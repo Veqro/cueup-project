@@ -1,0 +1,30 @@
+{
+    "users": [
+        {
+            "id": "1",
+            "username": "VaTe",
+            "events": [],
+            "spotifyData": {
+                "id": "31qfhyu2jptjwewskgwll3qah3zi",
+                "name": "VaTe",
+                "isPremium": true,
+                "encryptedRefreshToken": {
+                    "encrypted": "p/lWU312Gh/6ZaaMB4cvwo6bTRpqcjt40GuMiCOLTryO8Xw2QWw4FPImybw/23n9p/IiUB8yL3b+MZSzWsciuYHkXzZiRj1K9WWj1RDTa+vV4jgrQk4FQIEltKMP2XLtlZ1HDl1MOVD6IKO9JJMryYXJZFREKRNdxxTIuzOQUPGT4i0="
+                }
+            }
+        },
+        {
+            "id": "1757720645633",
+            "username": "Thore S.",
+            "spotifyData": {
+                "id": "31go5bamhmpcktfkjctkrg5aibki",
+                "name": "Thore S.",
+                "isPremium": true,
+                "encryptedRefreshToken": {
+                    "encrypted": "p/lRC2hMEmmGBr+nI6Vo4YXsU1dmSBtugQOf1z2IY8LWy1YLZ20RQvYWtdUjvyLQodpKC0dqHl37A6C1FK1Q5JWeTAdBbBJPwz+8u0eHbLiy31Awe10PH+M0r7YSuyLF0coiLHsxJxHWFo2hGIRw44WbeC95XmdrghPNiD6cTsqt9y0="
+                }
+            },
+            "events": []
+        }
+    ]
+}

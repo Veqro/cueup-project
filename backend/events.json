@@ -1,0 +1,83 @@
+{
+  "events": [
+    {
+      "id": "TJYZ2G",
+      "name": "test2",
+      "date": "2025-09-12",
+      "time": "01:45",
+      "endTime": "04:00",
+      "location": "rr",
+      "dj": "Test",
+      "description": "",
+      "wishUrl": "http://127.0.0.1:5500/userwish.html?event=C51B80",
+      "createdAt": "2025-09-12T23:54:03.511Z",
+      "eventCode": "C51B80",
+      "userId": "1757720645633",
+      "username": "Thore S."
+    },
+    {
+      "id": "5V2A1F",
+      "name": "Sommerfest",
+      "date": "2025-09-14",
+      "time": "01:15",
+      "endTime": "02:00",
+      "location": "rr",
+      "dj": "Test",
+      "description": "",
+      "wishUrl": "http://127.0.0.1:5500/userwish.html?event=60F4CC",
+      "createdAt": "2025-09-13T22:14:23.783Z",
+      "eventCode": "60F4CC",
+      "userId": "1",
+      "username": "VaTe",
+      "wishes": [
+        {
+          "id": "17578023543860xx2622k5",
+          "songId": "629jYEsYz9YmEVOOlHnRmK",
+          "title": "Zahnputzlied",
+          "artist": "Libatiba",
+          "coverUrl": "https://i.scdn.co/image/ab67616d0000b273c3a893775bbe0b8a74f89c17",
+          "spotifyUri": "spotify:track:629jYEsYz9YmEVOOlHnRmK",
+          "timestamp": "2025-09-13T22:25:54.386Z",
+          "status": "rejected",
+          "eventCode": "5V2A1F",
+          "lastUpdated": "2025-09-13T22:26:49.068Z"
+        },
+        {
+          "id": "1757802380167igfy7tfkn",
+          "songId": "6DXLO8LndZMVOHM0wNbpzg",
+          "title": "Danza Kuduro",
+          "artist": "Don Omar, Lucenzo",
+          "coverUrl": "https://i.scdn.co/image/ab67616d0000b273d4c273fe23a0950d7ac9fce2",
+          "spotifyUri": "spotify:track:6DXLO8LndZMVOHM0wNbpzg",
+          "timestamp": "2025-09-13T22:26:20.167Z",
+          "status": "accepted",
+          "eventCode": "5V2A1F",
+          "lastUpdated": "2025-09-13T22:26:42.247Z"
+        },
+        {
+          "id": "17578023936396mbravicb",
+          "songId": "6DXLO8LndZMVOHM0wNbpzg",
+          "title": "Danza Kuduro",
+          "artist": "Don Omar, Lucenzo",
+          "coverUrl": "https://i.scdn.co/image/ab67616d0000b273d4c273fe23a0950d7ac9fce2",
+          "spotifyUri": "spotify:track:6DXLO8LndZMVOHM0wNbpzg",
+          "timestamp": "2025-09-13T22:26:33.639Z",
+          "status": "rejected",
+          "eventCode": "5V2A1F",
+          "lastUpdated": "2025-09-13T22:26:44.949Z"
+        },
+        {
+          "id": "17578031147183ubd7rd2c",
+          "songId": "5fwSHlTEWpluwOM0Sxnh5k",
+          "title": "Pepas",
+          "artist": "Farruko",
+          "coverUrl": "https://i.scdn.co/image/ab67616d0000b2734239a6aa89738d8f798168ad",
+          "spotifyUri": "spotify:track:5fwSHlTEWpluwOM0Sxnh5k",
+          "timestamp": "2025-09-13T22:38:34.718Z",
+          "status": "pending",
+          "eventCode": "5V2A1F"
+        }
+      ]
+    }
+  ]
+}
