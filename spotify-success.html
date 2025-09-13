@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Anmeldung Erfolgreich</title>
+    <link rel="stylesheet" href="startpage.css">
+    <style>
+        .success-container {
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 40px;
+            background-color: #333;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .success-title {
+            color: #1DB954;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .success-message {
+            color: #fff;
+            font-size: 1.2rem;
+            margin: 20px 0;
+        }
+
+        .user-name {
+            color: #1DB954;
+            font-weight: bold;
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: #aa00ff;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #cc33ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(170, 0, 255, 0.3);
+        }
+
+        .spotify-icon {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 20px;
+        }
+
+        /* User Menu CSS */
+        .user-menu-container {
+            position: relative;
+            margin-right: 20px;
+        }
+        .user-icon {
+            color: white;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .user-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            min-width: 150px;
+            z-index: 1000;
+        }
+        .user-menu p, .user-menu a {
+            color: white;
+            text-decoration: none;
+            margin: 5px 0;
+        }
+        /* Sticky Footer Layout */
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .main-content {
+            flex: 1;
+        }
+    </style>
+    <script src="url-rewriter.js"></script>
+</head>
+<body>
+    <header>
+      <a href="startpage.html" class="mainLogoLink"
+        ><h1 class="mainlogo">Cueup</h1></a
+      >
+      <div style="display: flex; align-items: center; margin-right: 20px;">
+        <div class="user-menu-container">
+          <div class="user-icon" onclick="window.location.href='profile.html'"><img src="img/icons8-benutzer-64.png" alt="User Icon" style="display: block; width: 40px;" /></div>
+          <div class="user-menu">
+            <div id="userMenuContent"></div>
+          </div>
+        </div>
+        <label class="burger" for="burger">
+          <input type="checkbox" id="burger" />
+          <span></span>
+          <span></span>
+          <span></span>
+        </label>
+      </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+      <nav>
+        <ul id="navigationMenu">
+          <!-- Menü wird dynamisch basierend auf Login-Status gefüllt -->
+        </ul>
+      </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="success-container">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Spotify_icon.svg/1982px-Spotify_icon.svg.png" 
+             alt="Spotify" 
+             class="spotify-icon">
+        <h1 class="success-title">Erfolgreich verbunden!</h1>
+        <p class="success-message">
+            Willkommen, <span class="user-name" id="userName">...</span>!
+        </p>
+        <p class="success-message">
+            Dein Spotify-Account wurde erfolgreich mit dem DJ-System verknüpft.
+        </p>
+        <a href="startpage.html" class="back-button">Zurück zur Startseite</a>
+        </div>
+    </div>
+
+    <script>
+        const SERVER_URL = 'http://127.0.0.1:3000';
+        
+        // Burger Menu Toggle
+        document.getElementById('burger').addEventListener('change', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        // Dynamische Navigation basierend auf Login-Status
+        async function updateNavigation() {
+            const navigationMenu = document.getElementById('navigationMenu');
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/auth/status`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                const isLoggedIn = data.isAuthenticated && data.spotifyConnected;
+                
+                // Basis-Menüeinträge, die für alle Benutzer verfügbar sind
+                const baseMenuItems = [
+                    { text: 'Startseite', href: 'startpage.html' },
+                    { text: 'Spotify Integration', href: 'explain-spotify.html' },
+                    { text: 'Kontakt', href: 'contact.html' }
+                ];
+                
+                let menuItems;
+                if (isLoggedIn) {
+                    // Angemeldeter Benutzer
+                    menuItems = [
+                        ...baseMenuItems,
+                        { text: 'Event erstellen', href: 'createevent.html' },
+                        { text: 'Meine Events', href: 'myEvents.html' },
+                        { text: 'Profil', href: 'profile.html' },
+                        { text: 'Ausloggen', href: '#', onclick: 'logout()' }
+                    ];
+                } else {
+                    // Nicht angemeldeter Benutzer
+                    menuItems = [
+                        ...baseMenuItems,
+                        { text: 'Einloggen', href: 'free.html' }
+                    ];
+                }
+                
+                // Menü aufbauen
+                navigationMenu.innerHTML = menuItems.map(item => {
+                    if (item.onclick) {
+                        return `<li><a href="${item.href}" onclick="${item.onclick}">${item.text}</a></li>`;
+                    } else {
+                        return `<li><a href="${item.href}">${item.text}</a></li>`;
+                    }
+                }).join('');
+                
+            } catch (error) {
+                console.log('Auth check failed, showing guest menu');
+                // Bei Fehler: Gast-Menü anzeigen
+                navigationMenu.innerHTML = `
+                    <li><a href="startpage.html">Startseite</a></li>
+                    <li><a href="explain-spotify.html">Spotify Integration</a></li>
+                    <li><a href="contact.html">Kontakt</a></li>
+                    <li><a href="free.html">Einloggen</a></li>
+                `;
+            }
+        }
+
+        function logout() {
+            fetch(`${SERVER_URL}/logout`, {
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = 'free.html';
+                }
+            })
+            .catch(error => {
+                console.error('Logout failed:', error);
+                // Fallback: Zur Login-Seite weiterleiten
+                window.location.href = 'free.html';
+            });
+        }
+        
+        // Hole den Benutzernamen vom Server
+        fetch(`${SERVER_URL}/spotify/me`, {
+            credentials: 'include'  // Wichtig für Session-Cookies
+        })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('userName').textContent = data.display_name;
+            })
+            .catch(error => {
+                console.error('Fehler beim Laden der Benutzerdaten:', error);
+                document.getElementById('userName').textContent = 'DJ';
+            });
+
+        // Menü beim Laden der Seite aktualisieren
+        updateNavigation();
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>CueUp</h3>
+          <p>Die professionelle Lösung für DJ Event-Management und Musikwunsch-Verwaltung mit nahtloser Spotify-Integration.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="startpage.html">Startseite</a></li>
+            <li><a href="createevent.html">Event erstellen</a></li>
+            <li><a href="myEvents.html">Meine Events</a></li>
+            <li><a href="contact.html">Kontakt</a></li>
+          </ul>
+        </div>
+
+      
+      </div>
+      <div class="footer-bottom">
+        <p>CueUp </p>
+      </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cueup</title>
+    <link rel="stylesheet" href="startpage.css" />
+    <style>
+      .user-menu-container {
+        position: relative;
+        margin-right: 20px;
+      }
+      .user-icon {
+        color: white;
+        cursor: pointer;
+        padding: 5px;
+        
+      }
+      .user-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: rgba(0, 0, 0, 0.9);
+        padding: 10px;
+        border-radius: 5px;
+        min-width: 150px;
+        z-index: 1000;
+      }
+     
+      .user-menu p, .user-menu a {
+        color: white;
+        text-decoration: none;
+        margin: 5px 0;
+      }
+   
+    </style>
+    <script src="url-rewriter.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="startpage.html" class="mainLogoLink"
+        ><h1 class="mainlogo">Cueup</h1></a
+      >
+      <div style="display: flex; align-items: center; margin-right: 20px;">
+        <div class="user-menu-container">
+          <div class="user-icon" onclick="window.location.href='profile.html'"><img src="img/icons8-benutzer-64.png" alt="User Icon" style="display: block; width: 40px;" /></div>
+          <div class="user-menu">
+            <div id="userMenuContent"></div>
+          </div>
+        </div>
+        <label class="burger" for="burger">
+          <input type="checkbox" id="burger" />
+          <span></span>
+          <span></span>
+          <span></span>
+        </label>
+      </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+      <nav>
+        <ul id="navigationMenu">
+          <!-- Menü wird dynamisch basierend auf Login-Status gefüllt -->
+        </ul>
+      </nav>
+    </div>
+    
+    <div class="background-image"></div>
+    
+    <!-- Main Content Container für bessere PC-Formatierung -->
+    <div class="main-container">
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="hero-content">
+          <h2 class="welcome-title">Willkommen bei Cueup!</h2>
+          <p class="welcome-description">
+            Mit CueUp kannst du als DJ Musikwünsche ganz einfach verwalten und deine
+            Gäste aktiv in dein Set einbinden. Über die integrierte Wunschliste
+            behalten alle den Überblick – und dank der Spotify-Integration kannst du
+            die Songs direkt in deine Warteschlange übernehmen.
+          </p>
+          <div class="hero-buttons">
+            <button class="cta-button primary" onclick="window.location.href='createevent.html'">
+              Event erstellen
+            </button>
+            <button class="cta-button secondary" onclick="window.location.href='myEvents.html'">
+              Meine Events
+            </button>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- How it works Section -->
+      <section class="how-it-works">
+        <div class="section-container">
+          <h3 class="section-title">So einfach geht's</h3>
+          <div class="steps-container">
+            <div class="step-item">
+              <div class="step-number">1</div>
+              <h4 class="step-title">Mit Spotify verbinden</h4>
+              <p class="step-description">Logge dich mit deinem Spotify-Konto für nahtlose Integration ein.</p>
+            </div>
+            <div class="step-item">
+              <div class="step-number">2</div>
+              <h4 class="step-title">Event erstellen</h4>
+              <p class="step-description">Erstelle dein Event mit allen wichtigen Details und teile den Code mit deinen Gästen.</p>
+            </div>
+            <div class="step-item">
+              <div class="step-number">3</div>
+              <h4 class="step-title">Wünsche verwalten</h4>
+              <p class="step-description">Deine Gäste können Musikwünsche abgeben und du behältst alles im Live-Dashboard im Überblick.</p>
+            </div>
+            <div class="step-item">
+              <div class="step-number">4</div>
+              <h4 class="step-title">Musik spielen</h4>
+              <p class="step-description">Füge Songs direkt zu deiner Spotify-Warteschlange hinzu und sorge für die perfekte Stimmung.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>CueUp</h3>
+          <p>Die professionelle Lösung für DJ Event-Management und Musikwunsch-Verwaltung mit nahtloser Spotify-Integration.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="startpage.html">Startseite</a></li>
+            <li><a href="createevent.html">Event erstellen</a></li>
+            <li><a href="myEvents.html">Meine Events</a></li>
+            <li><a href="contact.html">Kontakt</a></li>
+          </ul>
+        </div>
+
+      
+      </div>
+      <div class="footer-bottom">
+        <p>CueUp </p>
+      </div>
+    </footer>
+    <script>
+      document.getElementById("burger").addEventListener("change", function () {
+        document.getElementById("sidebar").classList.toggle("active");
+      });
+
+      // Dynamisches Menü basierend auf Login-Status
+      async function updateNavigation() {
+        const navigationMenu = document.getElementById('navigationMenu');
+        
+        try {
+          // Prüfe Login-Status
+          const response = await fetch('http://127.0.0.1:3000/auth/check', {
+            credentials: 'include'
+          });
+          
+          const isLoggedIn = response.ok;
+          
+          // Basis-Menüpunkte (immer sichtbar)
+          const baseMenuItems = [
+            { text: 'Startseite', href: 'startpage.html' },
+            { text: 'Kontakt', href: 'contact.html' }
+          ];
+          
+          let menuItems = [];
+          
+          if (isLoggedIn) {
+            // Angemeldeter Benutzer
+            menuItems = [
+              ...baseMenuItems,
+              { text: 'Event erstellen', href: 'createevent.html' },
+              { text: 'Meine Events', href: 'myEvents.html' },
+              { text: 'Profil', href: 'profile.html' },
+              { text: 'Ausloggen', href: '#', onclick: 'logout()' }
+            ];
+          } else {
+            // Nicht angemeldeter Benutzer
+            menuItems = [
+              ...baseMenuItems,
+              { text: 'Einloggen', href: 'free.html' }
+            ];
+          }
+          
+          // Menü aufbauen
+          navigationMenu.innerHTML = menuItems.map(item => {
+            if (item.onclick) {
+              return `<li><a href="${item.href}" onclick="${item.onclick}">${item.text}</a></li>`;
+            } else {
+              return `<li><a href="${item.href}">${item.text}</a></li>`;
+            }
+          }).join('');
+          
+        } catch (error) {
+          console.log('Auth check failed, showing guest menu');
+          // Bei Fehler: Gast-Menü anzeigen
+          navigationMenu.innerHTML = `
+            <li><a href="startpage.html">Startseite</a></li>
+            <li><a href="contact.html">Kontakt</a></li>
+            <li><a href="free.html">Einloggen</a></li>
+          `;
+        }
+      }
+
+      function logout() {
+        fetch('http://127.0.0.1:3000/logout', {
+          method: 'POST',
+          credentials: 'include'
+        })
+        .then(response => {
+          if (response.ok) {
+            window.location.href = 'free.html';
+          }
+        })
+        .catch(error => {
+          console.error('Logout failed:', error);
+          // Fallback: Zur Login-Seite weiterleiten
+          window.location.href = 'free.html';
+        });
+      }
+
+      // Menü beim Laden der Seite aktualisieren
+      updateNavigation();
+    </script>
+  </body>
+</html>

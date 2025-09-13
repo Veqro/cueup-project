@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event erstellen - Cueup</title>
+    <link rel="stylesheet" href="startpage.css">
+    <style>
+        .user-menu-container {
+            position: relative;
+            margin-right: 20px;
+        }
+        .user-icon {
+            color: white;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .user-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            min-width: 150px;
+            z-index: 1000;
+        }
+        .user-menu p, .user-menu a {
+            color: white;
+            text-decoration: none;
+            margin: 5px 0;
+        }
+
+        /* Formular-Styling */
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(170, 0, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-title {
+            color: #aa00ff;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            text-shadow: 0 0 15px rgba(170, 0, 255, 0.3), 0 0 25px rgba(170, 0, 255, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        input[type="date"],
+        input[type="time"] {
+            cursor: pointer;
+        }
+
+        input:focus:not(:invalid),
+        textarea:focus {
+            outline: none;
+            border-color: #aa00ff;
+            box-shadow: 0 0 0 3px rgba(170, 0, 255, 0.25);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .optional-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-left: 0.5rem;
+            font-weight: normal;
+        }
+
+        .submit-container {
+            text-align: center;
+            margin-top: 2.5rem;
+        }
+
+        /* Fehlermeldung Styling */
+        .error-message {
+            background-color: rgba(255, 107, 107, 0.1);
+            border-left: 4px solid #ff6b6b;
+            color: #ff6b6b;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 10px 10px 0;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+            backdrop-filter: blur(5px);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        input:invalid,
+        textarea:invalid {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.25);
+        }
+
+        .field-error {
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+            display: none;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Placeholder Styling */
+        ::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Custom Date/Time Modal Styling */
+        .datetime-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .datetime-modal-content {
+            background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(40, 40, 40, 0.9));
+            border: 2px solid rgba(170, 0, 255, 0.4);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(170, 0, 255, 0.3);
+        }
+
+        .datetime-modal h3 {
+            color: #aa00ff;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-shadow: 0 2px 10px rgba(170, 0, 255, 0.3);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin: 20px 0;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav-btn {
+            background: rgba(170, 0, 255, 0.2);
+            border: 1px solid rgba(170, 0, 255, 0.4);
+            color: #aa00ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-nav-btn:hover {
+            background: rgba(170, 0, 255, 0.4);
+            color: white;
+        }
+
+        .calendar-month-year {
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .calendar-weekday {
+            color: #aa00ff;
+            font-weight: bold;
+            padding: 10px 5px;
+            font-size: 0.9rem;
+        }
+
+        .calendar-day {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 5px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-day:hover {
+            background: rgba(170, 0, 255, 0.3);
+            border-color: #aa00ff;
+        }
+
+        .calendar-day.selected {
+            background: #aa00ff;
+            color: white;
+            border-color: #aa00ff;
+        }
+
+        .calendar-day.other-month {
+            color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .time-picker {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .time-input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .time-input-group label {
+            color: #aa00ff;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* Custom Number Spinner */
+        .custom-time-input {
+            background: rgba(40, 40, 40, 0.9);
+            border: 2px solid rgba(170, 0, 255, 0.3);
+            border-radius: 15px;
+            color: white;
+            padding: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            width: 80px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .custom-time-input:hover {
+            border-color: rgba(170, 0, 255, 0.6);
+            background: rgba(50, 50, 50, 0.9);
+        }
+
+        .custom-time-input:focus {
+            outline: none;
+            border-color: #aa00ff;
+            box-shadow: 0 0 0 3px rgba(170, 0, 255, 0.25);
+        }
+
+        .time-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-left: 10px;
+        }
+
+        .time-btn {
+            background: rgba(170, 0, 255, 0.2);
+            border: 1px solid rgba(170, 0, 255, 0.4);
+            color: #aa00ff;
+            border-radius: 8px;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .time-btn:hover {
+            background: rgba(170, 0, 255, 0.4);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(170, 0, 255, 0.3);
+        }
+
+        .time-select {
+            background: rgba(40, 40, 40, 0.9);
+            border: 2px solid rgba(170, 0, 255, 0.3);
+            border-radius: 10px;
+            color: white;
+            padding: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+
+        .time-select:focus {
+            outline: none;
+            border-color: #aa00ff;
+            box-shadow: 0 0 0 3px rgba(170, 0, 255, 0.25);
+            background: rgba(40, 40, 40, 1);
+        }
+
+        /* Custom Dropdown-Styling für die Optionen */
+        .time-select option {
+            background: rgba(40, 40, 40, 0.95);
+            color: white;
+            padding: 8px;
+            border: none;
+        }
+
+        .time-select option:hover,
+        .time-select option:focus,
+        .time-select option:checked {
+            background: rgba(170, 0, 255, 0.3);
+            color: white;
+        }
+
+        /* Custom Arrow für Select */
+        .time-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='%23aa00ff' viewBox='0 0 16 16'%3e%3cpath d='M8 13.1l-8-8 2.1-2.1 5.9 5.9 5.9-5.9L16 5.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .modal-btn-confirm {
+            background: linear-gradient(135deg, #aa00ff, #cc44ff);
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            background: linear-gradient(135deg, #cc44ff, #aa00ff);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(170, 0, 255, 0.4);
+        }
+
+        .modal-btn-cancel {
+            background: transparent;
+            border: 2px solid #666;
+            color: #aaa;
+        }
+
+        .modal-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: #aa00ff;
+        }
+
+        /* Custom Input Styling für Date/Time */
+        input[type="date"],
+        input[type="time"] {
+            cursor: pointer;
+            position: relative;
+        }
+
+        /* Verstecke die Browser-nativen Picker */
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            display: none;
+        }
+
+        input[type="date"]::-webkit-inner-spin-button,
+        input[type="time"]::-webkit-inner-spin-button {
+            display: none;
+        }
+    </style>
+    <script src="url-rewriter.js"></script>
+</head>
+<body>
+    <header>
+       <a href="startpage.html" class="mainLogoLink"><h1 class="mainlogo">Cueup</h1></a>
+
+      <div style="display: flex; align-items: center; margin-right: 20px;">
+        <div class="user-menu-container">
+          <div class="user-icon" onclick="window.location.href='profile.html'"><img src="img/icons8-benutzer-64.png" alt="User Icon" style="display: block; width: 40px;" /></div>
+          <div class="user-menu">
+            <div id="userMenuContent"></div>
+          </div>
+        </div>
+        <label class="burger" for="burger">
+          <input type="checkbox" id="burger" />
+          <span></span>
+          <span></span>
+          <span></span>
+        </label>
+      </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+      <nav>
+        <ul>
+          <li><a href="startpage.html">Startseite</a></li>
+          <li><a href="createevent.html">Event erstellen</a></li>
+          <li><a href="myEvents.html">Meine Events</a></li>
+          <li><a href="contact.html">Kontakt</a></li>
+          <li><a href="#" onclick="logout()">Ausloggen</a></li>
+          <li><a href="free.html">Einloggen</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <main class="content">
+        <div class="form-container">
+            <h2 class="form-title">Event Details</h2>
+            
+            <div class="error-message" id="formError">
+                Bitte füllen Sie alle erforderlichen Felder aus.
+            </div>
+
+            <form id="eventForm" novalidate>
+                <div class="form-group">
+                    <label for="eventName">Event Name</label>
+                    <input type="text" id="eventName" name="eventName" placeholder="z.B. Sommerfest" required>
+                    <div class="field-error" data-for="eventName">Bitte geben Sie einen Event-Namen ein.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventDate">Datum</label>
+                    <input type="date" id="eventDate" name="eventDate" required>
+                    <div class="field-error" data-for="eventDate">Bitte wählen Sie ein Datum aus.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="startTime">Startzeit</label>
+                    <input type="time" id="startTime" name="startTime" required>
+                    <div class="field-error" data-for="startTime">Bitte wählen Sie eine Startzeit aus.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="endTime">Endzeit</label>
+                    <input type="time" id="endTime" name="endTime" required>
+                    <div class="field-error" data-for="endTime">Bitte wählen Sie eine Endzeit aus.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location" placeholder="z.B. Club XYZ, Musterstraße 123" required>
+                    <div class="field-error" data-for="location">Bitte geben Sie eine Location ein.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="djName">DJ Name</label>
+                    <input type="text" id="djName" name="djName" placeholder="z.B. DJ MixMaster" required>
+                    <div class="field-error" data-for="djName">Bitte geben Sie einen DJ-Namen ein.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Beschreibung <span class="optional-label">(optional)</span></label>
+                    <textarea id="description" name="description" placeholder="Beschreibe dein Event: Musikrichtung, besondere Highlights..."></textarea>
+                </div>
+
+                <div class="submit-container">
+                    <button type="submit" class="create-button"> Event erstellen</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Custom Date Picker Modal -->
+    <div id="dateModal" class="datetime-modal">
+        <div class="datetime-modal-content">
+            <h3>📅 Datum auswählen</h3>
+            <div class="calendar-header">
+                <button type="button" class="calendar-nav-btn" id="prevMonth">❮</button>
+                <span class="calendar-month-year" id="monthYear"></span>
+                <button type="button" class="calendar-nav-btn" id="nextMonth">❯</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn modal-btn-confirm" id="confirmDate">Bestätigen</button>
+                <button type="button" class="modal-btn modal-btn-cancel" id="cancelDate">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Time Picker Modal -->
+    <div id="timeModal" class="datetime-modal">
+        <div class="datetime-modal-content">
+            <h3>🕐 Zeit auswählen</h3>
+            <div class="time-picker">
+                <div class="time-input-group">
+                    <label>Stunde</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="text" class="custom-time-input" id="hourInput" readonly>
+                        <div class="time-controls">
+                            <button type="button" class="time-btn" id="hourUp">▲</button>
+                            <button type="button" class="time-btn" id="hourDown">▼</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="time-input-group">
+                    <label>Minute</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="text" class="custom-time-input" id="minuteInput" readonly>
+                        <div class="time-controls">
+                            <button type="button" class="time-btn" id="minuteUp">▲</button>
+                            <button type="button" class="time-btn" id="minuteDown">▼</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn modal-btn-confirm" id="confirmTime">Bestätigen</button>
+                <button type="button" class="modal-btn modal-btn-cancel" id="cancelTime">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('burger').addEventListener('change', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        // Logout Funktion
+        function logout() {
+            fetch('/logout', {
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = 'free.html';
+                }
+            })
+            .catch(error => {
+                console.error('Logout failed:', error);
+            });
+        }
+
+        // User Menu Funktionalität
+        function updateUserMenu(isAuthenticated, username) {
+            const menuContent = document.getElementById('userMenuContent');
+            if (isAuthenticated) {
+                menuContent.innerHTML = `<p>${username}</p>`;
+            } else {
+                menuContent.innerHTML = '<a href="free.html">Anmelden</a>';
+            }
+        }
+
+        // Auth Status Check
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/auth/status', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                updateUserMenu(data.isAuthenticated, data.username);
+            } catch (error) {
+                console.error('Fehler beim Prüfen des Auth-Status:', error);
+            }
+        }
+
+        // Initial Auth Status Check
+        checkAuthStatus();
+
+        // ============ CUSTOM DATE/TIME PICKER ============
+        let currentDate = new Date();
+        let selectedDate = null;
+        let currentInput = null;
+
+        // Date Picker Funktionalität
+        const dateModal = document.getElementById('dateModal');
+        const timeModal = document.getElementById('timeModal');
+        const monthYear = document.getElementById('monthYear');
+        const calendarGrid = document.getElementById('calendarGrid');
+        const hourInput = document.getElementById('hourInput');
+        const minuteInput = document.getElementById('minuteInput');
+        let currentHour = 12;
+        let currentMinute = 0;
+
+        // Time Controls
+        function updateTimeDisplays() {
+            hourInput.value = currentHour.toString().padStart(2, '0');
+            minuteInput.value = currentMinute.toString().padStart(2, '0');
+        }
+
+        // Time Control Event Listeners
+        document.getElementById('hourUp').addEventListener('click', () => {
+            currentHour = (currentHour + 1) % 24;
+            updateTimeDisplays();
+        });
+
+        document.getElementById('hourDown').addEventListener('click', () => {
+            currentHour = (currentHour - 1 + 24) % 24;
+            updateTimeDisplays();
+        });
+
+        document.getElementById('minuteUp').addEventListener('click', () => {
+            currentMinute = (currentMinute + 15) % 60;
+            updateTimeDisplays();
+        });
+
+        document.getElementById('minuteDown').addEventListener('click', () => {
+            currentMinute = (currentMinute - 15 + 60) % 60;
+            updateTimeDisplays();
+        });
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            monthYear.textContent = currentDate.toLocaleDateString('de-DE', { 
+                month: 'long', 
+                year: 'numeric' 
+            });
+
+            calendarGrid.innerHTML = '';
+
+            // Wochentage-Header
+            const weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+            weekdays.forEach(day => {
+                const div = document.createElement('div');
+                div.className = 'calendar-weekday';
+                div.textContent = day;
+                calendarGrid.appendChild(div);
+            });
+
+            // Ersten Tag des Monats finden
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            let startDate = new Date(firstDay);
+            
+            // Zum Montag der ersten Woche gehen
+            const dayOfWeek = (firstDay.getDay() + 6) % 7; // Montag = 0
+            startDate.setDate(firstDay.getDate() - dayOfWeek);
+
+            // 6 Wochen anzeigen
+            for (let i = 0; i < 42; i++) {
+                const cellDate = new Date(startDate);
+                cellDate.setDate(startDate.getDate() + i);
+
+                const div = document.createElement('div');
+                div.className = 'calendar-day';
+                div.textContent = cellDate.getDate();
+
+                if (cellDate.getMonth() !== month) {
+                    div.classList.add('other-month');
+                }
+
+                if (selectedDate && cellDate.toDateString() === selectedDate.toDateString()) {
+                    div.classList.add('selected');
+                }
+
+                div.addEventListener('click', () => {
+                    document.querySelectorAll('.calendar-day.selected').forEach(el => 
+                        el.classList.remove('selected')
+                    );
+                    div.classList.add('selected');
+                    selectedDate = new Date(cellDate);
+                });
+
+                calendarGrid.appendChild(div);
+            }
+        }
+
+        // Event Listeners für Custom Picker
+        document.getElementById('eventDate').addEventListener('click', function(e) {
+            e.preventDefault();
+            currentInput = this;
+            
+            // Aktuelles Datum setzen falls vorhanden
+            if (this.value) {
+                selectedDate = new Date(this.value + 'T00:00:00');
+                currentDate = new Date(selectedDate);
+            } else {
+                currentDate = new Date();
+                selectedDate = null;
+            }
+            
+            renderCalendar();
+            dateModal.style.display = 'flex';
+        });
+
+        document.getElementById('startTime').addEventListener('click', function(e) {
+            e.preventDefault();
+            currentInput = this;
+            
+            // Aktuelle Zeit setzen falls vorhanden
+            if (this.value) {
+                const [hours, minutes] = this.value.split(':');
+                currentHour = parseInt(hours);
+                currentMinute = parseInt(minutes);
+            } else {
+                const now = new Date();
+                currentHour = now.getHours();
+                currentMinute = Math.floor(now.getMinutes() / 15) * 15;
+            }
+            
+            updateTimeDisplays();
+            timeModal.style.display = 'flex';
+        });
+
+        document.getElementById('endTime').addEventListener('click', function(e) {
+            e.preventDefault();
+            currentInput = this;
+            
+            // Aktuelle Zeit setzen falls vorhanden
+            if (this.value) {
+                const [hours, minutes] = this.value.split(':');
+                currentHour = parseInt(hours);
+                currentMinute = parseInt(minutes);
+            } else {
+                const now = new Date();
+                currentHour = (now.getHours() + 2) % 24;
+                currentMinute = Math.floor(now.getMinutes() / 15) * 15;
+            }
+            
+            updateTimeDisplays();
+            timeModal.style.display = 'flex';
+        });
+
+        // Navigation
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+        // Bestätigen/Abbrechen
+        document.getElementById('confirmDate').addEventListener('click', () => {
+            if (selectedDate && currentInput) {
+                const formattedDate = selectedDate.toISOString().split('T')[0];
+                currentInput.value = formattedDate;
+                validateField(currentInput);
+            }
+            dateModal.style.display = 'none';
+        });
+
+        document.getElementById('cancelDate').addEventListener('click', () => {
+            dateModal.style.display = 'none';
+        });
+
+        document.getElementById('confirmTime').addEventListener('click', () => {
+            if (currentInput) {
+                const time = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+                currentInput.value = time;
+                validateField(currentInput);
+            }
+            timeModal.style.display = 'none';
+        });
+
+        document.getElementById('cancelTime').addEventListener('click', () => {
+            timeModal.style.display = 'none';
+        });
+
+        // Modal schließen bei außerhalb klicken
+        [dateModal, timeModal].forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+
+        // ESC zum Schließen
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                dateModal.style.display = 'none';
+                timeModal.style.display = 'none';
+            }
+        });
+
+        // Initialisierung
+        updateTimeDisplays();
+        // ============ ENDE CUSTOM DATE/TIME PICKER ============
+
+        const form = document.getElementById('eventForm');
+        const formError = document.getElementById('formError');
+        const inputs = form.querySelectorAll('input[required], textarea[required]');
+
+        // Einzelfeld-Validierung
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                validateField(this);
+            });
+
+            input.addEventListener('blur', function() {
+                validateField(this);
+            });
+        });
+
+        function validateField(field) {
+            const errorDiv = field.parentElement.querySelector('.field-error');
+            if (!field.value) {
+                field.classList.add('invalid');
+                errorDiv.style.display = 'block';
+            } else {
+                field.classList.remove('invalid');
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        // Formular-Validierung
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            let isValid = true;
+            formError.style.display = 'none';
+
+            // Alle Pflichtfelder prüfen
+            inputs.forEach(input => {
+                if (!input.value) {
+                    isValid = false;
+                    validateField(input);
+                }
+            });
+
+            // Zusätzliche Zeitvalidierung
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            if (startTime && endTime && startTime >= endTime) {
+                isValid = false;
+                formError.textContent = 'Die Endzeit muss nach der Startzeit liegen.';
+                formError.style.display = 'block';
+            }
+
+            if (!isValid) {
+                formError.style.display = 'block';
+                formError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                return;
+            }
+
+            // Wenn alles valid ist
+            // Event-Code generieren (6 Zeichen, Zahlen und Großbuchstaben)
+            const eventCode = Array.from(crypto.getRandomValues(new Uint8Array(6)))
+                .map(n => (n % 36).toString(36).toUpperCase())
+                .join('');
+            
+            // Wunsch-URL generieren
+            const wishUrl = `${window.location.origin}/userwish.html?eventId=${eventCode}`;
+
+            // Event-Daten sammeln
+            const eventData = {
+                id: eventCode,
+                name: document.getElementById('eventName').value,
+                date: document.getElementById('eventDate').value,
+                time: document.getElementById('startTime').value,
+                endTime: document.getElementById('endTime').value,
+                location: document.getElementById('location').value,
+                dj: document.getElementById('djName').value,
+                description: document.getElementById('description').value,
+                wishUrl: wishUrl,
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                console.log('Sende Event-Daten:', eventData);
+                
+                // Event zum Server senden
+                const response = await fetch('http://127.0.0.1:3000/api/events', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(eventData),
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Server-Antwort:', response.status, errorText);
+                    throw new Error(`Server-Fehler: ${response.status} - ${errorText}`);
+                }
+
+                // Als Backup auch im localStorage speichern
+                let existingEvents = [];
+                const eventsStr = localStorage.getItem('events');
+                if (eventsStr) {
+                    existingEvents = JSON.parse(eventsStr);
+                }
+                if (!Array.isArray(existingEvents)) {
+                    existingEvents = [];
+                }
+
+                // Neues Event hinzufügen
+                existingEvents.unshift(eventData);
+                localStorage.setItem('events', JSON.stringify(existingEvents));
+                
+                console.log('Event erfolgreich gespeichert:', eventData);
+
+                // Zur Erfolgsseite weiterleiten
+                window.location.href = `eventSuccess.html?code=${eventCode}&wishUrl=${encodeURIComponent(wishUrl)}`;
+            } catch (error) {
+                console.error('Fehler beim Speichern des Events:', error);
+                alert('Fehler beim Speichern des Events: ' + error.message);
+            }
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>CueUp</h3>
+          <p>Die professionelle Lösung für DJ Event-Management und Musikwunsch-Verwaltung mit nahtloser Spotify-Integration.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="startpage.html">Startseite</a></li>
+            <li><a href="createevent.html">Event erstellen</a></li>
+            <li><a href="myEvents.html">Meine Events</a></li>
+            <li><a href="contact.html">Kontakt</a></li>
+          </ul>
+        </div>
+
+      
+      </div>
+      <div class="footer-bottom">
+        <p>CueUp </p>
+      </div>
+    </footer>
+</body>
+</html>

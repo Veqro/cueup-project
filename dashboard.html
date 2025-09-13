@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Dashboard - Musikwünsche</title>
+    <link rel="stylesheet" href="startpage.css">
+    <style>
+        .dashboard-container {
+            width: calc(100% - 40px);
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin: 80px 0 40px 0;
+            padding: 0 100px 0 20px; /* Mehr Padding rechts für den Button-Platz */
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1; /* Nimmt den verfügbaren Platz ein */
+        }
+
+        .back-arrow {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(170, 0, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(170, 0, 255, 0.3);
+            border-radius: 15px;
+            width: 60px;
+            height: 60px;
+            color: #aa00ff;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 8px 32px rgba(170, 0, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: absolute;
+            overflow: hidden;
+            z-index: 10; /* Stelle sicher, dass der Button über anderen Elementen liegt */
+        }
+
+        .back-arrow::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transition: left 0.5s;
+        }
+
+        .back-arrow:hover {
+            background: rgba(170, 0, 255, 0.2);
+            border-color: #aa00ff;
+            color: #ffffff;
+            transform: translateY(-50%) scale(1.05) translateX(-2px);
+            box-shadow: 
+                0 12px 40px rgba(170, 0, 255, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .back-arrow:hover::before {
+            left: 100%;
+        }
+
+        .back-arrow:active {
+            transform: translateY(-50%) scale(0.95) translateX(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .back-arrow {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+                left: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .back-arrow {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+                left: 10px;
+            }
+        }
+    
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #aa00ff;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(170, 0, 255, 0.3);
+        }
+
+        .wishes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+            gap: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            place-items: center;
+        }
+
+        @media (min-width: 900px) {
+            .wishes-container {
+                grid-template-columns: repeat(2, minmax(400px, 1fr));
+            }
+        }
+
+        @media (min-width: 1400px) {
+            .wishes-container {
+                grid-template-columns: repeat(3, minmax(400px, 1fr));
+            }
+        }
+
+        .filter-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 0 20px;
+        }
+
+        .filter-tab {
+            padding: 10px 20px;
+            background-color: #333;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 480px) {
+            .filter-tabs {
+                gap: 5px;
+            }
+            .filter-tab {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+        }
+
+        .filter-tab.active {
+            background-color: #aa00ff;
+        }
+
+        .wish-card {
+            background-color: #333;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 480px) {
+            .wish-card {
+                min-width: auto;
+                width: 100%;
+                margin: 0 10px;
+            }
+        }
+
+        .wish-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .wish-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .action-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .accept-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .reject-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .spotify-btn {
+            background-color: #1DB954;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .spotify-btn:hover {
+            background-color: #1ed760;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            z-index: 1;
+            white-space: nowrap; /* Verhindert Umbruch des Status-Texts */
+        }
+
+        .status-pending {
+            background-color: #FFA000;
+            color: white;
+        }
+
+        .status-accepted {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .status-rejected {
+            background-color: #f44336;
+            color: white;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast .icon {
+            font-size: 20px;
+        }
+
+        .toast.error {
+            background: #f44336;
+        }
+
+        /* Spotify Connect Modal */
+        .spotify-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+        }
+
+        .spotify-modal-content {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(29, 185, 84, 0.4);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 
+                0 25px 80px rgba(29, 185, 84, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .spotify-modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(29, 185, 84, 0.1),
+                transparent
+            );
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .spotify-modal-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #1DB954, #1ed760);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            box-shadow: 0 10px 30px rgba(29, 185, 84, 0.4);
+        }
+
+        .spotify-modal-title {
+            color: #1DB954;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(29, 185, 84, 0.3);
+        }
+
+        .spotify-modal-message {
+            color: #ffffff;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+
+        .spotify-modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .spotify-modal-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            min-width: 120px;
+        }
+
+        .spotify-modal-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: left 0.5s;
+        }
+
+        .spotify-modal-btn:hover::before {
+            left: 100%;
+        }
+
+        .spotify-modal-btn-connect {
+            background: linear-gradient(135deg, #1DB954, #1ed760);
+            color: white;
+            border: 2px solid transparent;
+        }
+
+        .spotify-modal-btn-connect:hover {
+            background: linear-gradient(135deg, #1ed760, #1DB954);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(29, 185, 84, 0.4);
+        }
+
+        .spotify-modal-btn-cancel {
+            background: transparent;
+            color: #aaa;
+            border: 2px solid #444;
+        }
+
+        .spotify-modal-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: #666;
+            transform: translateY(-2px);
+        }
+
+        .wish-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+            padding-right: 100px; /* Platz für den Status-Badge */
+        }
+
+        .wish-cover {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            margin-right: 15px;
+            flex-shrink: 0; /* Verhindert das Schrumpfen des Covers */
+        }
+
+        .wish-info {
+            flex-grow: 1;
+            color: white;
+            min-width: 0; /* Erlaubt Text-Overflow */
+        }
+
+        .wish-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .wish-artist {
+            color: #aaa;
+        }
+
+        .wish-timestamp {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .no-wishes {
+            text-align: center;
+            color: #666;
+            font-size: 1.2rem;
+            margin-top: 50px;
+        }
+
+        /* Animation für neue Wünsche */
+        @keyframes newWishAnimation {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .new-wish {
+            animation: newWishAnimation 0.5s ease-out;
+        }
+
+        /* Minimal Footer-Positionierung */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            flex: 1;
+        }
+
+        .footer {
+            margin-top: auto;
+        }
+    </style>
+    <script src="url-rewriter.js"></script>
+</head>
+<body>
+    <div id="toast" class="toast">
+        <span class="icon">✓</span>
+        <span class="message"></span>
+    </div>
+
+    <!-- Spotify Connect Modal -->
+    <div id="spotifyModal" class="spotify-modal-overlay">
+        <div class="spotify-modal-content">
+            <div class="spotify-modal-icon">🎵</div>
+            <div class="spotify-modal-title">Spotify-Verbindung erforderlich</div>
+            <div class="spotify-modal-message">
+                Um Songs zur Spotify-Warteschlange hinzuzufügen, musst du deinen Account mit Spotify verbinden.
+            </div>
+            <div class="spotify-modal-buttons">
+                <button class="spotify-modal-btn spotify-modal-btn-connect" onclick="connectToSpotify()">
+                    Mit Spotify verbinden
+                </button>
+                <button class="spotify-modal-btn spotify-modal-btn-cancel" onclick="closeSpotifyModal()">
+                    Abbrechen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <div class="header">
+            <button class="back-arrow" onclick="goBackToMyEvents()" title="Zurück zu Meine Events">
+                ❮
+            </button>
+            <div class="header-content">
+                <h1>DJ Dashboard</h1>
+                <p style="color: white; text-shadow: #bc37ff 0px 0px 15px;">Live-Übersicht der Musikwünsche</p>
+            </div>
+        </div>
+
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">Alle</button>
+            <button class="filter-tab" data-filter="pending">Ausstehend</button>
+            <button class="filter-tab" data-filter="accepted">Angenommen</button>
+            <button class="filter-tab" data-filter="rejected">Abgelehnt</button>
+        </div>
+
+        <div class="wishes-container" id="wishesContainer">
+            <!-- Wünsche werden hier dynamisch eingefügt -->
+        </div>
+    </div>
+
+    <script>
+        const SERVER_URL = 'http://127.0.0.1:3000';
+        const wishesContainer = document.getElementById('wishesContainer');
+        let wishes = [];
+        let currentEventCode = null;
+        let lastUpdateTime = 0;
+
+        // Event-Code aus der URL holen
+        const urlParams = new URLSearchParams(window.location.search);
+        currentEventCode = urlParams.get('eventId') || urlParams.get('event'); // Unterstütze beide Parameter
+        
+        if (!currentEventCode) {
+            document.body.innerHTML = '<div class="dashboard-container"><div class="header"><h1>Fehler</h1><p>Kein Event-Code gefunden</p></div></div>';
+            throw new Error('Kein Event-Code in der URL gefunden');
+        }
+
+        // SICHERHEIT: Authentifizierung und Berechtigung prüfen
+        async function checkAuthAndPermission() {
+            try {
+                // 1. Prüfe ob Benutzer eingeloggt ist
+                const authResponse = await fetch(`${SERVER_URL}/auth/status`, {
+                    credentials: 'include'
+                });
+                
+                if (!authResponse.ok) {
+                    throw new Error('Nicht authentifiziert');
+                }
+                
+                const authData = await authResponse.json();
+                
+                if (!authData.isAuthenticated) {
+                    // Nicht eingeloggt - zur Login-Seite weiterleiten
+                    window.location.href = 'free.html?redirect=' + encodeURIComponent(window.location.href);
+                    return false;
+                }
+
+                // 2. Prüfe ob der Benutzer Berechtigung für dieses Event hat
+                const eventResponse = await fetch(`${SERVER_URL}/api/event/${currentEventCode}/check-owner`, {
+                    credentials: 'include'
+                });
+
+                if (!eventResponse.ok) {
+                    const errorData = await eventResponse.json();
+                    if (eventResponse.status === 403) {
+                        // Kein Zugriff auf dieses Event
+                        document.body.innerHTML = `
+                            <div class="dashboard-container">
+                                <div class="header">
+                                    <h1 style="color: #f44336;">🚫 Zugriff verweigert</h1>
+                                    <p style="color: white;">Du hast keine Berechtigung für dieses Event-Dashboard.</p>
+                                    <p style="color: #aaa;">Nur der Event-Ersteller kann das Dashboard verwenden.</p>
+                                    <button onclick="window.location.href='myEvents.html'" 
+                                            style="padding: 10px 20px; background: #aa00ff; color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 20px;">
+                                        Zu meinen Events
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        return false;
+                    } else if (eventResponse.status === 404) {
+                        // Event nicht gefunden
+                        document.body.innerHTML = `
+                            <div class="dashboard-container">
+                                <div class="header">
+                                    <h1 style="color: #f44336;">❌ Event nicht gefunden</h1>
+                                    <p style="color: white;">Das Event mit dem Code "${currentEventCode}" existiert nicht.</p>
+                                    <button onclick="window.location.href='myEvents.html'" 
+                                            style="padding: 10px 20px; background: #aa00ff; color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 20px;">
+                                        Zu meinen Events
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        return false;
+                    } else {
+                        throw new Error(errorData.message || 'Fehler beim Prüfen der Berechtigung');
+                    }
+                }
+
+                // Berechtigung OK - Event-Daten anzeigen
+                const eventData = await eventResponse.json();
+                console.log('✅ Dashboard-Zugriff berechtigt für Event:', eventData.title);
+                
+                // Aktualisiere den Header mit dem Event-Namen
+                const headerTitle = document.querySelector('.header h1');
+                if (headerTitle && eventData.title) {
+                    headerTitle.textContent = `DJ Dashboard - ${eventData.title}`;
+                }
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Auth/Permission-Fehler:', error);
+                
+                // Bei Netzwerkfehlern oder anderen Problemen zur Login-Seite
+                document.body.innerHTML = `
+                    <div class="dashboard-container">
+                        <div class="header">
+                            <h1 style="color: #f44336;">🔒 Anmeldung erforderlich</h1>
+                            <p style="color: white;">Du musst angemeldet sein, um das Dashboard zu verwenden.</p>
+                            <button onclick="window.location.href='free.html'" 
+                                    style="padding: 10px 20px; background: #aa00ff; color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 20px;">
+                                Jetzt anmelden
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return false;
+            }
+        }
+
+        // WebSocket Verbindung aufbauen
+        const ws = new WebSocket('ws://127.0.0.1:3000');
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            // Nur Updates für das aktuelle Event verarbeiten
+            if (data.eventCode === currentEventCode) {
+                if (data.type === 'newWish') {
+                    // Prüfe ob der Wunsch bereits existiert
+                    const existingWish = wishes.find(w => w.id === data.wish.id);
+                    if (!existingWish) {
+                        wishes.unshift(data.wish);
+                        addWish(data.wish, true);
+                    }
+                } else if (data.type === 'wishStatusUpdate') {
+                    // Update den Wunsch im Array
+                    const index = wishes.findIndex(w => w.id === data.wish.id);
+                    if (index !== -1) {
+                        wishes[index] = data.wish;
+                    }
+                    updateWishInUI(data.wish);
+                }
+            }
+        };
+
+        function updateWishInUI(wish) {
+            const wishCard = document.querySelector(`.wish-card[data-id="${wish.id}"]`);
+            if (wishCard) {
+                const statusText = {
+                    pending: 'Ausstehend',
+                    accepted: 'Angenommen',
+                    rejected: 'Abgelehnt'
+                };
+
+                wishCard.dataset.status = wish.status;
+                const badge = wishCard.querySelector('.status-badge');
+                if (badge) {
+                    badge.className = `status-badge status-${wish.status}`;
+                    badge.textContent = statusText[wish.status];
+                }
+
+                // Aktualisiere den Filter direkt nach dem Status-Update
+                const activeFilter = document.querySelector('.filter-tab.active');
+                if (activeFilter) {
+                    const currentFilter = activeFilter.dataset.filter;
+                    filterWishes(currentFilter);
+                }
+            }
+        }
+
+        // Initial alle Wünsche für das aktuelle Event laden
+        async function loadWishes() {
+            try {
+                const now = Date.now();
+                // Verhindere zu häufige Aktualisierungen (mindestens 2 Sekunden Abstand)
+                if (now - lastUpdateTime < 2000) {
+                    return;
+                }
+                lastUpdateTime = now;
+
+                const response = await fetch(`${SERVER_URL}/api/event/${currentEventCode}/wishes`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Fehler beim Laden der Wünsche');
+                }
+
+                const eventWishes = await response.json();
+                
+                // Vergleiche mit aktuellen Wünschen
+                const hasChanges = JSON.stringify(eventWishes) !== JSON.stringify(wishes);
+                
+                if (hasChanges) {
+                    console.log('Neue Wünsche geladen:', eventWishes);
+                    // Sortiere nach lastUpdated oder timestamp, neueste zuerst
+                    wishes = eventWishes.sort((a, b) => {
+                        const dateA = new Date(a.lastUpdated || a.timestamp);
+                        const dateB = new Date(b.lastUpdated || b.timestamp);
+                        return dateB - dateA;
+                    });
+                    
+                    displayWishes();
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden der Wünsche:', error);
+                // Toast nur anzeigen wenn es sich nicht um einen Timeout handelt
+                if (!error.message.includes('timeout')) {
+                    showToast('Fehler beim Laden der Musikwünsche', 'error');
+                }
+            }
+        }
+
+        function displayWishes() {
+            if (wishes.length === 0) {
+                wishesContainer.innerHTML = '<div class="no-wishes">Noch keine Musikwünsche vorhanden</div>';
+                return;
+            }
+
+            // Aktuelle Wunsch-IDs im Container
+            const currentWishIds = Array.from(wishesContainer.querySelectorAll('.wish-card')).map(card => card.dataset.id);
+            
+            // Entferne Wünsche die nicht mehr in der Liste sind
+            currentWishIds.forEach(id => {
+                if (!wishes.find(w => w.id === id)) {
+                    const card = document.querySelector(`.wish-card[data-id="${id}"]`);
+                    if (card) {
+                        card.remove();
+                    }
+                }
+            });
+
+            // Füge nur neue Wünsche hinzu
+            wishes.forEach(wish => {
+                if (!currentWishIds.includes(wish.id)) {
+                    addWish(wish);
+                }
+            });
+        }
+
+        function addWish(wish, isNew = false) {
+            // Prüfe ob der Wunsch bereits angezeigt wird
+            const existingWishCard = document.querySelector(`.wish-card[data-id="${wish.id}"]`);
+            if (existingWishCard) {
+                return;
+            }
+
+            const div = document.createElement('div');
+            div.className = `wish-card ${isNew ? 'new-wish' : ''}`;
+            div.dataset.status = wish.status || 'pending';
+            div.dataset.id = wish.id; // Wichtig für die Status-Aktualisierung
+            
+            const timestamp = new Date(wish.timestamp).toLocaleString('de-DE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const statusText = {
+                pending: 'Ausstehend',
+                accepted: 'Angenommen',
+                rejected: 'Abgelehnt'
+            };
+
+            div.innerHTML = `
+                <div class="status-badge status-${wish.status || 'pending'}">
+                    ${statusText[wish.status || 'pending']}
+                </div>
+                <div class="wish-header">
+                    <img src="${wish.coverUrl}" alt="Album Cover" class="wish-cover">
+                    <div class="wish-info">
+                        <div class="wish-title">${wish.title}</div>
+                        <div class="wish-artist">${wish.artist}</div>
+                    </div>
+                </div>
+                <div class="wish-timestamp">${timestamp}</div>
+                <div class="wish-actions">
+                    <div class="action-group">
+                        <button class="action-btn accept-btn" onclick="updateWishStatus('${wish.id}', 'accepted')">
+                            👍 Annehmen
+                        </button>
+                        <button class="action-btn reject-btn" onclick="updateWishStatus('${wish.id}', 'rejected')">
+                            👎 Ablehnen
+                        </button>
+                    </div>
+                    <button class="action-btn spotify-btn" onclick="addToQueue('${wish.id}', '${wish.spotifyUri}')">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Spotify_icon.svg/1982px-Spotify_icon.svg.png" 
+                             alt="Zu Spotify hinzufügen" 
+                             width="20" 
+                             height="20">
+                        In die <br> Warteschlange
+                    </button>
+                </div>
+            `;
+
+            if (isNew) {
+                wishesContainer.insertBefore(div, wishesContainer.firstChild);
+                wishes.unshift(wish);
+            } else {
+                wishesContainer.appendChild(div);
+            }
+        }
+
+        // Filter-Funktionalität
+        const filterTabs = document.querySelectorAll('.filter-tab');
+        filterTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                filterTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const filter = tab.dataset.filter;
+                filterWishes(filter);
+            });
+        });
+
+        function filterWishes(filter) {
+            const cards = document.querySelectorAll('.wish-card');
+            cards.forEach(card => {
+                if (filter === 'all' || card.dataset.status === filter) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        async function updateWishStatus(wishId, status) {
+            console.log('Updating wish status:', { wishId, status, currentEventCode });
+            try {
+                const response = await fetch(`${SERVER_URL}/api/wishes/${wishId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ 
+                        status,
+                        eventCode: currentEventCode
+                    })
+                });
+
+                let errorData;
+                try {
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.includes("application/json")) {
+                        errorData = await response.json();
+                    } else {
+                        errorData = { error: 'Server-Fehler' };
+                    }
+                } catch (e) {
+                    errorData = { error: 'Server-Fehler' };
+                }
+
+                if (!response.ok) {
+                    throw new Error(errorData.error || 'Fehler beim Aktualisieren des Status');
+                }
+
+                if (errorData.wish) {
+                    updateWishInUI(errorData.wish);
+                    showToast(`Wunsch wurde ${status === 'accepted' ? 'angenommen' : 'abgelehnt'}`, 'success');
+                    
+                    // Update auch im lokalen wishes Array
+                    const wishIndex = wishes.findIndex(w => w.id === wishId);
+                    if (wishIndex !== -1) {
+                        wishes[wishIndex] = errorData.wish;
+                    }
+                }
+            } catch (error) {
+                console.error('Fehler:', error);
+                showToast('Fehler beim Aktualisieren des Status', 'error');
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = toast.querySelector('.icon');
+            const messageEl = toast.querySelector('.message');
+            
+            // Icon je nach Type setzen
+            icon.textContent = type === 'success' ? '✓' : '✕';
+            
+            // Nachricht setzen
+            messageEl.textContent = message;
+            
+            // Styling je nach Type
+            toast.className = `toast ${type}`;
+            
+            // Animation starten
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Toast nach 3 Sekunden ausblenden
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        async function addToQueue(wishId, spotifyUri) {
+            if (!spotifyUri) {
+                showToast('Fehler: Keine Spotify URI für diesen Song gefunden', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${SERVER_URL}/spotify/queue`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ uri: spotifyUri })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Fehler beim Hinzufügen zur Warteschlange');
+                }
+
+                showToast('Song wurde zur Spotify-Warteschlange hinzugefügt!', 'success');
+            } catch (error) {
+                console.error('Fehler:', error);
+                if (error.message.includes('DJ muss mit Spotify verbunden sein')) {
+                    showSpotifyModal();
+                } else if (error.message.includes('Kein aktiver Spotify-Player')) {
+                    showToast('Bitte öffne Spotify und spiele einen Song ab, bevor du Songs zur Warteschlange hinzufügst.', 'error');
+                } else {
+                    showToast(error.message || 'Fehler beim Hinzufügen zur Warteschlange', 'error');
+                }
+            }
+        }
+
+        // Spotify Modal Funktionen
+        function showSpotifyModal() {
+            document.getElementById('spotifyModal').style.display = 'flex';
+        }
+
+        function closeSpotifyModal() {
+            document.getElementById('spotifyModal').style.display = 'none';
+        }
+
+        function connectToSpotify() {
+            closeSpotifyModal();
+            window.location.href = 'spotify-login.html';
+        }
+
+        // Modal schließen wenn außerhalb geklickt wird
+        document.getElementById('spotifyModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSpotifyModal();
+            }
+        });
+
+        // ESC-Taste zum Schließen des Modals
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSpotifyModal();
+            }
+        });
+
+        // Zurück zu myEvents-Funktion
+        function goBackToMyEvents() {
+            // Nehme den aktuellen Event-Code und leite zu myEvents weiter
+            window.location.href = 'myEvents.html';
+        }
+
+        // Initial authentifizieren und dann laden
+        async function initializeDashboard() {
+            const hasAccess = await checkAuthAndPermission();
+            if (hasAccess) {
+                // Nur wenn berechtigt, Dashboard initialisieren
+                loadWishes();
+                
+                // Automatische Aktualisierung alle 2 Sekunden
+                setInterval(loadWishes, 2000);
+            }
+        }
+
+        // Dashboard initialisieren
+        initializeDashboard();
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>CueUp</h3>
+          <p>Die professionelle Lösung für DJ Event-Management und Musikwunsch-Verwaltung mit nahtloser Spotify-Integration.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="startpage.html">Startseite</a></li>
+            <li><a href="createevent.html">Event erstellen</a></li>
+            <li><a href="myEvents.html">Meine Events</a></li>
+            <li><a href="contact.html">Kontakt</a></li>
+          </ul>
+        </div>
+
+      
+      </div>
+      <div class="footer-bottom">
+        <p>CueUp </p>
+      </div>
+    </footer>
+</body>
+</html>

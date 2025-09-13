@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cueup - Login</title>
+    <link rel="stylesheet" href="startpage.css">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 120px auto 100px auto;
+            padding: 30px;
+            background-color: #333;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #aa00ff;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            color: #fff;
+            font-size: 1.1rem;
+        }
+
+        .form-group input {
+            padding: 12px 15px;
+            border: 2px solid #444;
+            border-radius: 8px;
+            background-color: #222;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #aa00ff;
+            outline: none;
+            box-shadow: 0 0 10px rgba(170, 0, 255, 0.2);
+        }
+
+        .spotify-login-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .spotify-info {
+            text-align: left;
+        }
+
+        .spotify-login-btn {
+            background-color: #1ED760;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 55px;
+        }
+
+        .spotify-login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(29, 185, 84, 0.3);
+        }
+
+        .spotify-login-btn:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            color: #ff4444;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.error {
+            background: #ff4444;
+        }
+
+        /* User Menu CSS */
+        .user-menu-container {
+            position: relative;
+            margin-right: 20px;
+        }
+        .user-icon {
+            color: white;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .user-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            min-width: 150px;
+            z-index: 1000;
+        }
+        .user-menu p, .user-menu a {
+            color: white;
+            text-decoration: none;
+            margin: 5px 0;
+        }
+    </style>
+    <script src="url-rewriter.js"></script>
+</head>
+<body>
+    <header>
+      <a href="startpage.html" class="mainLogoLink"
+        ><h1 class="mainlogo">Cueup</h1></a
+      >
+      <div style="display: flex; align-items: center; margin-right: 20px;">
+        <div class="user-menu-container">
+          <div class="user-icon" onclick="window.location.href='profile.html'"><img src="img/icons8-benutzer-64.png" alt="User Icon" style="display: block; width: 40px;" /></div>
+          <div class="user-menu">
+            <div id="userMenuContent"></div>
+          </div>
+        </div>
+        <label class="burger" for="burger">
+          <input type="checkbox" id="burger" />
+          <span></span>
+          <span></span>
+          <span></span>
+        </label>
+      </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+      <nav>
+        <ul id="navigationMenu">
+          <!-- Menü wird dynamisch basierend auf Login-Status gefüllt -->
+        </ul>
+      </nav>
+    </div>
+
+    <div id="toast" class="toast">
+        <span class="message"></span>
+    </div>
+
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Cueup</h1>
+            <p style="color: #fff;">Melde dich mit deinem Spotify-Account an</p>
+        </div>
+
+        <div class="spotify-login-section">
+            <div class="spotify-info">
+
+                <p style="color: #ccc; margin-bottom: 20px; line-height: 1.5; display: flex; align-items: center; justify-content: center;">
+                    CueUp nutzt jetzt ausschließlich Spotify zur Anmeldung.
+                    Nur mit Spotify Premium möglich.
+                </p>
+                <ul style="color: #ccc; margin-bottom: 25px; padding-left: 20px; line-height: 1.6;">
+                    <li>✅ Sicher und einfach</li>
+                    <li>✅ Keine separaten Passwörter</li>
+                    <li>✅ Direkter Zugriff auf deine Musik</li>
+                </ul>
+            </div>
+            
+            <button id="spotifyLoginBtn" class="spotify-login-btn">
+                <img src="img/Spotify_Full_Logo_RGB_White.png" alt="Spotify Logo" style="height: 25px; margin-right: 10px;">
+                Mit Spotify anmelden
+            </button>
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const messageEl = toast.querySelector('.message');
+            
+            messageEl.textContent = message;
+            toast.className = `toast ${type}`;
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Spotify Login Handler
+        document.getElementById('spotifyLoginBtn').addEventListener('click', async () => {
+            const loginButton = document.getElementById('spotifyLoginBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            console.log('Spotify Login Button geklickt');
+            loginButton.disabled = true;
+            loginButton.textContent = 'Weiterleitung zu Spotify...';
+            
+            try {
+                // Erst prüfen ob Server erreichbar ist
+                console.log('Teste Server-Verbindung...');
+                const testResponse = await fetch('http://127.0.0.1:3000/auth/status', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                console.log('Server-Antwort:', testResponse.status);
+                
+                if (!testResponse.ok && testResponse.status !== 401) {
+                    throw new Error('Server nicht erreichbar');
+                }
+                
+                console.log('Server erreichbar, weiterleitung zu Spotify...');
+                // Redirect zu Spotify-Autorisierung
+                window.location.href = 'http://127.0.0.1:3000/login';
+            } catch (error) {
+                console.error('Fehler beim Spotify-Login:', error);
+                errorMessage.textContent = 'Server nicht erreichbar. Bitte starte den Server.';
+                errorMessage.style.display = 'block';
+                showToast('Server nicht erreichbar', 'error');
+                
+                loginButton.disabled = false;
+                loginButton.innerHTML = `
+                    <img src="img/Spotify_Full_Logo_RGB_White.png" alt="Spotify Logo" style="height: 25px; margin-right: 10px;">
+                    Mit Spotify anmelden
+                `;
+            }
+        });
+
+        // Burger Menu Toggle
+        document.getElementById('burger').addEventListener('change', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        // Dynamische Navigation basierend auf Login-Status
+        async function updateNavigation() {
+            const navigationMenu = document.getElementById('navigationMenu');
+            
+            try {
+                const response = await fetch('http://127.0.0.1:3000/auth/status', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                const isLoggedIn = data.isAuthenticated && data.spotifyConnected;
+                
+                // Basis-Menüeinträge, die für alle Benutzer verfügbar sind
+                const baseMenuItems = [
+                    { text: 'Startseite', href: 'startpage.html' },
+                    { text: 'Spotify Integration', href: 'explain-spotify.html' },
+                    { text: 'Kontakt', href: 'contact.html' }
+                ];
+                
+                let menuItems;
+                if (isLoggedIn) {
+                    // Angemeldeter Benutzer - weiterleiten zur Startseite
+                    showToast('Bereits angemeldet, weiterleiten...');
+                    setTimeout(() => {
+                        window.location.href = 'startpage.html';
+                    }, 1000);
+                    return;
+                } else {
+                    // Nicht angemeldeter Benutzer
+                    menuItems = [
+                        ...baseMenuItems,
+                        { text: 'Einloggen', href: 'free.html' }
+                    ];
+                }
+                
+                // Menü aufbauen
+                navigationMenu.innerHTML = menuItems.map(item => {
+                    if (item.onclick) {
+                        return `<li><a href="${item.href}" onclick="${item.onclick}">${item.text}</a></li>`;
+                    } else {
+                        return `<li><a href="${item.href}">${item.text}</a></li>`;
+                    }
+                }).join('');
+                
+            } catch (error) {
+                console.log('Auth check failed, showing guest menu');
+                // Bei Fehler: Gast-Menü anzeigen
+                navigationMenu.innerHTML = `
+                    <li><a href="startpage.html">Startseite</a></li>
+                    <li><a href="explain-spotify.html">Spotify Integration</a></li>
+                    <li><a href="contact.html">Kontakt</a></li>
+                    <li><a href="free.html">Einloggen</a></li>
+                `;
+            }
+        }
+
+        // Beim Laden der Seite
+        window.addEventListener('load', async () => {
+            updateNavigation();
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>CueUp</h3>
+          <p>Die professionelle Lösung für DJ Event-Management und Musikwunsch-Verwaltung mit nahtloser Spotify-Integration.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="startpage.html">Startseite</a></li>
+            <li><a href="createevent.html">Event erstellen</a></li>
+            <li><a href="myEvents.html">Meine Events</a></li>
+            <li><a href="contact.html">Kontakt</a></li>
+          </ul>
+        </div>
+
+      
+      </div>
+      <div class="footer-bottom">
+        <p>CueUp </p>
+      </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,64 @@
+# URL Rewriting für saubere URLs ohne .html Endungen
+# Funktioniert auf Apache Webservern (die meisten Hosting-Anbieter)
+
+RewriteEngine On
+
+# Verhindere direkten Zugriff auf .htaccess
+<Files ".htaccess">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Entferne trailing slashes
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{THE_REQUEST} \s/+([^?\s]*?)//+(\S*)
+RewriteRule ^ /%1/%2 [R=301,L]
+
+# Verstecke .html Endungen
+# Interne Umleitung: /createevent -> /createevent.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.*)$ $1.html [L]
+
+# Externe Umleitung: /createevent.html -> /createevent
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
+RewriteRule ^ /%1? [R=301,L]
+
+# Root-Redirect zur Startpage
+RewriteRule ^$ /startpage [R=301,L]
+
+# Spezielle Weiterleitungen für häufige Pfade
+RewriteRule ^index$ /startpage [R=301,L]
+RewriteRule ^home$ /startpage [R=301,L]
+
+# Cache-Control für bessere Performance
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/html "access plus 1 hour"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+</IfModule>
+
+# Kompression für bessere Performance
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>
+
+# Sicherheit: Verhindere Zugriff auf sensible Dateien
+<FilesMatch "\.(json|log|env)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>

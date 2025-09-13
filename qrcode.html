@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR-Code Generator - Cueup</title>
+    <link rel="stylesheet" href="startpage.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        .qr-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(170, 0, 255, 0.2);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .qr-header {
+            color: #aa00ff;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .event-info {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            border-left: 3px solid #aa00ff;
+        }
+
+        .event-code {
+            color: #aa00ff;
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .qr-code-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .link-display {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border: 1px solid rgba(170, 0, 255, 0.2);
+            word-break: break-all;
+            color: white;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .action-btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            color: white;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(135deg, #5CBF60, #4CAF50);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #aa00ff, #6600cc);
+        }
+
+        .copy-btn:hover {
+            background: linear-gradient(135deg, #cc00ff, #8800dd);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(170, 0, 255, 0.4);
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2s forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .loading {
+            color: white;
+            font-size: 1.1rem;
+            margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Ladeanimation - Lila Kreis */
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(170, 0, 255, 0.2);
+            border-top: 4px solid #aa00ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #aa00ff;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-align: center;
+            animation: pulse 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { opacity: 0.7; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .qr-container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-btn {
+                width: 100%;
+                max-width: 250px;
+                justify-content: center;
+            }
+        }
+    </style>
+    <script src="url-rewriter.js"></script>
+</head>
+<body>
+    <header>
+        <a href="startpage.html" class="mainLogoLink"><h1 class="mainlogo">Cueup</h1></a>
+        
+        <div style="display: flex; align-items: center; margin-right: 20px;">
+            <label class="burger" for="burger">
+                <input type="checkbox" id="burger" />
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
+        </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+        <nav>
+            <ul>
+                <li><a href="startpage.html">Startseite</a></li>
+                <li><a href="createevent.html">Event erstellen</a></li>
+                <li><a href="myEvents.html">Meine Events</a></li>
+                <li><a href="contact.html">Kontakt</a></li>
+                <li><a href="free.html">Einloggen</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <main class="content">
+        <div class="qr-container">
+            <h1 class="qr-header">QR-Code für Musikwünsche</h1>
+            
+            <div class="event-info">
+                <p style="color: white; margin: 0;">Event-Code:</p>
+                <div class="event-code" id="eventCodeDisplay">Lädt...</div>
+            </div>
+
+            <div class="loading" id="loadingMessage">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">QR-Code wird generiert...</div>
+            </div>
+            
+            <div class="qr-code-container" id="qrContainer" style="display: none;">
+                <div id="qrcode"></div>
+            </div>
+
+            <div class="link-display" id="linkDisplay" style="display: none;"></div>
+
+            <div class="action-buttons" id="actionButtons" style="display: none;">
+                <button class="action-btn back-btn" onclick="window.close()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5"></path>
+                        <polyline points="12,19 5,12 12,5"></polyline>
+                    </svg>
+                    Schließen
+                </button>
+                
+                <button class="action-btn download-btn" onclick="downloadQRCode()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7,10 12,15 17,10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    QR-Code herunterladen
+                </button>
+                
+                <button class="action-btn copy-btn" onclick="copyLink()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Link kopieren
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Burger Menu
+        document.getElementById("burger").addEventListener("change", function () {
+            document.getElementById("sidebar").classList.toggle("active");
+        });
+
+        let qrCodeDataURL = null;
+        let musicWishLink = null;
+
+        // URL Parameter auslesen
+        const urlParams = new URLSearchParams(window.location.search);
+        const url = urlParams.get('url');
+        const eventCode = urlParams.get('eventCode');
+
+        if (!url || !eventCode) {
+            document.querySelector('.qr-container').innerHTML = `
+                <h1 class="qr-header">Fehler</h1>
+                <p style="color: white; text-align: center;">Ungültige Parameter. Bitte versuchen Sie es erneut.</p>
+                <div class="action-buttons">
+                    <button class="action-btn back-btn" onclick="window.close()">Schließen</button>
+                </div>
+            `;
+        } else {
+            // Event-Code anzeigen
+            document.getElementById('eventCodeDisplay').textContent = `#${eventCode}`;
+            musicWishLink = url;
+            
+            // Warten bis die Seite vollständig geladen ist, dann QR-Code generieren
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(generateQRCode, 500); // Kurze Verzögerung für Library-Laden
+                });
+            } else {
+                setTimeout(generateQRCode, 500);
+            }
+        }
+
+        async function generateQRCode() {
+            try {
+                // Ladeanimation anzeigen
+                document.getElementById('loadingMessage').style.display = 'flex';
+                
+                // Warten bis QRCode Library geladen ist
+                if (typeof QRCode === 'undefined') {
+                    console.log('QRCode Library nicht geladen, verwende Fallback...');
+                    generateQRCodeFallback();
+                    return;
+                }
+
+                console.log('Generiere QR-Code für:', musicWishLink);
+
+                // QR-Code mit QRCode.js generieren
+                const canvas = document.createElement('canvas');
+                
+                // Einfachere Optionen verwenden
+                QRCode.toCanvas(canvas, musicWishLink, {
+                    width: 300,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                }, function (error) {
+                    if (error) {
+                        console.error('QRCode Generierungsfehler:', error);
+                        console.log('Verwende Fallback wegen Fehler...');
+                        generateQRCodeFallback();
+                        return;
+                    }
+                    
+                    console.log('QR-Code erfolgreich generiert!');
+                    
+                    // QR-Code anzeigen
+                    const qrcodeContainer = document.getElementById('qrcode');
+                    qrcodeContainer.innerHTML = ''; // Container leeren
+                    qrcodeContainer.appendChild(canvas);
+                    
+                    // DataURL für Download speichern
+                    qrCodeDataURL = canvas.toDataURL('image/png');
+                    
+                    // Link anzeigen
+                    document.getElementById('linkDisplay').textContent = musicWishLink;
+                    
+                    // UI aktualisieren
+                    document.getElementById('loadingMessage').style.display = 'none';
+                    document.getElementById('qrContainer').style.display = 'inline-block';
+                    document.getElementById('linkDisplay').style.display = 'block';
+                    document.getElementById('actionButtons').style.display = 'flex';
+                });
+                
+            } catch (error) {
+                console.error('Fehler beim Generieren des QR-Codes:', error);
+                console.log('Verwende Fallback wegen Exception...');
+                generateQRCodeFallback();
+            }
+        }
+
+        // Fallback QR-Code Generierung mit Google Charts API
+        function generateQRCodeFallback() {
+            console.log('Verwende Fallback QR-Code Generation');
+            
+            // Ladetext aktualisieren
+            const loadingText = document.querySelector('.loading-text');
+            if (loadingText) {
+                loadingText.textContent = 'Generiere QR-Code (Fallback)...';
+            }
+            
+            const qrSize = 300;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(musicWishLink)}`;
+            
+            const img = document.createElement('img');
+            img.src = qrUrl;
+            img.style.width = '300px';
+            img.style.height = '300px';
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = function() {
+                console.log('Fallback QR-Code erfolgreich geladen!');
+                
+                // QR-Code anzeigen
+                const qrcodeContainer = document.getElementById('qrcode');
+                qrcodeContainer.innerHTML = '';
+                qrcodeContainer.appendChild(img);
+                
+                // Canvas für Download erstellen
+                const canvas = document.createElement('canvas');
+                canvas.width = 300;
+                canvas.height = 300;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, 300, 300);
+                qrCodeDataURL = canvas.toDataURL('image/png');
+                
+                // Link anzeigen
+                document.getElementById('linkDisplay').textContent = musicWishLink;
+                
+                // UI aktualisieren
+                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('qrContainer').style.display = 'inline-block';
+                document.getElementById('linkDisplay').style.display = 'block';
+                document.getElementById('actionButtons').style.display = 'flex';
+            };
+            
+            img.onerror = function() {
+                console.error('Auch Fallback fehlgeschlagen');
+                document.getElementById('loadingMessage').innerHTML = 
+                    '<div style="color: #ff4444; text-align: center;"><div>❌</div><div>QR-Code konnte nicht generiert werden</div><div style="font-size: 0.9rem; margin-top: 0.5rem;">Bitte versuchen Sie es später erneut</div></div>';
+            };
+        }
+
+        // QR-Code herunterladen
+        function downloadQRCode() {
+            if (!qrCodeDataURL) {
+                showToast('QR-Code ist noch nicht bereit', 'error');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.download = `musikwunsch-qr-${eventCode}.png`;
+            link.href = qrCodeDataURL;
+            link.click();
+            
+            showToast('QR-Code wurde heruntergeladen!');
+        }
+
+        // Link kopieren
+        async function copyLink() {
+            try {
+                await navigator.clipboard.writeText(musicWishLink);
+                showToast('Link wurde kopiert!');
+            } catch (err) {
+                console.error('Fehler beim Kopieren:', err);
+                showToast('Fehler beim Kopieren des Links', 'error');
+            }
+        }
+
+        // Toast Nachricht anzeigen
+        function showToast(message, type = 'success') {
+            const toast = document.createElement("div");
+            toast.className = "toast-message";
+            if (type === 'error') {
+                toast.style.background = '#f44336';
+            }
+            toast.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 6L9 17l-5-5"/>
+                </svg>
+                ${message}
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2300);
+        }
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>CueUp</h3>
+          <p>Die professionelle Lösung für DJ Event-Management und Musikwunsch-Verwaltung mit nahtloser Spotify-Integration.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="startpage.html">Startseite</a></li>
+            <li><a href="createevent.html">Event erstellen</a></li>
+            <li><a href="myEvents.html">Meine Events</a></li>
+            <li><a href="contact.html">Kontakt</a></li>
+          </ul>
+        </div>
+
+      
+      </div>
+      <div class="footer-bottom">
+        <p>CueUp </p>
+      </div>
+    </footer>
+</body>
+</html>

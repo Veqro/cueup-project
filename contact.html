@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontakt</title>
+    <link rel="stylesheet" href="startpage.css" />
+    <style>
+      .user-menu-container {
+        position: relative;
+        margin-right: 20px;
+      }
+      .user-icon {
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 5px;
+      }
+      .user-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: rgba(0, 0, 0, 0.9);
+        padding: 10px;
+        border-radius: 5px;
+        min-width: 150px;
+        z-index: 1000;
+      }
+      .user-menu-container:hover .user-menu {
+        display: block;
+      }
+      .user-menu p, .user-menu a {
+        color: white;
+        text-decoration: none;
+        margin: 5px 0;
+      }
+      .user-menu a:hover {
+        text-decoration: underline;
+      }
+    </style>
+    <script src="url-rewriter.js"></script>
+</head>
+<body style="min-height: 100vh; display: flex; flex-direction: column;">
+    <header>
+      <a href="startpage.html" class="mainLogoLink"><h1 class="mainlogo">Cueup</h1></a>
+
+      <div style="display: flex; align-items: center; margin-right: 20px;">
+        <div class="user-menu-container">
+          <div class="user-icon" onclick="window.location.href='profile.html'"><img src="img/icons8-benutzer-64.png" alt="User Icon" style="display: block; width: 40px;" /></div>
+          <div class="user-menu">
+            <div id="userMenuContent"></div>
+          </div>
+        </div>
+        <label class="burger" for="burger">
+          <input type="checkbox" id="burger" />
+          <span></span>
+          <span></span>
+          <span></span>
+        </label>
+      </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+      <nav>
+        <ul id="navigationMenu">
+          <!-- Menü wird dynamisch basierend auf Login-Status gefüllt -->
+        </ul>
+      </nav>
+    </div>
+
+    <main style="flex: 1; padding: 2rem; max-width: 800px; margin: 0 auto;">
+        <div style="text-align: center; margin-top: 2rem;">
+            <h2 style="color: #aa00ff; font-size: 2.5rem; margin-bottom: 2rem; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">Kontakt</h2>
+            
+            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 2rem; border: 1px solid rgba(170, 0, 255, 0.2); backdrop-filter: blur(10px);">
+                <p style="color: white; font-size: 1.2rem; line-height: 1.6; margin-bottom: 2rem;">
+                    Haben Sie Fragen oder Anregungen zu CueUp? <br>
+                    Wir freuen uns auf Ihre Nachricht!
+                </p>
+                
+                <div style="background: rgba(170, 0, 255, 0.1); border-radius: 10px; padding: 1.5rem; border-left: 4px solid #aa00ff;">
+                    <h3 style="color: #aa00ff; margin-bottom: 1rem;">📧 Kontaktdaten</h3>
+                    <p style="color: white; font-size: 1.1rem; margin: 0;">
+                        <strong>Email:</strong> test@test.com
+                    </p>
+                </div>
+                
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin: 0;">
+                        Wir antworten in der Regel innerhalb von 24 Stunden.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+     <script>
+      document.getElementById('burger').addEventListener('change', function() {
+        document.getElementById('sidebar').classList.toggle('active');
+      });
+
+      // Dynamisches Menü basierend auf Login-Status
+      async function updateNavigation() {
+        const navigationMenu = document.getElementById('navigationMenu');
+        
+        try {
+          // Prüfe Login-Status
+          const response = await fetch('http://127.0.0.1:3000/auth/check', {
+            credentials: 'include'
+          });
+          
+          const isLoggedIn = response.ok;
+          
+          // Basis-Menüpunkte (immer sichtbar)
+          const baseMenuItems = [
+            { text: 'Startseite', href: 'startpage.html' },
+            { text: 'Kontakt', href: 'contact.html' }
+          ];
+          
+          let menuItems = [];
+          
+          if (isLoggedIn) {
+            // Angemeldeter Benutzer
+            menuItems = [
+              ...baseMenuItems,
+              { text: 'Event erstellen', href: 'createevent.html' },
+              { text: 'Meine Events', href: 'myEvents.html' },
+              { text: 'Profil', href: 'profile.html' },
+              { text: 'Ausloggen', href: '#', onclick: 'logout()' }
+            ];
+          } else {
+            // Nicht angemeldeter Benutzer
+            menuItems = [
+              ...baseMenuItems,
+              { text: 'Einloggen', href: 'free.html' }
+            ];
+          }
+          
+          // Menü aufbauen
+          navigationMenu.innerHTML = menuItems.map(item => {
+            if (item.onclick) {
+              return `<li><a href="${item.href}" onclick="${item.onclick}">${item.text}</a></li>`;
+            } else {
+              return `<li><a href="${item.href}">${item.text}</a></li>`;
+            }
+          }).join('');
+          
+        } catch (error) {
+          console.log('Auth check failed, showing guest menu');
+          // Bei Fehler: Gast-Menü anzeigen
+          navigationMenu.innerHTML = `
+            <li><a href="startpage.html">Startseite</a></li>
+            <li><a href="contact.html">Kontakt</a></li>
+            <li><a href="free.html">Einloggen</a></li>
+          `;
+        }
+      }
+
+      function logout() {
+        fetch('http://127.0.0.1:3000/logout', {
+          method: 'POST',
+          credentials: 'include'
+        })
+        .then(response => {
+          if (response.ok) {
+            window.location.href = 'free.html';
+          }
+        })
+        .catch(error => {
+          console.error('Logout failed:', error);
+          // Fallback: Zur Login-Seite weiterleiten
+          window.location.href = 'free.html';
+        });
+      }
+
+      // Menü beim Laden der Seite aktualisieren
+      updateNavigation();
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>CueUp</h3>
+          <p>Die professionelle Lösung für DJ Event-Management und Musikwunsch-Verwaltung mit nahtloser Spotify-Integration.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="startpage.html">Startseite</a></li>
+            <li><a href="createevent.html">Event erstellen</a></li>
+            <li><a href="myEvents.html">Meine Events</a></li>
+            <li><a href="contact.html">Kontakt</a></li>
+          </ul>
+        </div>
+
+      
+      </div>
+      <div class="footer-bottom">
+        <p>CueUp </p>
+      </div>
+    </footer>
+</body>
+</html>

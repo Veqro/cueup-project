@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meine Events - Cueup</title>
+    <link rel="stylesheet" href="startpage.css" />
+    <style>
+      .user-menu-container {
+        position: relative;
+        margin-right: 20px;
+      }
+      .user-icon {
+        color: white;
+        cursor: pointer;
+        padding: 5px;
+      }
+      .user-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: rgba(0, 0, 0, 0.9);
+        padding: 10px;
+        border-radius: 5px;
+        min-width: 150px;
+        z-index: 1000;
+      }
+      .user-menu p, .user-menu a {
+        color: white;
+        text-decoration: none;
+        margin: 5px 0;
+      }
+
+      .delete-btn {
+        background: none;
+        border: none;
+        color: #ff4444;
+        cursor: pointer;
+        padding: 8px;
+        transition: all 0.3s ease;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+      }
+
+      .delete-btn:hover {
+        background-color: rgba(255, 68, 68, 0.1);
+        transform: scale(1.1);
+      }
+
+      .events-container {
+        max-width: 800px;
+        margin: 2rem auto;
+      }
+
+      .event-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 1.5rem;
+        position: relative;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(170, 0, 255, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .event-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(170, 0, 255, 0.3);
+        border-color: #aa00ff;
+      }
+
+      .event-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+      }
+
+      .event-title-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .event-title {
+        color: #aa00ff;
+        margin: 0;
+        font-size: 1.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .event-code {
+        color: white;
+        font-family: monospace;
+        font-size: 0.9rem;
+        background-color: rgba(170, 0, 255, 0.2);
+        padding: 0.3rem 0.8rem;
+        border-radius: 8px;
+        border: 1px solid #aa00ff;
+        align-self: flex-start;
+      }
+
+      /* Verbesserte Event-Details Anzeige */
+      .event-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+
+      .info-item {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1rem;
+        border-radius: 10px;
+        border-left: 3px solid #aa00ff;
+        transition: all 0.3s ease;
+      }
+
+      .info-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+      }
+
+      .info-label {
+        color: #aa00ff;
+        font-size: 0.9rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .info-value {
+        color: white;
+        font-size: 1rem;
+        margin: 0;
+        line-height: 1.4;
+      }
+
+      .event-description {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        border-left: 3px solid #aa00ff;
+      }
+
+      .event-description .info-label {
+        margin-bottom: 0.5rem;
+      }
+
+      .event-description .info-value {
+        line-height: 1.6;
+        font-style: italic;
+      }
+
+      .event-footer {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .event-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .dashboard-btn, .copy-btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .dashboard-btn {
+        background: linear-gradient(135deg, #aa00ff, #6600cc);
+        color: white;
+      }
+
+      .dashboard-btn:hover {
+        background: linear-gradient(135deg, #cc00ff, #8800dd);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(170, 0, 255, 0.4);
+      }
+
+      .copy-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .copy-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
+      }
+
+      .loading {
+        color: white;
+        text-align: center;
+        padding: 20px;
+        font-size: 1.2rem;
+      }
+
+      .toast-message {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #4caf50;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 1000;
+        animation: slideIn 0.3s ease, fadeOut 0.3s ease 2s forwards;
+      }
+
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+
+      /* Bestätigungs-Popup Styles */
+      .confirmation-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 2000;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .confirmation-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #333;
+        border-radius: 15px;
+        padding: 2rem;
+        max-width: 400px;
+        width: 90%;
+        border: 2px solid #aa00ff;
+        animation: slideInModal 0.3s ease;
+      }
+
+      .confirmation-content h3 {
+        color: #ff4444;
+        margin-bottom: 1rem;
+        text-align: center;
+        font-size: 1.3rem;
+      }
+
+      .confirmation-content p {
+        color: white;
+        margin-bottom: 2rem;
+        text-align: center;
+        line-height: 1.5;
+      }
+
+      .confirmation-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+      }
+
+      .confirm-btn {
+        background: #ff4444;
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+
+      .confirm-btn:hover {
+        background: #ff6666;
+        transform: translateY(-2px);
+      }
+
+      .cancel-btn {
+        background: #666;
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+
+      .cancel-btn:hover {
+        background: #888;
+        transform: translateY(-2px);
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @keyframes slideInModal {
+        from { 
+          opacity: 0;
+          transform: translate(-50%, -60%);
+        }
+        to { 
+          opacity: 1;
+          transform: translate(-50%, -50%);
+        }
+      }
+
+      /* Tag-System Styles */
+      .filter-tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .filter-tab {
+        padding: 0.8rem 1.5rem;
+        border: 2px solid rgba(170, 0, 255, 0.3);
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        user-select: none;
+      }
+
+      .filter-tab:hover {
+        background: rgba(170, 0, 255, 0.2);
+        transform: translateY(-2px);
+      }
+
+      .filter-tab.active {
+        background: linear-gradient(135deg, #aa00ff, #6600cc);
+        border-color: #aa00ff;
+        box-shadow: 0 4px 15px rgba(170, 0, 255, 0.4);
+      }
+
+      .event-status-badge {
+        position: absolute;
+        top: 1rem;
+        right: 4rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .status-upcoming {
+        background: linear-gradient(135deg, #00ff88, #00cc66);
+        color: white;
+        box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3);
+      }
+
+      .status-active {
+        background: linear-gradient(135deg, #ff6b35, #f7931e);
+        color: white;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+        animation: pulse 2s infinite;
+      }
+
+      .status-past {
+        background: linear-gradient(135deg, #666, #888);
+        color: white;
+        box-shadow: 0 2px 8px rgba(102, 102, 102, 0.3);
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+
+      .events-section {
+        margin-bottom: 3rem;
+      }
+
+      .events-section h3 {
+        color: #aa00ff;
+        margin-bottom: 1.5rem;
+        font-size: 1.8rem;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .section-count {
+        background: rgba(170, 0, 255, 0.2);
+        color: #aa00ff;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: normal;
+      }
+
+      .no-events-message {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 4rem 2rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        border: 1px dashed rgba(170, 0, 255, 0.3);
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .events-container {
+        min-height: 60vh;
+      }
+
+      /* Floating Add Button */
+      .floating-add-btn {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #aa00ff, #6600cc);
+        border: none;
+        border-radius: 50%;
+        box-shadow: 0 4px 20px rgba(170, 0, 255, 0.4);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        color: white;
+        font-size: 24px;
+        font-weight: 300;
+      }
+
+      .floating-add-btn:hover {
+        transform: scale(1.1) rotate(90deg);
+        box-shadow: 0 6px 25px rgba(170, 0, 255, 0.6);
+        background: linear-gradient(135deg, #cc00ff, #8800dd);
+      }
+
+      .floating-add-btn:active {
+        transform: scale(0.95) rotate(90deg);
+      }
+
+
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .event-info-grid {
+          grid-template-columns: 1fr;
+        }
+        
+        .event-actions {
+          flex-direction: column;
+        }
+        
+        .dashboard-btn, .copy-btn {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .filter-tabs {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .filter-tab {
+          width: 200px;
+          justify-content: center;
+        }
+
+        .floating-add-btn {
+          bottom: 80px;
+          right: 20px;
+          width: 55px;
+          height: 55px;
+          font-size: 22px;
+        }
+
+
+      }
+    </style>
+    <script src="url-rewriter.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="startpage.html" class="mainLogoLink"><h1 class="mainlogo">Cueup</h1></a>
+
+      <div style="display: flex; align-items: center; margin-right: 20px;">
+        <div class="user-menu-container">
+          <div class="user-icon" onclick="window.location.href='profile.html'">
+            <img src="img/icons8-benutzer-64.png" alt="User Icon" style="display: block; width: 40px;" />
+          </div>
+          <div class="user-menu">
+            <div id="userMenuContent"></div>
+          </div>
+        </div>
+        <label class="burger" for="burger">
+          <input type="checkbox" id="burger" />
+          <span></span>
+          <span></span>
+          <span></span>
+        </label>
+      </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+      <nav>
+        <ul>
+          <li><a href="startpage.html">Startseite</a></li>
+          <li><a href="createevent.html">Event erstellen</a></li>
+          <li><a href="myEvents.html">Meine Events</a></li>
+          <li><a href="contact.html">Kontakt</a></li>
+          <li><a href="#" onclick="logout()">Ausloggen</a></li>
+          <li><a href="free.html">Einloggen</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <main class="content">
+      <div class="events-container">
+        <h2 style="color: #aa00ff; margin-bottom: 2rem; text-align: center; font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">Meine Events</h2>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+          <div class="filter-tab active" data-filter="all" onclick="filterEvents('all')">
+            🎵 Alle Events <span id="countAll" class="section-count">0</span>
+          </div>
+          <div class="filter-tab" data-filter="upcoming" onclick="filterEvents('upcoming')">
+            🚀 Kommende <span id="countUpcoming" class="section-count">0</span>
+          </div>
+          <div class="filter-tab" data-filter="active" onclick="filterEvents('active')">
+            🔥 Aktive <span id="countActive" class="section-count">0</span>
+          </div>
+          <div class="filter-tab" data-filter="past" onclick="filterEvents('past')">
+            📅 Vergangene <span id="countPast" class="section-count">0</span>
+          </div>
+        </div>
+
+        <div id="eventsList">
+          <div class="loading">Lade Events...</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Floating Add Button -->
+    <button class="floating-add-btn" onclick="window.location.href='createevent.html'" title="Neues Event erstellen">
+      +
+    </button>
+
+    <!-- Bestätigungs-Popup für Event-Löschung -->
+    <div id="confirmationModal" class="confirmation-modal">
+      <div class="confirmation-content">
+        <h3>⚠️ Event löschen</h3>
+        <p>Möchten Sie dieses Event wirklich löschen?<br>
+        <strong id="eventToDelete"></strong><br>
+        <span style="color: #ff6666;">Diese Aktion kann nicht rückgängig gemacht werden.</span></p>
+        <div class="confirmation-buttons">
+          <button class="cancel-btn" onclick="closeConfirmationModal()">Abbrechen</button>
+          <button class="confirm-btn" onclick="confirmDeleteEvent()">Löschen</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Burger Menu
+      document.getElementById("burger").addEventListener("change", function () {
+        document.getElementById("sidebar").classList.toggle("active");
+      });
+
+      // Event-Status bestimmen
+      function getEventStatus(event) {
+        if (!event.date) return 'upcoming';
+        
+        const now = new Date();
+        const eventDate = new Date(event.date);
+        
+        // Startzeit hinzufügen falls vorhanden
+        if (event.time || event.startTime) {
+          const timeStr = event.time || event.startTime;
+          const [hours, minutes] = timeStr.split(':');
+          eventDate.setHours(parseInt(hours) || 0, parseInt(minutes) || 0, 0, 0);
+        }
+        
+        // Endzeit für aktive Events
+        let eventEndDate = new Date(eventDate);
+        if (event.endTime) {
+          const [endHours, endMinutes] = event.endTime.split(':');
+          eventEndDate.setHours(parseInt(endHours) || 23, parseInt(endMinutes) || 59, 59, 999);
+        } else {
+          // Wenn keine Endzeit angegeben, nehme 4 Stunden als Standard-Event-Dauer
+          eventEndDate.setHours(eventDate.getHours() + 4);
+        }
+        
+        if (now < eventDate) {
+          return 'upcoming';
+        } else if (now >= eventDate && now <= eventEndDate) {
+          return 'active';
+        } else {
+          return 'past';
+        }
+      }
+
+      // Event HTML erstellen
+      function createEventHTML(event) {
+        const eventDate = event.date ? new Date(event.date).toLocaleDateString("de-DE", {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }) : 'Nicht angegeben';
+
+        const escapedName = (event.name || event.eventName || "Unbenanntes Event").replace(/'/g, "\\'");
+        const eventCode = event.eventCode || event.id;
+        const status = getEventStatus(event);
+        
+        console.log('Event Debug:', { 
+          name: event.name || event.eventName, 
+          eventCode: eventCode, 
+          originalEvent: event 
+        });
+        
+        const statusLabels = {
+          'upcoming': 'Kommend',
+          'active': 'Live',
+          'past': 'Beendet'
+        };
+
+        return `
+        <div class="event-card" data-status="${status}">
+          <div class="event-status-badge status-${status}">
+            ${statusLabels[status]}
+          </div>
+          <div class="event-header">
+            <div class="event-title-section">
+              <h3 class="event-title">${event.name || event.eventName || "Unbenanntes Event"}</h3>
+              <span class="event-code">#${eventCode}</span>
+            </div>
+            <button class="delete-btn" onclick="showDeleteConfirmation('${eventCode}', '${escapedName}')" title="Event löschen">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2m-6 5v6m4-6v6"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="event-info-grid">
+            <div class="info-item">
+              <div class="info-label">Datum</div>
+              <p class="info-value">${eventDate}</p>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Zeiten</div>
+              <p class="info-value">
+                <strong>Start:</strong> ${event.time || event.startTime || 'Nicht angegeben'}<br>
+                <strong>Ende:</strong> ${event.endTime || 'Nicht angegeben'}
+              </p>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Location</div>
+              <p class="info-value">${event.location || 'Nicht angegeben'}</p>
+            </div>
+            <div class="info-item">
+              <div class="info-label">DJ</div>
+              <p class="info-value">${event.dj || 'Nicht angegeben'}</p>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Erstellt am</div>
+              <p class="info-value">${event.createdAt ? new Date(event.createdAt).toLocaleDateString("de-DE") : 'Unbekannt'}</p>
+            </div>
+          </div>
+          
+          ${event.description ? `
+            <div class="event-description">
+              <div class="info-label">Beschreibung</div>
+              <p class="info-value">${event.description}</p>
+            </div>
+          ` : ''}
+          
+          <div class="event-footer">
+            <div class="event-actions">
+              <a href="dashboard.html?eventId=${eventCode}" class="dashboard-btn">
+                Zum Dashboard
+              </a>
+              <button class="copy-btn" onclick="copyWishLink('${eventCode}')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Musikwunsch-Link kopieren
+              </button>
+              <button class="copy-btn" onclick="generateQRCode('${eventCode}')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                QR-Code generieren
+              </button>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      // Globale Events-Variable
+      let allEvents = [];
+      let currentFilter = 'all';
+
+      // Events laden
+      async function loadEvents() {
+        const eventsList = document.getElementById("eventsList");
+        eventsList.innerHTML = '<div class="loading">Lade Events...</div>';
+
+        try {
+          const response = await fetch("http://127.0.0.1:3000/api/events", {
+            credentials: "include",
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Server-Fehler: ${response.status}`);
+          }
+
+          allEvents = await response.json();
+
+          if (allEvents.length === 0) {
+            eventsList.innerHTML = `
+              <div style="text-align: center; color: white;">
+                <p style="font-size: 1.2rem; margin-bottom: 2rem;">Noch keine Events erstellt.</p>
+                <a href="createevent.html" class="dashboard-btn">
+                  🎵 Erstes Event erstellen
+                </a>
+              </div>`;
+            updateEventCounts();
+            return;
+          }
+
+          // Events nach Datum sortieren (neueste zuerst)
+          allEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+          
+          updateEventCounts();
+          displayEvents();
+        } catch (error) {
+          console.error("Fehler beim Laden der Events:", error);
+          eventsList.innerHTML = `
+            <div style="text-align: center; color: white;">
+              <p>Fehler beim Laden der Events.</p>
+              <p>Bitte versuchen Sie es später erneut.</p>
+              <a href="createevent.html" class="dashboard-btn" style="margin-top: 1rem;">
+                Event erstellen
+              </a>
+            </div>`;
+        }
+      }
+
+      // Event-Anzahl aktualisieren
+      function updateEventCounts() {
+        const counts = {
+          all: allEvents.length,
+          upcoming: 0,
+          active: 0,
+          past: 0
+        };
+
+        allEvents.forEach(event => {
+          const status = getEventStatus(event);
+          counts[status]++;
+        });
+
+        document.getElementById('countAll').textContent = counts.all;
+        document.getElementById('countUpcoming').textContent = counts.upcoming;
+        document.getElementById('countActive').textContent = counts.active;
+        document.getElementById('countPast').textContent = counts.past;
+      }
+
+      // Events anzeigen basierend auf Filter
+      function displayEvents() {
+        const eventsList = document.getElementById("eventsList");
+        
+        let filteredEvents = allEvents;
+        if (currentFilter !== 'all') {
+          filteredEvents = allEvents.filter(event => getEventStatus(event) === currentFilter);
+        }
+
+        if (filteredEvents.length === 0) {
+          const filterNames = {
+            'all': 'Events',
+            'upcoming': 'kommende Events',
+            'active': 'aktive Events',
+            'past': 'vergangene Events'
+          };
+          
+          eventsList.innerHTML = `
+            <div class="no-events-message">
+              <p>Keine ${filterNames[currentFilter]} gefunden.</p>
+            </div>`;
+          return;
+        }
+
+        // Events nach Status gruppieren falls "alle" gewählt ist
+        if (currentFilter === 'all') {
+          const groupedEvents = {
+            active: filteredEvents.filter(event => getEventStatus(event) === 'active'),
+            upcoming: filteredEvents.filter(event => getEventStatus(event) === 'upcoming'),
+            past: filteredEvents.filter(event => getEventStatus(event) === 'past')
+          };
+
+          let html = '';
+          
+          // Aktive Events zuerst
+          if (groupedEvents.active.length > 0) {
+            html += `
+              <div class="events-section">
+                <h3>🔥 Aktive Events <span class="section-count">${groupedEvents.active.length}</span></h3>
+                ${groupedEvents.active.map(event => createEventHTML(event)).join('')}
+              </div>`;
+          }
+
+          // Dann kommende Events
+          if (groupedEvents.upcoming.length > 0) {
+            html += `
+              <div class="events-section">
+                <h3>🚀 Kommende Events <span class="section-count">${groupedEvents.upcoming.length}</span></h3>
+                ${groupedEvents.upcoming.map(event => createEventHTML(event)).join('')}
+              </div>`;
+          }
+
+          // Zuletzt vergangene Events
+          if (groupedEvents.past.length > 0) {
+            html += `
+              <div class="events-section">
+                <h3>📅 Vergangene Events <span class="section-count">${groupedEvents.past.length}</span></h3>
+                ${groupedEvents.past.map(event => createEventHTML(event)).join('')}
+              </div>`;
+          }
+
+          eventsList.innerHTML = html;
+        } else {
+          // Einzelne Kategorie anzeigen
+          const eventsHtml = filteredEvents.map(event => createEventHTML(event)).join('');
+          eventsList.innerHTML = eventsHtml;
+        }
+      }
+
+      // Filter Events
+      function filterEvents(filter) {
+        currentFilter = filter;
+        
+        // Tab-Styling aktualisieren
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+        
+        displayEvents();
+      }
+
+      // Bestätigungs-Popup Funktionen
+      let eventToDeleteCode = null;
+
+      function showDeleteConfirmation(eventCode, eventName) {
+        eventToDeleteCode = eventCode;
+        document.getElementById('eventToDelete').textContent = eventName;
+        document.getElementById('confirmationModal').style.display = 'block';
+      }
+
+      function closeConfirmationModal() {
+        document.getElementById('confirmationModal').style.display = 'none';
+        eventToDeleteCode = null;
+      }
+
+      function confirmDeleteEvent() {
+        if (eventToDeleteCode) {
+          deleteEvent(eventToDeleteCode);
+          closeConfirmationModal();
+        }
+      }
+
+      // Event löschen
+      async function deleteEvent(eventCode) {
+        try {
+          console.log('Lösche Event mit Code:', eventCode);
+          
+          const response = await fetch(`http://127.0.0.1:3000/api/event/${eventCode}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+
+          console.log('Delete Response Status:', response.status);
+          
+          if (response.ok) {
+            const result = await response.json();
+            console.log('Delete Erfolg:', result);
+            await loadEvents();
+            showToast("Event wurde erfolgreich gelöscht");
+          } else {
+            const errorData = await response.json().catch(() => ({ message: 'Unbekannter Fehler' }));
+            console.error('Delete Fehler:', response.status, errorData);
+            showToast(`Fehler: ${errorData.message || 'Event konnte nicht gelöscht werden'}`);
+          }
+        } catch (error) {
+          console.error("Network/Parse Fehler beim Löschen:", error);
+          showToast("Fehler: Event konnte nicht gelöscht werden");
+        }
+      }
+
+      // Musikwunsch-Link kopieren
+      async function copyWishLink(eventCode) {
+        const wishLink = `${window.location.origin}/userwish.html?event=${eventCode}`;
+        try {
+          await navigator.clipboard.writeText(wishLink);
+          showToast("Musikwunsch-Link wurde kopiert!");
+        } catch (err) {
+          console.error("Fehler beim Kopieren:", err);
+          showToast("Fehler beim Kopieren des Links");
+        }
+      }
+
+      // QR-Code generieren
+      function generateQRCode(eventCode) {
+        const wishLink = `${window.location.origin}/userwish.html?event=${eventCode}`;
+        const qrUrl = `qrcode.html?url=${encodeURIComponent(wishLink)}&eventCode=${encodeURIComponent(eventCode)}`;
+        window.open(qrUrl, '_blank');
+      }
+
+      // Toast Nachricht anzeigen
+      function showToast(message) {
+        const toast = document.createElement("div");
+        toast.className = "toast-message";
+        toast.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+          ${message}
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2300);
+      }
+
+      // Auth-Status prüfen
+      async function checkAuthStatus() {
+        try {
+          const response = await fetch("http://127.0.0.1:3000/auth/status", {
+            credentials: "include",
+          });
+          const data = await response.json();
+          updateUserMenu(data.isAuthenticated, data.username);
+        } catch (error) {
+          console.error("Fehler beim Prüfen des Auth-Status:", error);
+        }
+      }
+
+      function updateUserMenu(isAuthenticated, username) {
+        const menuContent = document.getElementById("userMenuContent");
+        if (isAuthenticated) {
+          menuContent.innerHTML = `<p>${username}</p>`;
+        } else {
+          menuContent.innerHTML = '<a href="free.html">Anmelden</a>';
+        }
+      }
+
+      // Logout
+      async function logout() {
+        try {
+          const response = await fetch("http://127.0.0.1:3000/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+          if (response.ok) {
+            window.location.href = "startpage.html";
+          }
+        } catch (error) {
+          console.error("Logout error:", error);
+        }
+      }
+
+      // Modal Event-Listener
+      document.addEventListener('click', function(event) {
+        const modal = document.getElementById('confirmationModal');
+        if (event.target === modal) {
+          closeConfirmationModal();
+        }
+      });
+
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+          closeConfirmationModal();
+        }
+      });
+
+      // Seite laden
+      window.addEventListener("load", () => {
+        loadEvents();
+        checkAuthStatus();
+      });
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>CueUp</h3>
+          <p>Die professionelle Lösung für DJ Event-Management und Musikwunsch-Verwaltung mit nahtloser Spotify-Integration.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="startpage.html">Startseite</a></li>
+            <li><a href="createevent.html">Event erstellen</a></li>
+            <li><a href="myEvents.html">Meine Events</a></li>
+            <li><a href="contact.html">Kontakt</a></li>
+          </ul>
+        </div>
+
+      
+      </div>
+      <div class="footer-bottom">
+        <p>CueUp </p>
+      </div>
+    </footer>
+  </body>
+</html>

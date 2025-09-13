@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil - Cueup</title>
+    <link rel="stylesheet" href="startpage.css">
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 50px auto;
+            color: white;
+            padding: 20px;
+        }
+        
+        .profile-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .profile-section h2 {
+            color: #aa00ff;
+            margin-bottom: 15px;
+        }
+
+        .profile-title {
+            font-size: 2.5em;
+            color: #aa00ff;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .profile-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #aa00ff, transparent);
+            margin: 15px 0;
+        }
+
+        .profile-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(170, 0, 255, 0.2);
+        }
+
+        .profile-stat:last-child {
+            border-bottom: none;
+        }
+
+        .profile-stat-label {
+            color: #888;
+        }
+
+        .profile-stat-value {
+            color: white;
+        }
+
+        .logout-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #aa00ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+
+        .logout-button:hover {
+            background-color: #cc33ff;
+        }
+
+        .login-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background-color: #aa00ff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            transition: background-color 0.3s, transform 0.3s;
+            margin-top: 20px;
+        }
+
+        .login-button:hover {
+            background-color: #cc33ff;
+            transform: translateY(-2px);
+        }
+
+        .user-menu-container {
+            position: relative;
+            margin-right: 20px;
+        }
+        .user-icon {
+            color: white;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .user-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            min-width: 150px;
+            z-index: 1000;
+        }
+        .user-menu p, .user-menu a {
+            color: white;
+            text-decoration: none;
+            margin: 5px 0;
+        }
+
+        /* Popup Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(170, 0, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(170, 0, 255, 0.3);
+        }
+
+        .modal-title {
+            color: #aa00ff;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .modal-message {
+            color: white;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .modal-btn-confirm {
+            background: #ff4444;
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            background: #ff6666;
+            transform: translateY(-2px);
+        }
+
+        .modal-btn-cancel {
+            background: #666;
+            color: white;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #888;
+            transform: translateY(-2px);
+        }
+    </style>
+    <script src="url-rewriter.js"></script>
+</head>
+<body>
+    <!-- Popup Modal -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title">Konto löschen & Abmelden?</h3>
+            <p class="modal-message">
+                Möchten Sie wirklich Ihr CueUp-Konto löschen?<br><br>
+                <strong>Dies wird:</strong><br>
+                • Alle Ihre Events löschen<br>
+                • Ihre Benutzerdaten entfernen<br>
+                • Sie automatisch abmelden<br><br>
+                <em>Diese Aktion kann nicht rückgängig gemacht werden.</em>
+            </p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Abbrechen</button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmDeleteAccount()">Konto löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <a href="startpage.html" class="mainLogoLink"><h1 class="mainlogo">Cueup</h1></a>
+        <div style="display: flex; align-items: center; margin-right: 20px;">
+            <div class="user-menu-container">
+                <div class="user-icon" onclick="window.location.href='profile.html'"><img src="img/icons8-benutzer-64.png" alt="User Icon" style="display: block; width: 40px;" /></div>
+                <div class="user-menu">
+                    <div id="userMenuContent"></div>
+                </div>
+            </div>
+            <label class="burger" for="burger">
+                <input type="checkbox" id="burger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
+        </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+        <nav>
+            <ul id="navigationMenu">
+                <!-- Menü wird dynamisch basierend auf Login-Status gefüllt -->
+            </ul>
+        </nav>
+    </div>
+
+    <main class="content">
+        <!-- Container für nicht eingeloggte Benutzer -->
+        <div id="notLoggedInContainer" style="display: none;">
+            <div class="login-container" style="max-width: 450px; margin: 120px auto 100px auto; padding: 40px; background-color: #333; border-radius: 15px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); text-align: center;">
+                <div class="login-header" style="margin-bottom: 30px;">
+                    <h1 style="color: #aa00ff; font-size: 2.5rem; margin-bottom: 10px;">Profil anzeigen</h1>
+                    <p style="color: #ccc; font-size: 1.1rem; line-height: 1.6;">Um Ihr Profil zu sehen, müssen Sie sich zuerst mit Ihrem Spotify-Konto einloggen.</p>
+                </div>
+                <div style="margin-top: 30px;">
+                    <a href="free.html" style="display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #aa00ff, #8a2be2); color: white; text-decoration: none; border: none; border-radius: 25px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; text-align: center; min-width: 200px; box-shadow: 0 4px 15px rgba(170, 0, 255, 0.3);">Einloggen</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Container für eingeloggte Benutzer -->
+        <div class="profile-container" id="loggedInContainer" style="display: none;">
+            <h1 class="profile-title">Dein Profil</h1>
+            
+            <div class="profile-section">
+                <h2>Persönliche Informationen</h2>
+                <div class="profile-divider"></div>
+                <div id="personalInfo">
+                    <div class="profile-stat">
+                        <span class="profile-stat-label">Benutzername</span>
+                        <span class="profile-stat-value" id="spotifyDisplayName">Lädt...</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="profile-stat-label">Konto-Typ</span>
+                        <span class="profile-stat-value" id="spotifyAccountType">Lädt...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h2>Event Statistiken</h2>
+                <div class="profile-divider"></div>
+                <div id="eventStats">
+                    <div class="profile-stat">
+                        <span class="profile-stat-label">Anzahl Events</span>
+                        <span class="profile-stat-value" id="eventCount">Lädt...</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="profile-stat-label">Nächstes Event</span>
+                        <span class="profile-stat-value" id="nextEvent">Lädt...</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="profile-stat-label">Letztes Event</span>
+                        <span class="profile-stat-value" id="lastEvent">Lädt...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h2>Account Verwaltung</h2>
+                <div class="profile-divider"></div>
+                <div id="accountDetails" style="text-align: center;">
+                    <p style="color: #888; font-size: 1em; margin-bottom: 25px; line-height: 1.5;">
+                        Dein CueUp-Konto ist mit deinem Spotify-Profil verknüpft.<br>
+                        Alle Daten werden automatisch synchronisiert.
+                    </p>
+                    <button onclick="disconnectAndLogout()" class="spotify-disconnect-button" style="background: #ff4444; border: none; cursor: pointer; display: inline-flex; align-items: center; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold; font-size: 14px; margin: 0 auto;">
+                        <svg style="width: 20px; height: 20px; margin-right: 8px; fill: white;" viewBox="0 0 24 24">
+                            <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                        </svg>
+                        Konto löschen
+                    </button>
+                </div>
+            </div>
+
+            <button class="logout-button" onclick="logout()">Ausloggen</button>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById("burger").addEventListener("change", function() {
+            document.getElementById("sidebar").classList.toggle("active");
+        });
+
+        // Dynamisches Menü basierend auf Login-Status
+        async function updateNavigation() {
+            const navigationMenu = document.getElementById('navigationMenu');
+            
+            try {
+                // Prüfe Login-Status
+                const response = await fetch('http://127.0.0.1:3000/auth/check', {
+                    credentials: 'include'
+                });
+                
+                const isLoggedIn = response.ok;
+                
+                // Basis-Menüpunkte (immer sichtbar)
+                const baseMenuItems = [
+                    { text: 'Startseite', href: 'startpage.html' },
+                    { text: 'Kontakt', href: 'contact.html' }
+                ];
+                
+                let menuItems = [];
+                
+                if (isLoggedIn) {
+                    // Angemeldeter Benutzer
+                    menuItems = [
+                        ...baseMenuItems,
+                        { text: 'Event erstellen', href: 'createevent.html' },
+                        { text: 'Meine Events', href: 'myEvents.html' },
+                        { text: 'Profil', href: 'profile.html' },
+                        { text: 'Ausloggen', href: '#', onclick: 'logout()' }
+                    ];
+                } else {
+                    // Nicht angemeldeter Benutzer
+                    menuItems = [
+                        ...baseMenuItems,
+                        { text: 'Einloggen', href: 'free.html' }
+                    ];
+                }
+                
+                // Menü aufbauen
+                navigationMenu.innerHTML = menuItems.map(item => {
+                    if (item.onclick) {
+                        return `<li><a href="${item.href}" onclick="${item.onclick}">${item.text}</a></li>`;
+                    } else {
+                        return `<li><a href="${item.href}">${item.text}</a></li>`;
+                    }
+                }).join('');
+                
+            } catch (error) {
+                console.log('Auth check failed, showing guest menu');
+                // Bei Fehler: Gast-Menü anzeigen
+                navigationMenu.innerHTML = `
+                    <li><a href="startpage.html">Startseite</a></li>
+                    <li><a href="contact.html">Kontakt</a></li>
+                    <li><a href="free.html">Einloggen</a></li>
+                `;
+            }
+        }
+
+        // Profildaten laden
+        async function loadProfileData() {
+            try {
+                const response = await fetch('http://127.0.0.1:3000/auth/status', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = 'free.html';
+                        return;
+                    }
+                    throw new Error('Fehler beim Laden der Profildaten');
+                }
+
+                const data = await response.json();
+                
+                if (data.isAuthenticated && data.spotifyConnected) {
+                    // Spotify-Informationen sind bereits im checkAuthAndLoadProfile gesetzt
+
+                    // Event Statistiken laden
+                    fetch('http://127.0.0.1:3000/api/events', {
+                        credentials: 'include'
+                    })
+                    .then(response => response.json())
+                    .then(events => {
+                        // Event Statistiken
+                        document.getElementById('eventCount').textContent = events.length || '0';
+                        
+                        if (events.length > 0) {
+                            // Sortiere Events nach Datum
+                            const sortedEvents = events.sort((a, b) => new Date(a.date) - new Date(b.date));
+                            const futureEvents = sortedEvents.filter(e => new Date(e.date) > new Date());
+                            const pastEvents = sortedEvents.filter(e => new Date(e.date) <= new Date());
+
+                            // Nächstes Event
+                            document.getElementById('nextEvent').textContent = 
+                                futureEvents.length > 0 
+                                    ? new Date(futureEvents[0].date).toLocaleDateString() 
+                                    : 'Keine geplanten Events';
+
+                            // Letztes Event
+                            document.getElementById('lastEvent').textContent = 
+                                pastEvents.length > 0 
+                                    ? new Date(pastEvents[pastEvents.length - 1].date).toLocaleDateString() 
+                                    : 'Keine vergangenen Events';
+                        } else {
+                            document.getElementById('nextEvent').textContent = 'Keine geplanten Events';
+                            document.getElementById('lastEvent').textContent = 'Keine vergangenen Events';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fehler beim Laden der Events:', error);
+                        document.getElementById('eventCount').textContent = 'Fehler beim Laden';
+                        document.getElementById('nextEvent').textContent = 'Fehler beim Laden';
+                        document.getElementById('lastEvent').textContent = 'Fehler beim Laden';
+                    });
+
+                    // Account Details
+                    document.getElementById('accountCreated').textContent = data.createdAt 
+                        ? new Date(data.createdAt).toLocaleDateString() 
+                        : 'Nicht verfügbar';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const elements = ['username', 'eventCount', 'nextEvent', 'lastEvent', 'accountCreated'];
+                elements.forEach(id => {
+                    document.getElementById(id).textContent = 'Fehler beim Laden';
+                });
+            }
+        }
+
+        // Globale Variable für den Server-URL
+        const SERVER_URL = 'http://127.0.0.1:3000';
+
+        // Prüft den Login-Status und zeigt entsprechenden Content
+        async function checkAuthAndLoadProfile() {
+            try {
+                const response = await fetch(`${SERVER_URL}/auth/status`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Fehler beim Prüfen des Auth-Status');
+                }
+
+                const data = await response.json();
+                
+                if (data.isAuthenticated && data.spotifyConnected) {
+                    // Eingeloggter Benutzer mit Spotify: Profil anzeigen und Daten laden
+                    document.getElementById('notLoggedInContainer').style.display = 'none';
+                    document.getElementById('loggedInContainer').style.display = 'block';
+                    
+                    // Benutzer-Informationen aktualisieren
+                    document.getElementById('spotifyDisplayName').textContent = data.spotifyUsername || 'Unbekannt';
+                    document.getElementById('spotifyAccountType').textContent = data.isPremium ? 'Spotify Premium' : 'Spotify Free';
+
+                    loadProfileData();
+                } else {
+                    // Nicht eingeloggt oder kein Spotify: Login-Aufforderung anzeigen
+                    document.getElementById('notLoggedInContainer').style.display = 'block';
+                    document.getElementById('loggedInContainer').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                // Bei Fehler: Login-Aufforderung anzeigen
+                document.getElementById('notLoggedInContainer').style.display = 'block';
+                document.getElementById('loggedInContainer').style.display = 'none';
+            }
+        }
+
+        async function logout() {
+            try {
+                const response = await fetch(`${SERVER_URL}/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    // Session-Cookie löschen
+                    document.cookie = 'connect.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                    
+                    // Zur Startseite weiterleiten
+                    window.location.href = 'startpage.html';
+                } else {
+                    console.error('Logout fehlgeschlagen');
+                    alert('Beim Ausloggen ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.');
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('Beim Ausloggen ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.');
+            }
+        }
+
+        // Event-Listener NUR für den Logout-Button (nicht Spotify-Disconnect!)
+        document.querySelector('button.logout-button[onclick="logout()"]')?.addEventListener('click', logout);
+
+        // Konto-Löschung-Funktion
+        async function disconnectAndLogout() {
+            // Modal anzeigen
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        // Modal schließen
+        function closeModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        // Bestätigte Konto-Löschung
+        async function confirmDeleteAccount() {
+            closeModal();
+            
+            try {
+                // Zuerst alle Events des Benutzers löschen
+                const eventsResponse = await fetch(`${SERVER_URL}/api/events`, {
+                    credentials: 'include'
+                });
+                
+                if (eventsResponse.ok) {
+                    const events = await eventsResponse.json();
+                    // Lösche jeden Event
+                    for (const event of events) {
+                        await fetch(`${SERVER_URL}/api/events/${event.id}`, {
+                            method: 'DELETE',
+                            credentials: 'include'
+                        });
+                    }
+                }
+                
+                // Dann das Benutzerkonto löschen
+                const deleteResponse = await fetch(`${SERVER_URL}/auth/delete-account`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+
+                if (!deleteResponse.ok) {
+                    throw new Error('Fehler beim Löschen des Kontos');
+                }
+                
+                alert('Ihr Konto wurde erfolgreich gelöscht.');
+                
+                // Session löschen und zur Startseite weiterleiten
+                await logout();
+                
+            } catch (error) {
+                console.error('Delete account error:', error);
+                alert('Fehler beim Löschen des Kontos: ' + error.message);
+            }
+        }
+
+        // Initial Auth-Status prüfen und Profil laden
+        checkAuthAndLoadProfile();
+        
+        // Menü beim Laden der Seite aktualisieren
+        updateNavigation();
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>CueUp</h3>
+          <p>Die professionelle Lösung für DJ Event-Management und Musikwunsch-Verwaltung mit nahtloser Spotify-Integration.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="startpage.html">Startseite</a></li>
+            <li><a href="createevent.html">Event erstellen</a></li>
+            <li><a href="myEvents.html">Meine Events</a></li>
+            <li><a href="contact.html">Kontakt</a></li>
+          </ul>
+        </div>
+
+      
+      </div>
+      <div class="footer-bottom">
+        <p>CueUp </p>
+      </div>
+    </footer>
+</body>
+</html>

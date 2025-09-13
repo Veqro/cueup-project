@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Musikwünsche</title>
+    <link rel="stylesheet" href="startpage.css">
+    <style>
+        /* Language Dropdown Styles */
+        .language-dropdown {
+            position: relative;
+            margin-right: 20px;
+        }
+        
+        .language-button {
+            background: transparent;
+            border: 2px solid rgba(170, 0, 255, 0.4);
+            border-radius: 4px;
+            padding: 10px 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            min-width: 50px;
+            min-height: 40px;
+        }
+        
+        .language-button:hover {
+            border-color: #aa00ff;
+            background: rgba(170, 0, 255, 0.1);
+        }
+        
+        .flag-icon {
+            width: 24px;
+            height: 16px;
+            border-radius: 2px;
+        }
+        
+        .dropdown-arrow {
+            color: white;
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+        
+        .language-dropdown.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .language-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(170, 0, 255, 0.3);
+            border-radius: 4px;
+            padding: 8px 0;
+            min-width: 150px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .language-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .language-option:hover {
+            background: rgba(170, 0, 255, 0.2);
+            color: white;
+        }
+        
+        .language-name {
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto 0 auto;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .event-info {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .event-name {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #aa00ff;
+        }
+
+        .dj-name {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #444;
+            border-radius: 10px;
+            background-color: #222;
+            color: white;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .search-input:focus {
+            border-color: #aa00ff;
+            outline: none;
+            box-shadow: 0 0 10px rgba(170, 0, 255, 0.2);
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #222;
+            border: 2px solid #aa00ff;
+            border-radius: 10px;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Custom Scrollbar für Suggestions */
+        .suggestions::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .suggestions::-webkit-scrollbar-track {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .suggestions::-webkit-scrollbar-thumb {
+            background: #aa00ff;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        .suggestions::-webkit-scrollbar-thumb:hover {
+            background: #9000dd;
+        }
+
+        /* Firefox Scrollbar */
+        .suggestions {
+            scrollbar-width: thin;
+            scrollbar-color: #aa00ff #333;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: white;
+        }
+
+        .suggestion-item:hover {
+            background-color: #444;
+        }
+
+        .suggestion-cover {
+            width: 50px;
+            height: 50px;
+            margin-right: 15px;
+            border-radius: 5px;
+        }
+
+        .suggestion-info {
+            flex-grow: 1;
+        }
+
+        .suggestion-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .suggestion-artist {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 200px;
+            margin: 30px auto 0;
+            padding: 15px 30px;
+            background-color: #aa00ff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #9000dd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(170, 0, 255, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Erfolgsmeldung */
+        .success-message {
+            display: none;
+            text-align: center;
+            color: #4CAF50;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+
+        /* Permanenter unterer Streifen */
+        .spotify-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background-color: #191414;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0px;
+            z-index: 999;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .spotify-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-right: 20px;
+            font-size: 20px;
+        }
+
+        .spotify-text {
+            font-size: 12px;
+            color: white;
+            margin: 0;
+        }
+
+        .contact-button {
+            background: linear-gradient(135deg, #aa00ff, #8a2be2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 1rem;
+          
+            transition: all 0.3s ease;
+            margin-left: 20px;
+            box-shadow: 0 4px 15px rgba(170, 0, 255, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .contact-button:hover {
+            background: linear-gradient(135deg, #9000dd, #aa00ff);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(170, 0, 255, 0.4);
+            color: white;
+        }
+        
+     
+
+        .spotify-logo {
+            height: 30px;
+            width: auto;
+          
+        }
+
+   
+
+        /* Body Padding für Footer */
+        body {
+            padding-bottom: 60px;
+        }
+
+        /* Mobile Optimierung */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+                max-width: calc(100% - 20px);
+            }
+            
+            .event-name {
+                font-size: 2rem;
+            }
+            
+            .dj-name {
+                font-size: 1.4rem;
+            }
+            
+            .search-container {
+                max-width: 100%;
+                margin: 0 auto;
+                padding: 0;
+            }
+            
+            .search-input {
+                font-size: 16px; /* Verhindert Zoom auf iOS */
+                padding: 12px 15px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .suggestions {
+                max-height: 250px;
+            }
+            
+            .suggestion-item {
+                padding: 12px 10px;
+            }
+            
+            .suggestion-cover {
+                width: 40px;
+                height: 40px;
+                margin-right: 10px;
+            }
+            
+            .suggestion-title {
+                font-size: 0.9rem;
+            }
+            
+            .suggestion-artist {
+                font-size: 0.8rem;
+            }
+            
+            .submit-btn {
+                width: 90%;
+                max-width: 300px;
+            }
+            
+            .spotify-footer {
+                height: 45px;
+                padding: 0 15px;
+            }
+
+            .spotify-info {
+                gap: 8px;
+                padding-right: 15px;
+            }
+
+            .spotify-text {
+                font-size: 10px;
+            }
+
+            .contact-button {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+                margin-left: 15px;
+            }
+            
+            .spotify-logo {
+                height: 25px;
+            }
+            
+            body {
+                padding-bottom: 55px;
+            }
+        }
+
+        /* Sehr kleine Bildschirme */
+        @media (max-width: 480px) {
+            .container {
+                margin: 5px;
+                padding: 10px;
+                max-width: calc(100% - 10px);
+            }
+            
+            .event-name {
+                font-size: 1.8rem;
+            }
+            
+            .dj-name {
+                font-size: 1.2rem;
+            }
+            
+            .search-container {
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .search-input {
+                padding: 10px 12px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .suggestions {
+                max-height: 200px;
+                width: 100%;
+            }
+            
+            .suggestion-item {
+                padding: 8px;
+            }
+            
+            .suggestion-cover {
+                width: 35px;
+                height: 35px;
+                margin-right: 8px;
+            }
+        }
+    </style>
+    <script src="url-rewriter.js"></script>
+</head>
+<body>
+    <!-- Header mit Sprachauswahl -->
+    <header>
+        <a  class="mainLogoLink"><h1 class="mainlogo">Cueup</h1></a>
+        <div style="display: flex; align-items: center; margin-right: 20px;">
+            <div class="language-dropdown" id="languageDropdown">
+                <button class="language-button" onclick="toggleLanguageMenu()">
+                    <img src="https://flagcdn.com/w40/de.png" alt="Deutsch" class="flag-icon" id="currentFlag">
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="language-menu" id="languageMenu">
+                    <a href="javascript:void(0)" class="language-option" onclick="changeLanguage('de')">
+                        <img src="https://flagcdn.com/w40/de.png" alt="Deutsch" class="flag-icon">
+                        <span class="language-name">Deutsch</span>
+                    </a>
+                    <a href="javascript:void(0)" class="language-option" onclick="changeLanguage('fr')">
+                        <img src="https://flagcdn.com/w40/fr.png" alt="Français" class="flag-icon">
+                        <span class="language-name">Français</span>
+                    </a>
+                    <a href="javascript:void(0)" class="language-option" onclick="changeLanguage('es')">
+                        <img src="https://flagcdn.com/w40/es.png" alt="Español" class="flag-icon">
+                        <span class="language-name">Español</span>
+                    </a>
+                    <a href="javascript:void(0)" class="language-option" onclick="changeLanguage('en')">
+                        <img src="https://flagcdn.com/w40/us.png" alt="English" class="flag-icon">
+                        <span class="language-name">English</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="event-info">
+            <h1 class="event-name" id="eventName">Veranstaltungsname</h1>
+            <h2 class="dj-name" id="djName">DJ Name</h2>
+            <p id="festName">Name des DJ-Fests</p>
+        </div>
+
+        <div class="search-container">
+            <input type="text" 
+                   class="search-input" 
+                   placeholder="Songtitel eingeben..." 
+                   id="songSearch"
+                   autocomplete="off">
+            <div class="suggestions" id="suggestions"></div>
+        </div>
+
+        <button class="submit-btn" id="submitWish" disabled>Wunsch abschicken</button>
+        <div class="success-message" id="successMessage">
+            Dein Musikwunsch wurde erfolgreich übermittelt!
+        </div>
+    </div>
+
+    <!-- Permanenter Spotify Footer -->
+    <div class="spotify-footer">
+        <a href="contact.html" class="contact-button">Kontakt</a>
+        <div class="spotify-info">
+            <p class="spotify-text">Musikinformationen bereitgestellt von</p>
+            <img src="img/Spotify_Full_Logo_RGB_White.png" alt="Spotify" class="spotify-logo">
+        </div>
+    </div>
+
+    <script>
+        // ========== ÜBERSETZUNGSBEREICH - HIER KÖNNEN SIE IHRE ÜBERSETZUNGEN EINGEBEN ==========
+        const translations = {
+            'de': {
+                title: 'DJ Musikwünsche',
+                placeholder: 'Songtitel eingeben...',
+                submitButton: 'Wunsch abschicken',
+                successMessage: 'Dein Musikwunsch wurde erfolgreich übermittelt!',
+                contactButton: 'Kontakt',
+                spotifyText: 'Musikinformationen bereitgestellt von',
+                noEventCode: 'Kein Event-Code gefunden',
+                eventNotFound: 'Event nicht gefunden',
+                unknownEvent: 'Unbekannte Veranstaltung',
+                unknownDJ: 'Unbekannter DJ'
+            },
+            'fr': {
+                // TODO: HIER FRANZÖSISCHE ÜBERSETZUNGEN EINGEBEN
+                title: 'Souhaits musicaux DJ',
+                placeholder: 'Entrez le titre de la chanson...',
+                submitButton: 'Envoyer le souhait',
+                successMessage: 'Votre souhait musical a été transmis avec succès!',
+                contactButton: 'Contact',
+                spotifyText: 'Informations musicales fournies par',
+                noEventCode: 'Aucun code d\'événement trouvé',
+                eventNotFound: 'Événement non trouvé',
+                unknownEvent: 'Événement inconnu',
+                unknownDJ: 'DJ inconnu'
+            },
+            'es': {
+                // TODO: HIER SPANISCHE ÜBERSETZUNGEN EINGEBEN  
+                title: 'Deseos musicales DJ',
+                placeholder: 'Ingrese el título de la canción...',
+                submitButton: 'Enviar deseo',
+                successMessage: '¡Tu deseo musical ha sido enviado exitosamente!',
+                contactButton: 'Contacto',
+                spotifyText: 'Información musical proporcionada por',
+                noEventCode: 'No se encontró código de evento',
+                eventNotFound: 'Evento no encontrado',
+                unknownEvent: 'Evento desconocido',
+                unknownDJ: 'DJ desconocido'
+            },
+            'en': {
+                // TODO: HIER ENGLISCHE ÜBERSETZUNGEN EINGEBEN
+                title: 'DJ Music Requests',
+                placeholder: 'Enter song title...',
+                submitButton: 'Submit Request',
+                successMessage: 'Your music request has been successfully submitted!',
+                contactButton: 'Contact',
+                spotifyText: 'Music information provided by',
+                noEventCode: 'No event code found',
+                eventNotFound: 'Event not found',
+                unknownEvent: 'Unknown Event',
+                unknownDJ: 'Unknown DJ'
+            }
+        };
+        // ========== ENDE ÜBERSETZUNGSBEREICH ==========
+
+        // Language Dropdown Funktionalität
+        function toggleLanguageMenu() {
+            const dropdown = document.getElementById('languageDropdown');
+            const menu = document.getElementById('languageMenu');
+            
+            dropdown.classList.toggle('open');
+            if (dropdown.classList.contains('open')) {
+                menu.style.display = 'block';
+            } else {
+                menu.style.display = 'none';
+            }
+        }
+        
+        function changeLanguage(langCode) {
+            const flagUrls = {
+                'de': 'https://flagcdn.com/w40/de.png',
+                'fr': 'https://flagcdn.com/w40/fr.png',
+                'es': 'https://flagcdn.com/w40/es.png',
+                'en': 'https://flagcdn.com/w40/us.png'
+            };
+            
+            // Flagge aktualisieren
+            document.getElementById('currentFlag').src = flagUrls[langCode];
+            
+            // Dropdown schließen
+            document.getElementById('languageDropdown').classList.remove('open');
+            document.getElementById('languageMenu').style.display = 'none';
+            
+            // Sprache in URL speichern und Seite neu laden
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('lang', langCode);
+            window.location.search = urlParams.toString();
+        }
+        
+        // Schließe Dropdown wenn außerhalb geklickt wird
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('languageDropdown');
+            if (!dropdown.contains(event.target)) {
+                dropdown.classList.remove('open');
+                document.getElementById('languageMenu').style.display = 'none';
+            }
+        });
+        
+        // Sprache beim Laden der Seite setzen
+        function initializeLanguage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const lang = urlParams.get('lang') || 'de';
+            
+            const flagUrls = {
+                'de': 'https://flagcdn.com/w40/de.png',
+                'fr': 'https://flagcdn.com/w40/fr.png',  
+                'es': 'https://flagcdn.com/w40/es.png',
+                'en': 'https://flagcdn.com/w40/us.png'
+            };
+            
+            document.getElementById('currentFlag').src = flagUrls[lang];
+            
+            // Übersetzungen anwenden
+            applyTranslations(lang);
+        }
+        
+        // Übersetzungen auf die Seite anwenden
+        function applyTranslations(lang) {
+            const t = translations[lang] || translations['de'];
+            
+            // Seitentitel
+            document.title = t.title;
+            
+            // Platzhaltertext im Suchfeld
+            document.getElementById('songSearch').placeholder = t.placeholder;
+            
+            // Submit-Button Text
+            document.getElementById('submitWish').textContent = t.submitButton;
+            
+            // Erfolgsmeldung
+            document.getElementById('successMessage').textContent = t.successMessage;
+            
+            // Kontakt-Button
+            document.querySelector('.contact-button').textContent = t.contactButton;
+            
+            // Spotify-Text
+            document.querySelector('.spotify-text').textContent = t.spotifyText;
+        }
+        
+        // Initialisiere Sprache beim Laden
+        window.addEventListener('load', initializeLanguage);
+
+        let selectedSong = null;
+        const searchInput = document.getElementById('songSearch');
+        const suggestionsContainer = document.getElementById('suggestions');
+        const submitButton = document.getElementById('submitWish');
+        const successMessage = document.getElementById('successMessage');
+
+        // Event-Details laden
+        async function loadEventDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventCode = urlParams.get('event');
+            
+            if (!eventCode) {
+                document.getElementById('eventName').textContent = 'Kein Event-Code gefunden';
+                document.getElementById('djName').textContent = '';
+                document.getElementById('festName').textContent = '';
+                searchInput.disabled = true;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://127.0.0.1:3000/api/event/${eventCode}`);
+                
+                // Überprüfe den Content-Type der Antwort
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Der Server ist möglicherweise nicht erreichbar. Bitte aktualisieren Sie die Seite oder versuchen Sie es später erneut.');
+                }
+
+                // Überprüfe den HTTP-Status
+                if (!response.ok) {
+                    throw new Error(`HTTP-Fehler! Status: ${response.status}`);
+                }
+
+                const event = await response.json();
+                
+                if (!event || event.error) {
+                    document.getElementById('eventName').textContent = 'Event nicht gefunden';
+                    document.getElementById('djName').textContent = '';
+                    document.getElementById('festName').textContent = '';
+                    searchInput.disabled = true;
+                    return;
+                }
+
+                console.log('Geladenes Event:', event);
+                document.getElementById('eventName').textContent = event.name || 'Unbekannte Veranstaltung';
+                document.getElementById('djName').textContent = event.dj || 'Unbekannter DJ';
+                document.getElementById('festName').textContent = event.location || '';
+                searchInput.disabled = false; // Aktiviere die Suche, wenn Event gefunden
+            } catch (error) {
+                console.error('Fehler beim Laden der Event-Details:', error);
+                document.getElementById('eventName').textContent = 'Event nicht gefunden';
+                document.getElementById('djName').textContent = '';
+                document.getElementById('festName').textContent = '';
+            }
+        }
+
+        // Event-Details beim Laden der Seite abrufen
+        window.addEventListener('load', loadEventDetails);
+
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+            
+            if (query.length >= 3) {
+                searchTimeout = setTimeout(() => searchSongs(query), 300);
+            } else {
+                suggestionsContainer.style.display = 'none';
+                submitButton.disabled = true;
+            }
+        });
+
+        // Event-Handler für den Submit-Button
+        submitButton.addEventListener('click', async () => {
+            if (!selectedSong) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventCode = urlParams.get('event');
+            
+            if (!eventCode) {
+                alert('Fehler: Kein Event-Code gefunden');
+                return;
+            }
+
+            try {
+                console.log('Sende Musikwunsch für Event:', eventCode, 'Song:', selectedSong.name);
+                
+                const response = await fetch(`http://127.0.0.1:3000/wish/${eventCode}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        songId: selectedSong.id,
+                        title: selectedSong.name,
+                        artist: selectedSong.artists.map(a => a.name).join(', '),
+                        coverUrl: selectedSong.album?.images?.[0]?.url,
+                        spotifyUri: selectedSong.uri
+                    })
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                if (!response.ok) {
+                    let errorData;
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
+                    }
+                    console.error('Server error response:', errorData);
+                    throw new Error(errorData.message || 'Fehler beim Speichern des Musikwunsches');
+                }
+
+                const result = await response.json();
+                console.log('Musikwunsch erfolgreich gesendet:', result);
+
+                // Erfolgreiche Speicherung
+                successMessage.style.display = 'block';
+                searchInput.value = '';
+                selectedSong = null;
+                submitButton.disabled = true;
+
+                // Nach 3 Sekunden ausblenden
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 3000);
+
+            } catch (error) {
+                console.error('Fehler beim Speichern des Musikwunsches:', error);
+                console.error('Error details:', error.message);
+                
+                // Prüfe ob es ein spezifischer Server-Fehler ist
+                if (error.message.includes('Nicht eingeloggt')) {
+                    alert('Hinweis: Sie müssen nicht eingeloggt sein, um Musikwünsche zu senden. Es liegt ein technisches Problem vor. Bitte versuchen Sie es erneut.');
+                } else {
+                    alert(error.message || 'Der Musikwunsch konnte nicht gespeichert werden. Bitte versuchen Sie es später erneut.');
+                }
+            }
+        });
+
+        async function searchSongs(query) {
+            try {
+                if (!query || query.length < 3) {
+                    suggestionsContainer.style.display = 'none';
+                    submitButton.disabled = true;
+                    return;
+                }
+
+                // Spotify-Suche durchführen
+                const response = await fetch(`http://127.0.0.1:3000/spotify/search?query=${encodeURIComponent(query)}`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Suche fehlgeschlagen');
+                }
+                
+                const data = await response.json();
+                console.log('Suchergebnisse:', data);
+                
+                if (data && data.tracks && data.tracks.items && data.tracks.items.length > 0) {
+                    displaySuggestions(data.tracks.items);
+                } else {
+                    suggestionsContainer.style.display = 'none';
+                    submitButton.disabled = true;
+                }
+            } catch (error) {
+                console.error('Fehler bei der Songsuche:', error);
+                suggestionsContainer.style.display = 'none';
+                submitButton.disabled = true;
+            }
+        }
+
+        function displaySuggestions(tracks) {
+            suggestionsContainer.innerHTML = '';
+            
+            tracks.forEach(track => {
+                if (!track.name || !track.artists) return; // Überspringe ungültige Tracks
+                
+                const albumImage = track.album?.images?.[0]?.url || 'img/default-album.png';
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                
+                try {
+                    div.innerHTML = `
+                        <img src="${albumImage}" alt="Album Cover" class="suggestion-cover">
+                        <div class="suggestion-info">
+                            <div class="suggestion-title">${track.name}</div>
+                            <div class="suggestion-artist">${track.artists.map(a => a.name).join(', ')}</div>
+                        </div>
+                    `;
+                    
+                    div.addEventListener('click', () => {
+                        selectedSong = track;
+                        searchInput.value = `${track.name} - ${track.artists.map(a => a.name).join(', ')}`;
+                        suggestionsContainer.style.display = 'none';
+                        submitButton.disabled = false;
+                    });
+                    
+                    suggestionsContainer.appendChild(div);
+                } catch (error) {
+                    console.error('Fehler beim Anzeigen des Tracks:', error, track);
+                }
+            });
+            
+            if (suggestionsContainer.children.length > 0) {
+                suggestionsContainer.style.display = 'block';
+            } else {
+                suggestionsContainer.style.display = 'none';
+            }
+        }
+
+        function selectSong(track) {
+            selectedSong = track;
+            searchInput.value = `${track.name} - ${track.artists.map(a => a.name).join(', ')}`;
+            suggestionsContainer.style.display = 'none';
+            submitButton.disabled = false;
+        }
+    </script>
+</body>
+</html>

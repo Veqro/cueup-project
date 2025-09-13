@@ -1,0 +1,14 @@
+{
+  "name": "cueup-frontend",
+  "version": "1.0.0",
+  "description": "CueUp Frontend Server mit URL Rewriting",
+  "main": "frontend-server.js",
+  "scripts": {
+    "start": "node frontend-server.js",
+    "dev": "node frontend-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "path": "^0.12.7"
+  }
+}
