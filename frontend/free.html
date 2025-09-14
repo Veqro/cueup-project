@@ -251,7 +251,7 @@
             try {
                 // Erst prüfen ob Server erreichbar ist
                 console.log('Teste Server-Verbindung...');
-                const testResponse = await fetch('http://127.0.0.1:3000/auth/status', {
+                const testResponse = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/status', {
                     method: 'GET',
                     credentials: 'include'
                 });
@@ -263,7 +263,7 @@
                 
                 console.log('Server erreichbar, weiterleitung zu Spotify...');
                 // Redirect zu Spotify-Autorisierung
-                window.location.href = 'http://127.0.0.1:3000/login';
+                window.location.href = 'https://novel-willyt-veqro-a29cd625.koyeb.app:8000/login';
             } catch (error) {
                 console.error('Fehler beim Spotify-Login:', error);
                 errorMessage.textContent = 'Server nicht erreichbar. Bitte starte den Server.';
@@ -288,7 +288,7 @@
             const navigationMenu = document.getElementById('navigationMenu');
             
             try {
-                const response = await fetch('http://127.0.0.1:3000/auth/status', {
+                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/status', {
                     credentials: 'include'
                 });
                 const data = await response.json();
