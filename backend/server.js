@@ -297,7 +297,7 @@ app.get('/auth/status', async (req, res) => {
         if (!user || !user.spotifyData) {
             // Benutzer nicht gefunden oder keine Spotify-Daten, Session ungültig
             req.session.destroy();
-            addLog('info', 'Auth-Status: Session ungültig, zerstört');
+            console.log('Auth-Status: Session ungültig, zerstört');
             return res.json({
                 isAuthenticated: false,
                 spotifyConnected: false,
@@ -1793,30 +1793,6 @@ app.listen(PORT, () => {
     console.log('Backend ist jetzt auf Koyeb gehostet!');
 });
 
-// Log-Funktion
-function addLog(level, message) {
-    const logEntry = {
-        timestamp: new Date().toISOString(),
-        level: level,
-        message: message
-    };
-    
-    serverLogs.push(logEntry);
-    if (level === 'error') {
-        errorLogs.push(logEntry);
-    }
-    
-    // Nur die letzten 1000 Logs behalten
-    if (serverLogs.length > 1000) {
-        serverLogs.shift();
-    }
-    if (errorLogs.length > 100) {
-        errorLogs.shift();
-    }
-    
-    console.log(`[${level.toUpperCase()}] ${message}`);
-}
-
 // Server-Statistiken
 let serverStats = {
     startTime: Date.now(),
@@ -1828,96 +1804,13 @@ let serverStats = {
     errorCount: 0
 };
 
-// JWT-Middleware für Admin-Routen
-function verifyAdminToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    
-    if (!token) {
-        return res.status(401).json({ success: false, message: 'Kein Token bereitgestellt' });
-    }
-    
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(403).json({ success: false, message: 'Ungültiger Token' });
-        }
-        if (!decoded.admin) {
-            return res.status(403).json({ success: false, message: 'Keine Admin-Berechtigung' });
-        }
-        req.admin = decoded;
-        next();
-    });
-}
 
-// ============ ADMIN ENDPOINTS ============
 
-// Admin-Login
-app.post('/admin/login', (req, res) => {
-    const { password } = req.body;
-    
-    if (!password) {
-        addLog('warning', 'Admin-Login Versuch ohne Passwort');
-        return res.status(400).json({ success: false, message: 'Passwort erforderlich' });
-    }
-    
-    if (password === ADMIN_PASSWORD) {
-        const token = jwt.sign(
-            { admin: true, loginTime: Date.now() }, 
-            JWT_SECRET, 
-            { expiresIn: '4h' }
-        );
-        
-        addLog('info', 'Erfolgreicher Admin-Login');
-        res.json({ 
-            success: true, 
-            token: token,
-            message: 'Admin erfolgreich angemeldet'
-        });
-    } else {
-        addLog('warning', 'Fehlgeschlagener Admin-Login Versuch');
-        serverStats.errorCount++;
-        res.status(401).json({ 
-            success: false, 
-            message: 'Falsches Passwort' 
-        });
-    }
-});
 
-// Server-Logs abrufen
-app.get('/admin/logs', verifyAdminToken, (req, res) => {
-    const { level = 'all', limit = 100 } = req.query;
-    let filteredLogs = serverLogs;
-    
-    if (level !== 'all') {
-        filteredLogs = serverLogs.filter(log => log.level === level);
-    }
-    
-    const logs = filteredLogs.slice(-parseInt(limit));
-    
-    res.json({
-        success: true,
-        logs: logs,
-        total: filteredLogs.length
-    });
-});
 
-// System-Statistiken
-app.get('/admin/stats', verifyAdminToken, (req, res) => {
-    const uptime = Date.now() - serverStats.startTime;
-    const uptimeFormatted = formatUptime(uptime);
-    
-    res.json({
-        success: true,
-        uptime: uptimeFormatted,
-        visitorsToday: serverStats.visitorsToday,
-        activeSessions: serverStats.activeSessions,
-        spotifyLogins: serverStats.spotifyLogins,
-        eventsCreated: serverStats.eventsCreated,
-        songRequests: serverStats.songRequests,
-        errorCount: serverStats.errorCount,
-        totalLogs: serverLogs.length
-    });
-});
+
+
+
 
 // System Health-Check
 app.get('/admin/health', verifyAdminToken, (req, res) => {
@@ -1958,13 +1851,13 @@ app.post('/admin/cache/clear', verifyAdminToken, (req, res) => {
             serverLogs.splice(0, serverLogs.length - 100);
         }
         
-        addLog('info', 'Admin: Cache geleert');
+        console.log( 'Admin: Cache geleert');
         res.json({ 
             success: true, 
             message: 'Cache erfolgreich geleert' 
         });
     } catch (error) {
-        addLog('error', `Admin: Fehler beim Cache leeren: ${error.message}`);
+        console.error( `Admin: Fehler beim Cache leeren: ${error.message}`);
         res.status(500).json({ 
             success: false, 
             message: 'Fehler beim Cache leeren' 
@@ -1985,7 +1878,7 @@ app.post('/admin/backup', verifyAdminToken, (req, res) => {
         
         const backupId = 'backup_' + Date.now();
         
-        addLog('info', `Admin: Backup erstellt (${backupId})`);
+        console.log( `Admin: Backup erstellt (${backupId})`);
         res.json({
             success: true,
             backupId: backupId,
@@ -1993,7 +1886,7 @@ app.post('/admin/backup', verifyAdminToken, (req, res) => {
             message: 'Backup erfolgreich erstellt'
         });
     } catch (error) {
-        addLog('error', `Admin: Fehler beim Backup: ${error.message}`);
+        console.error( `Admin: Fehler beim Backup: ${error.message}`);
         res.status(500).json({
             success: false,
             message: 'Fehler beim Erstellen des Backups'
@@ -2003,7 +1896,7 @@ app.post('/admin/backup', verifyAdminToken, (req, res) => {
 
 // Server neustarten (simuliert)
 app.post('/admin/restart', verifyAdminToken, (req, res) => {
-    addLog('warning', 'Admin: Server-Neustart angefordert');
+    console.warn( 'Admin: Server-Neustart angefordert');
     res.json({
         success: true,
         message: 'Server-Neustart eingeleitet (simuliert)'
@@ -2020,7 +1913,7 @@ const KOYEB_API_BASE = 'https://app.koyeb.com/v1';
 // Koyeb-Status abfragen (Sicherer Admin-Endpoint)
 app.get('/admin/koyeb-status', verifyAdminToken, async (req, res) => {
     try {
-        addLog('info', 'Admin: Koyeb-Status wird abgerufen');
+        console.log( 'Admin: Koyeb-Status wird abgerufen');
         
         // Services abrufen
         const servicesResponse = await fetch(`${KOYEB_API_BASE}/services`, {
@@ -2094,11 +1987,11 @@ app.get('/admin/koyeb-status', verifyAdminToken, async (req, res) => {
             }
         };
         
-        addLog('info', `Koyeb-Status erfolgreich abgerufen: ${koyebStatus.services.total} Services`);
+        console.log( `Koyeb-Status erfolgreich abgerufen: ${koyebStatus.services.total} Services`);
         res.json(koyebStatus);
         
     } catch (error) {
-        addLog('error', `Koyeb API Fehler: ${error.message}`);
+        console.error( `Koyeb API Fehler: ${error.message}`);
         res.status(500).json({
             success: false,
             error: 'Fehler beim Abrufen des Koyeb-Status',
@@ -2111,7 +2004,7 @@ app.get('/admin/koyeb-status', verifyAdminToken, async (req, res) => {
 app.get('/admin/koyeb-service/:serviceId', verifyAdminToken, async (req, res) => {
     try {
         const { serviceId } = req.params;
-        addLog('info', `Admin: Koyeb-Service Details für ${serviceId} werden abgerufen`);
+        console.log( `Admin: Koyeb-Service Details für ${serviceId} werden abgerufen`);
         
         const response = await fetch(`${KOYEB_API_BASE}/services/${serviceId}`, {
             method: 'GET',
@@ -2142,7 +2035,7 @@ app.get('/admin/koyeb-service/:serviceId', verifyAdminToken, async (req, res) =>
         });
         
     } catch (error) {
-        addLog('error', `Koyeb Service Details Fehler: ${error.message}`);
+        console.error( `Koyeb Service Details Fehler: ${error.message}`);
         res.status(500).json({
             success: false,
             error: 'Fehler beim Abrufen der Service-Details',
@@ -2157,7 +2050,7 @@ app.get('/admin/koyeb-logs/:serviceId', verifyAdminToken, async (req, res) => {
         const { serviceId } = req.params;
         const { limit = 100 } = req.query;
         
-        addLog('info', `Admin: Koyeb-Logs für Service ${serviceId} werden abgerufen`);
+        console.log( `Admin: Koyeb-Logs für Service ${serviceId} werden abgerufen`);
         
         const response = await fetch(`${KOYEB_API_BASE}/services/${serviceId}/logs?limit=${limit}`, {
             method: 'GET',
@@ -2180,7 +2073,7 @@ app.get('/admin/koyeb-logs/:serviceId', verifyAdminToken, async (req, res) => {
         });
         
     } catch (error) {
-        addLog('error', `Koyeb Logs Fehler: ${error.message}`);
+        console.error( `Koyeb Logs Fehler: ${error.message}`);
         res.status(500).json({
             success: false,
             error: 'Fehler beim Abrufen der Koyeb-Logs',
@@ -2205,23 +2098,18 @@ function formatUptime(milliseconds) {
     }
 }
 
-// Logging in bestehende Funktionen integrieren
-const originalConsoleError = console.error;
-console.error = function(...args) {
-    addLog('error', args.join(' '));
-    originalConsoleError.apply(console, args);
-};
+
 
 // Initialer Spotify-Token
 spotifyApi.clientCredentialsGrant()
     .then(data => {
         console.log('Spotify-Token erhalten');
-        addLog('info', 'Spotify-Token erfolgreich erhalten');
+        console.log('Spotify-Token erfolgreich erhalten');
         spotifyApi.setAccessToken(data.body['access_token']);
     })
     .catch(error => {
         console.error('Fehler beim Abrufen des Spotify-Tokens:', error);
-        addLog('error', `Spotify-Token Fehler: ${error.message}`);
+        console.error(`Spotify-Token Fehler: ${error.message}`);
     });
 
 app.listen(PORT, () => {
@@ -2230,26 +2118,5 @@ app.listen(PORT, () => {
     console.log(`https://novel-willyt-veqro-a29cd625.koyeb.app/startpage`);
     console.log('Saubere URLs aktiviert - keine .html Endungen mehr nötig!');
     console.log('Backend ist jetzt auf Koyeb gehostet!');
-    console.log('🔧 Admin-Panel verfügbar mit Passwort:', ADMIN_PASSWORD);
-    
-    addLog('info', `Server gestartet auf Port ${PORT}`);
-    addLog('info', 'Admin-System aktiviert');
-    addLog('info', 'Alle Admin-APIs verfügbar');
-    addLog('info', 'CueUp Server erfolgreich gestartet');
-    addLog('info', 'Koyeb Backend bereit für Requests');
-    addLog('debug', 'Server läuft im Produktionsmodus');
-    addLog('warning', 'System-Check: Alle Services online');
-    
-    // Simuliere einige Aktivitäten für Demo-Logs
-    setTimeout(() => {
-        addLog('info', 'Erste Systemprüfung abgeschlossen');
-        addLog('debug', 'Memory-Check: OK');
-        addLog('info', 'Spotify API-Verbindung aktiv');
-    }, 2000);
-    
-    setTimeout(() => {
-        addLog('warning', 'Backup-System initialisiert');
-        addLog('info', 'Admin-Console bereit');
-        addLog('debug', 'WebSocket-Server online');
-    }, 5000);
+    console.log(`Server gestartet auf Port ${PORT}`);
 });
