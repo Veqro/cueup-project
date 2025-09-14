@@ -324,7 +324,7 @@
             
             try {
                 // Prüfe Login-Status
-                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/check', {
+                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/check', {
                     credentials: 'include'
                 });
                 
@@ -378,7 +378,7 @@
         // Profildaten laden
         async function loadProfileData() {
             try {
-                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/status', {
+                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
                     credentials: 'include'
                 });
                 
@@ -396,7 +396,7 @@
                     // Spotify-Informationen sind bereits im checkAuthAndLoadProfile gesetzt
 
                     // Event Statistiken laden
-                    fetch('https://novel-willyt-veqro-a29cd625.koyeb.app:8000/api/events', {
+                    fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/api/events', {
                         credentials: 'include'
                     })
                     .then(response => response.json())
@@ -448,7 +448,7 @@
         }
 
         // Globale Variable für den Server-URL
-        const SERVER_URL = 'https://novel-willyt-veqro-a29cd625.koyeb.app:8000';
+        const SERVER_URL = 'https://novel-willyt-veqro-a29cd625.koyeb.app';
 
         // Prüft den Login-Status und zeigt entsprechenden Content
         async function checkAuthAndLoadProfile() {

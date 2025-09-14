@@ -270,7 +270,7 @@
             setTimeout(function() {
                 try {
                     // Direkte Weiterleitung ohne Prüfung
-                    window.location.href = 'https://novel-willyt-veqro-a29cd625.koyeb.app:8000/login';
+                    window.location.href = 'https://novel-willyt-veqro-a29cd625.koyeb.app/login';
                 } catch (e) {
                     // Falls selbst die Umleitung fehlschlägt
                     console.error('Fehler bei der Umleitung:', e);
@@ -316,7 +316,7 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 3000);
                 
-                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/status', {
+                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
                     credentials: 'include',
                     signal: controller.signal
                 }).catch(err => {

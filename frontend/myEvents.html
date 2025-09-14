@@ -758,7 +758,7 @@
         eventsList.innerHTML = '<div class="loading">Lade Events...</div>';
 
         try {
-          const response = await fetch("https://novel-willyt-veqro-a29cd625.koyeb.app:8000/api/events", {
+          const response = await fetch("https://novel-willyt-veqro-a29cd625.koyeb.app/api/events", {
             credentials: "include",
           });
           
@@ -926,7 +926,7 @@
         try {
           console.log('Lösche Event mit Code:', eventCode);
           
-          const response = await fetch(`https://novel-willyt-veqro-a29cd625.koyeb.app:8000/api/event/${eventCode}`, {
+          const response = await fetch(`https://novel-willyt-veqro-a29cd625.koyeb.app/api/event/${eventCode}`, {
             method: "DELETE",
             credentials: "include",
           });
@@ -985,7 +985,7 @@
       // Auth-Status prüfen
       async function checkAuthStatus() {
         try {
-          const response = await fetch("https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/status", {
+          const response = await fetch("https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status", {
             credentials: "include",
           });
           const data = await response.json();
@@ -1007,7 +1007,7 @@
       // Logout
       async function logout() {
         try {
-          const response = await fetch("https://novel-willyt-veqro-a29cd625.koyeb.app:8000/logout", {
+          const response = await fetch("https://novel-willyt-veqro-a29cd625.koyeb.app/logout", {
             method: "POST",
             credentials: "include",
           });
