@@ -566,137 +566,9 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>CueUp | <a href="debug" style="color: #888; text-decoration: none;">Debug Tools</a> | <a href="#" id="adminFooterLink">System Administration</a></p>
+            <p>CueUp | <a href="debug" style="color: #888; text-decoration: none;">Debug Tools</a></p>
         </div>
     </footer>
-        
-        <!-- Admin Modal -->
-        <div id="adminModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
-            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; padding: 30px; border-radius: 10px; max-width: 600px; width: 90%; max-height: 80%; overflow-y: auto;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="color: #aa00ff; margin: 0;">🔧 CueUp Admin Panel</h2>
-                    <button id="closeAdmin" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">✕</button>
-                </div>
-                
-                <div id="adminAuth" style="text-align: center;">
-                    <p style="color: #ddd; margin-bottom: 20px;">Admin-Passwort eingeben:</p>
-                    <form id="adminLoginForm" style="display: inline-block;">
-                        <input type="password" id="adminPassword" placeholder="Passwort" style="padding: 10px; width: 200px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #aa00ff; border-radius: 5px; text-align: center;" autocomplete="current-password">
-                        <br><br>
-                        <button type="submit" id="adminLogin" class="test-button">Anmelden</button>
-                    </form>
-                    <div id="adminError" style="color: #f44336; margin-top: 10px; display: none;">Falsches Passwort!</div>
-                </div>
-                
-                <div id="adminContent" style="display: none;">
-                    <div class="admin-section">
-                        <h3 style="color: #aa00ff;">📊 Server Statistiken</h3>
-                        <div id="serverStats" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 5px; margin: 10px 0;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                <div>
-                                    <strong>Uptime:</strong> <span id="uptime">Wird geladen...</span><br>
-                                    <strong>Letzte Prüfung:</strong> <span id="adminLastCheck">--</span><br>
-                                    <strong>Antwortzeit:</strong> <span id="adminResponseTime">--</span>
-                                </div>
-                                <div>
-                                    <strong>Status-Verlauf:</strong><br>
-                                    <div id="statusHistory" style="font-size: 0.9em; color: #ccc;">
-                                        Verlaufsdaten werden gesammelt...
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="admin-section">
-                        <h3 style="color: #aa00ff;">🔧 Server Verwaltung</h3>
-                        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 5px; margin-bottom: 15px;">
-                            <p style="color: #ddd; margin: 0 0 15px 0; font-size: 14px;">✅ Alle Tools verwenden die sichere Koyeb-Backend-API</p>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                                <button class="test-button" id="clearCache">🗑️ Cache leeren</button>
-                                <button class="test-button" id="testAllEndpoints">🔗 API-Tests</button>
-                                <button class="test-button" id="systemHealth">🏥 System-Check</button>
-                                <button class="test-button" id="viewErrors">⚠️ Fehler anzeigen</button>
-                                <button class="test-button" id="backupData">💾 Backup erstellen</button>
-                                <button class="test-button" id="restartServer">🔄 Server neustart</button>
-                            </div>
-                        </div>
-                        <div id="maintenanceResult" style="background: #1e1e1e; padding: 10px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; display: none;"></div>
-                    </div>
-                    
-                    <div class="admin-section">
-                        <h3 style="color: #aa00ff;">📈 Website Analytics</h3>
-                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 5px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                <div>
-                                    <strong>Besucher heute:</strong> <span id="visitorsToday">--</span><br>
-                                    <strong>Aktive Sessions:</strong> <span id="activeSessions">--</span><br>
-                                    <strong>Spotify Logins:</strong> <span id="spotifyLogins">--</span>
-                                </div>
-                                <div>
-                                    <strong>Events erstellt:</strong> <span id="eventsCreated">--</span><br>
-                                    <strong>Song Requests:</strong> <span id="songRequests">--</span><br>
-                                    <strong>Fehlermeldungen:</strong> <span id="errorCount">--</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="admin-section">
-                        <h3 style="color: #aa00ff;">📋 Server Logs & Monitoring</h3>
-                        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 5px; margin-bottom: 15px;">
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 15px;">
-                                <button class="test-button" id="viewServerLogs">📄 Server Logs</button>
-                                <button class="test-button" id="refreshServerLogs">🔄 Logs aktualisieren</button>
-                                <button class="test-button" id="downloadLogs">💾 Logs herunterladen</button>
-                            </div>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px;">
-                                <select id="logLevel" style="padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #aa00ff; border-radius: 3px;">
-                                    <option value="all">Alle Logs</option>
-                                    <option value="error">Nur Fehler</option>
-                                    <option value="warning">Warnungen</option>
-                                    <option value="info">Info</option>
-                                    <option value="debug">Debug</option>
-                                </select>
-                                <input type="number" id="logLimit" placeholder="Anzahl Logs" min="10" max="1000" value="100" style="padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #aa00ff; border-radius: 3px;">
-                            </div>
-                        </div>
-                        <div id="quickActionResult" style="background: #1e1e1e; padding: 10px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; display: none; margin-top: 15px;"></div>
-                    </div>
-                    
-                    <div class="admin-section">
-                        <h3 style="color: #aa00ff;">🖥️ Koyeb Platform Management</h3>
-                        <div class="koyeb-status">
-                            <div id="koyebConnection" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
-                                <div id="koyebStatusLight" style="width: 12px; height: 12px; border-radius: 50%; background: #888; animation: pulse 2s infinite;"></div>
-                                <span id="koyebStatusText" style="color: #ddd;">Verbindung wird geprüft...</span>
-                                <button id="checkKoyebStatus" style="margin-left: auto; padding: 4px 8px; background: #aa00ff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">Prüfen</button>
-                                <button id="loadKoyebDetails" style="margin-left: 5px; padding: 4px 8px; background: #2196f3; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">API Details</button>
-                            </div>
-                            <div id="koyebDetails" style="font-size: 12px; color: #888; line-height: 1.6; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px;">
-                                <div><strong>Backend URL:</strong> <code style="color: #4caf50; background: rgba(76,175,80,0.1); padding: 2px 4px; border-radius: 2px;">https://novel-willyt-veqro-a29cd625.koyeb.app</code></div>
-                                <div id="koyebResponseTime"><strong>Antwortzeit:</strong> <span style="color: #ff9800;">--</span></div>
-                                <div id="koyebLastCheck"><strong>Letzte Prüfung:</strong> <span style="color: #888;">--</span></div>
-                                <div id="koyebUptime"><strong>Server Status:</strong> <span style="color: #2196f3;">--</span></div>
-                            </div>
-                            <div id="koyebExtendedInfo" style="display: none; margin-top: 15px; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 5px; border-left: 3px solid #2196f3;">
-                                <h4 style="color: #2196f3; margin-top: 0; margin-bottom: 15px;">🚀 Koyeb Platform Overview</h4>
-                                <div id="koyebServicesInfo" style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
-                                    <strong style="color: #4caf50;">Services:</strong> <span style="color: #ddd;">Loading...</span>
-                                </div>
-                                <div id="koyebAppsInfo" style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
-                                    <strong style="color: #ff9800;">Apps:</strong> <span style="color: #ddd;">Loading...</span>
-                                </div>
-                                <div id="koyebDeploymentsInfo" style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
-                                    <strong style="color: #2196f3;">Recent Deployments:</strong>
-                                    <div id="deploymentsList" style="font-size: 11px; margin-top: 10px; max-height: 200px; overflow-y: auto; color: #ccc;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </main>
 
     <script>
@@ -1034,29 +906,7 @@
             });
             return formatJSON(headersObj);
         }
-        
-        // Admin Panel Funktionalität
-        let adminLoggedIn = false;
-        let statusHistory = [];
-        
-        // Admin-Zugriff über Footer (warten bis DOM geladen ist)
-        document.addEventListener('DOMContentLoaded', function() {
-            const adminFooterLink = document.getElementById('adminFooterLink');
-            const closeAdmin = document.getElementById('closeAdmin');
-            
-            if (adminFooterLink) {
-                adminFooterLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    document.getElementById('adminModal').style.display = 'block';
-                });
-            }
-            
-            if (closeAdmin) {
-                closeAdmin.addEventListener('click', function() {
-                    document.getElementById('adminModal').style.display = 'none';
-                });
-            }
-        });
+
         
         // Admin Login
         document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {

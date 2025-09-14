@@ -1785,15 +1785,13 @@ app.get('/', (req, res) => {
     res.redirect('/startpage');
 });
 
-// ============ ADMIN SYSTEM ============
-
-// Admin-Konfiguration
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'CueUpAdmin2024!';
-const JWT_SECRET = process.env.JWT_SECRET || 'cueup-admin-jwt-secret-2024';
-
-// Log-System
-const serverLogs = [];
-const errorLogs = [];
+app.listen(PORT, () => {
+    console.log('Server läuft auf Port', PORT);
+    console.log('Öffne im Browser:');
+    console.log(`https://novel-willyt-veqro-a29cd625.koyeb.app/startpage`);
+    console.log('Saubere URLs aktiviert - keine .html Endungen mehr nötig!');
+    console.log('Backend ist jetzt auf Koyeb gehostet!');
+});
 
 // Log-Funktion
 function addLog(level, message) {
