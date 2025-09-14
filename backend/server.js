@@ -1087,31 +1087,26 @@ app.get('/auth/my-events', (req, res) => {
 
 // Benutzerdaten Route
 app.get('/spotify/me', async (req, res) => {
-    if (!req.session.spotifyAccessToken) {
+    // Prüfe Session-basierte Authentifizierung
+    if (!req.session.userId || !req.session.spotify) {
         return res.status(401).json({ 
             error: 'not_authenticated',
             message: 'Nicht mit Spotify verbunden'
         });
     }
 
-    // Token-Erneuerung prüfen
-    if (req.session.tokenExpires && Date.now() > req.session.tokenExpires - 60000) {
-        try {
-            const data = await spotifyApi.refreshAccessToken();
-            spotifyApi.setAccessToken(data.body['access_token']);
-            req.session.spotifyAccessToken = data.body['access_token'];
-            req.session.tokenExpires = Date.now() + (data.body['expires_in'] * 1000);
-        } catch (error) {
-            console.error('Token refresh failed:', error);
-            return res.status(401).json({ 
-                error: 'token_expired',
-                message: 'Bitte erneut anmelden'
-            });
-        }
+    // Access Token aus RAM abrufen
+    const accessToken = getAccessToken(req.session.userId);
+    if (!accessToken) {
+        return res.status(401).json({ 
+            error: 'token_expired',
+            message: 'Bitte erneut anmelden'
+        });
     }
 
     try {
-        spotifyApi.setAccessToken(req.session.spotifyAccessToken);
+        // Access Token für API-Aufruf setzen
+        spotifyApi.setAccessToken(accessToken);
         const data = await spotifyApi.getMe();
         res.json({
             id: data.body.id,
