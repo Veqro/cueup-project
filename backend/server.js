@@ -182,16 +182,18 @@ app.use(bodyParser.json());
 
 // Session-Middleware MUSS GANZ OBEN STEHEN!
 app.use(session({
-    secret: 'dj-wishlist-secret',
+    secret: 'dj-wishlist-secret-2024-updated',
     resave: false,
-    saveUninitialized: false, // Nur Speichern wenn nötig
+    saveUninitialized: true, // Cookie auch für nicht-eingeloggte Benutzer erstellen
     cookie: {
-        secure: true, // HTTPS erforderlich für Produktionsumgebung
-        httpOnly: true,
-        sameSite: 'none', // Für Cross-Site Anfragen
-        maxAge: 24 * 60 * 60 * 1000 // 24 Stunden
+        secure: true, // HTTPS erforderlich (Koyeb + Vercel nutzen HTTPS)
+        httpOnly: true, // Schutz vor XSS
+        sameSite: 'none', // WICHTIG: Für Cross-Origin zwischen Vercel und Koyeb
+        maxAge: 24 * 60 * 60 * 1000, // 24 Stunden
+        domain: undefined // Automatische Domain-Erkennung
     },
-    name: 'sessionId' // Eindeutiger Cookie-Name
+    name: 'cueup.sid', // Eindeutiger Cookie-Name
+    proxy: true // Vertraue Proxy-Headern (wichtig für Koyeb)
 }));
 
 // ENTFERNT: Frontend-Dateien werden nicht mehr vom Backend serviert
@@ -687,6 +689,17 @@ app.use((req, res, next) => {
 
     console.log(`🔒 Protected path: ${req.path}, checking auth...`);
 
+    // DEBUG: Session-Details loggen
+    console.log('📊 Session Debug:', {
+        hasSession: !!req.session,
+        sessionId: req.sessionID,
+        userId: req.session?.userId,
+        username: req.session?.username,
+        spotify: req.session?.spotify,
+        cookies: req.headers.cookie,
+        userAgent: req.headers['user-agent']?.substring(0, 50)
+    });
+
     // Prüfen ob der Benutzer eingeloggt ist
     if (!req.session || !req.session.userId) {
         console.log(`❌ No session/userId for path: ${req.path}`);
@@ -895,9 +908,23 @@ app.get('/callback', async (req, res) => {
             isPremium: me.body.product === 'premium'
         };
         
+        // Session explizit speichern
+        req.session.save((err) => {
+            if (err) {
+                console.error('❌ Session save error:', err);
+            } else {
+                console.log('✅ Session erfolgreich gespeichert:', req.sessionID);
+            }
+        });
+        
         // Änderungen speichern
         saveUsers();
         console.log('Spotify Login erfolgreich für:', me.body.display_name, '- Tokens sicher gespeichert');
+        console.log('🔑 Session Details nach Login:', {
+            sessionId: req.sessionID,
+            userId: req.session.userId,
+            username: req.session.username
+        });
         
         // Zur Frontend Success-Seite weiterleiten
         res.redirect(`${FRONTEND_URL}/spotify-success.html`);
