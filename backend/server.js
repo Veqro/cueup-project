@@ -167,7 +167,11 @@ const spotifyApi = new SpotifyWebApi({
 
 // Middleware
 app.use(cors({
-    origin: [FRONTEND_URL, 'https://cueup.vercel.app'], // Frontend URLs
+    origin: [
+        FRONTEND_URL, 
+        'https://cueup.vercel.app',
+        'https://cueup-in4o30ksu-veqros-projects.vercel.app' // Neue Vercel-URL hinzugefügt
+    ], // Frontend URLs
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

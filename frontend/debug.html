@@ -390,11 +390,15 @@
                     <tr>
                         <th>CORS Setup</th>
                         <td>
-                            <pre>Origin: ['https://cueup.vercel.app']
+                            <pre>Origin: ['https://cueup.vercel.app', 'https://cueup-in4o30ksu-veqros-projects.vercel.app']
 Credentials: true
 Methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 Headers: ['Content-Type', 'Authorization']</pre>
                         </td>
+                    </tr>
+                    <tr>
+                        <th>Aktuelle Frontend URL</th>
+                        <td id="currentOrigin">Wird geladen...</td>
                     </tr>
                 </table>
             </div>
@@ -746,6 +750,9 @@ Headers: ['Content-Type', 'Authorization']</pre>
         
         // Initialer Verbindungstest
         window.addEventListener('DOMContentLoaded', function() {
+            // Aktuelle URL anzeigen
+            document.getElementById('currentOrigin').textContent = window.location.origin;
+            
             document.getElementById('checkConnection').click();
         });
     </script>
