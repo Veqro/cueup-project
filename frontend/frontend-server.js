@@ -38,7 +38,7 @@ app.get('/', (req, res) => {
 });
 
 // Fallback für alle anderen Routen
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => {
     res.status(404).send(`
         <html>
         <head><title>404 - Seite nicht gefunden</title></head>

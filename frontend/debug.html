@@ -357,7 +357,7 @@
         
         /* Footer Styles - exakt wie startpage.css */
         .footer {
-            background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(40, 40, 40, 0.9)) !important;
+            background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(40, 40, 40, 0.9));
             margin-top: 80px;
             padding: 50px 0 20px;
             border-top: 1px solid rgba(170, 0, 255, 0.2);
@@ -370,6 +370,18 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 40px;
+        }
+        
+        @media (min-width: 768px) {
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            .footer-content {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
         
         .footer-section h3 {
@@ -519,8 +531,11 @@
                     <div class="advanced-tool">
                         <h3>Schnelltest Routen</h3>
                         <div class="quick-tests">
-                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status">Login-System testen</button>
-                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/api/events">Event-System testen</button>
+                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status">Auth-Status testen</button>
+                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/login">Login-Route testen</button>
+                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/api/events">Events-API testen</button>
+                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/wishes">Musikwunsch-System testen</button>
+                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/auth/my-events">Meine Events testen</button>
                         </div>
                         <div id="quickTestResult" class="result-container" style="display: none;"></div>
                     </div>
