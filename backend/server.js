@@ -10,6 +10,9 @@ const session = require('express-session');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 
+// Fetch für Koyeb-API (falls nicht nativ verfügbar)
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
 // Express App erstellen
 const app = express();
 const fs = require('fs');
@@ -2010,6 +2013,182 @@ app.post('/admin/restart', verifyAdminToken, (req, res) => {
     
     // In einer echten Umgebung würde hier ein echter Neustart stattfinden
     // process.exit(0);
+});
+
+// ============ KOYEB-API INTEGRATION ============
+const KOYEB_API_TOKEN = process.env.KOYEB_API_TOKEN;
+const KOYEB_API_BASE = 'https://app.koyeb.com/v1';
+
+// Koyeb-Status abfragen (Sicherer Admin-Endpoint)
+app.get('/admin/koyeb-status', verifyAdminToken, async (req, res) => {
+    try {
+        addLog('info', 'Admin: Koyeb-Status wird abgerufen');
+        
+        // Services abrufen
+        const servicesResponse = await fetch(`${KOYEB_API_BASE}/services`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${KOYEB_API_TOKEN}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!servicesResponse.ok) {
+            throw new Error(`Koyeb API Error: ${servicesResponse.status}`);
+        }
+        
+        const servicesData = await servicesResponse.json();
+        
+        // Apps abrufen
+        const appsResponse = await fetch(`${KOYEB_API_BASE}/apps`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${KOYEB_API_TOKEN}`,
+                'Content-Type': 'application/json'  
+            }
+        });
+        
+        const appsData = appsResponse.ok ? await appsResponse.json() : { apps: [] };
+        
+        // Deployment-Status abrufen
+        const deploymentsResponse = await fetch(`${KOYEB_API_BASE}/deployments?limit=5`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${KOYEB_API_TOKEN}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const deploymentsData = deploymentsResponse.ok ? await deploymentsResponse.json() : { deployments: [] };
+        
+        // Response zusammenstellen
+        const koyebStatus = {
+            success: true,
+            timestamp: new Date().toISOString(),
+            services: {
+                total: servicesData.services?.length || 0,
+                running: servicesData.services?.filter(s => s.status === 'healthy')?.length || 0,
+                services: servicesData.services?.map(service => ({
+                    id: service.id,
+                    name: service.name,
+                    status: service.status,
+                    type: service.type,
+                    created_at: service.created_at,
+                    updated_at: service.updated_at
+                })) || []
+            },
+            apps: {
+                total: appsData.apps?.length || 0,
+                apps: appsData.apps?.map(app => ({
+                    id: app.id,
+                    name: app.name,
+                    status: app.status,
+                    created_at: app.created_at
+                })) || []
+            },
+            deployments: {
+                recent: deploymentsData.deployments?.slice(0, 5).map(deployment => ({
+                    id: deployment.id,
+                    status: deployment.status,
+                    created_at: deployment.created_at,
+                    messages: deployment.messages || []
+                })) || []
+            }
+        };
+        
+        addLog('info', `Koyeb-Status erfolgreich abgerufen: ${koyebStatus.services.total} Services`);
+        res.json(koyebStatus);
+        
+    } catch (error) {
+        addLog('error', `Koyeb API Fehler: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            error: 'Fehler beim Abrufen des Koyeb-Status',
+            message: error.message
+        });
+    }
+});
+
+// Koyeb-Service-Details abfragen
+app.get('/admin/koyeb-service/:serviceId', verifyAdminToken, async (req, res) => {
+    try {
+        const { serviceId } = req.params;
+        addLog('info', `Admin: Koyeb-Service Details für ${serviceId} werden abgerufen`);
+        
+        const response = await fetch(`${KOYEB_API_BASE}/services/${serviceId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${KOYEB_API_TOKEN}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Service nicht gefunden: ${response.status}`);
+        }
+        
+        const serviceData = await response.json();
+        
+        res.json({
+            success: true,
+            service: {
+                id: serviceData.service.id,
+                name: serviceData.service.name,
+                status: serviceData.service.status,
+                type: serviceData.service.type,
+                app_id: serviceData.service.app_id,
+                created_at: serviceData.service.created_at,
+                updated_at: serviceData.service.updated_at,
+                definition: serviceData.service.definition
+            }
+        });
+        
+    } catch (error) {
+        addLog('error', `Koyeb Service Details Fehler: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            error: 'Fehler beim Abrufen der Service-Details',
+            message: error.message
+        });
+    }
+});
+
+// Koyeb-Logs abfragen
+app.get('/admin/koyeb-logs/:serviceId', verifyAdminToken, async (req, res) => {
+    try {
+        const { serviceId } = req.params;
+        const { limit = 100 } = req.query;
+        
+        addLog('info', `Admin: Koyeb-Logs für Service ${serviceId} werden abgerufen`);
+        
+        const response = await fetch(`${KOYEB_API_BASE}/services/${serviceId}/logs?limit=${limit}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${KOYEB_API_TOKEN}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Logs nicht verfügbar: ${response.status}`);
+        }
+        
+        const logsData = await response.json();
+        
+        res.json({
+            success: true,
+            logs: logsData.logs || [],
+            service_id: serviceId
+        });
+        
+    } catch (error) {
+        addLog('error', `Koyeb Logs Fehler: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            error: 'Fehler beim Abrufen der Koyeb-Logs',
+            message: error.message
+        });
+    }
 });
 
 // Hilfsfunktion für Uptime-Formatierung

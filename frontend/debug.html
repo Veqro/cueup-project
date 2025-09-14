@@ -5,7 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CueUp - Debug Tools</title>
     <link rel="stylesheet" href="startpage.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    
+    <!-- Favicon Integration -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
+    <link rel="manifest" href="favicon_io/site.webmanifest">
+    <link rel="shortcut icon" href="favicon_io/favicon.ico">
+    <meta name="msapplication-TileColor" content="#aa00ff">
+    <meta name="theme-color" content="#aa00ff">
     <style>
         body {
             color: #fff;
@@ -572,9 +580,11 @@
                 
                 <div id="adminAuth" style="text-align: center;">
                     <p style="color: #ddd; margin-bottom: 20px;">Admin-Passwort eingeben:</p>
-                    <input type="password" id="adminPassword" placeholder="Passwort" style="padding: 10px; width: 200px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #aa00ff; border-radius: 5px; text-align: center;">
-                    <br><br>
-                    <button id="adminLogin" class="test-button">Anmelden</button>
+                    <form id="adminLoginForm" style="display: inline-block;">
+                        <input type="password" id="adminPassword" placeholder="Passwort" style="padding: 10px; width: 200px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #aa00ff; border-radius: 5px; text-align: center;" autocomplete="current-password">
+                        <br><br>
+                        <button type="submit" id="adminLogin" class="test-button">Anmelden</button>
+                    </form>
                     <div id="adminError" style="color: #f44336; margin-top: 10px; display: none;">Falsches Passwort!</div>
                 </div>
                 
@@ -599,37 +609,19 @@
                     </div>
                     
                     <div class="admin-section">
-                        <h3 style="color: #aa00ff;">🔧 Wartung & Tools</h3>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0;">
-                            <button class="test-button" id="clearCache">Cache leeren</button>
-                            <button class="test-button" id="testAllEndpoints">Alle Endpunkte testen</button>
-                            <button class="test-button" id="downloadLogs">Logs herunterladen</button>
-                            <button class="test-button" id="viewServerLogs">Server Logs anzeigen</button>
-                            <button class="test-button" id="refreshServerLogs">Logs aktualisieren</button>
+                        <h3 style="color: #aa00ff;">🔧 Server Verwaltung</h3>
+                        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <p style="color: #ddd; margin: 0 0 15px 0; font-size: 14px;">✅ Alle Tools verwenden die sichere Koyeb-Backend-API</p>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                                <button class="test-button" id="clearCache">🗑️ Cache leeren</button>
+                                <button class="test-button" id="testAllEndpoints">🔗 API-Tests</button>
+                                <button class="test-button" id="systemHealth">🏥 System-Check</button>
+                                <button class="test-button" id="viewErrors">⚠️ Fehler anzeigen</button>
+                                <button class="test-button" id="backupData">💾 Backup erstellen</button>
+                                <button class="test-button" id="restartServer">🔄 Server neustart</button>
+                            </div>
                         </div>
                         <div id="maintenanceResult" style="background: #1e1e1e; padding: 10px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; display: none;"></div>
-                    </div>
-                    
-                    <div class="admin-section">
-                        <h3 style="color: #aa00ff;">📋 Server Logs</h3>
-                        <div style="margin: 15px 0;">
-                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                                <select id="logLevel" style="padding: 5px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #aa00ff; border-radius: 3px;">
-                                    <option value="all">Alle Logs</option>
-                                    <option value="error">Nur Fehler</option>
-                                    <option value="warning">Warnungen</option>
-                                    <option value="info">Info</option>
-                                    <option value="debug">Debug</option>
-                                </select>
-                                <input type="number" id="logLimit" placeholder="Anzahl (100)" min="10" max="1000" value="100" style="width: 100px; padding: 5px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #aa00ff; border-radius: 3px;">
-                                <button class="test-button" id="loadLogs">Logs laden</button>
-                            </div>
-                        </div>
-                        <div id="serverLogsContainer" style="background: #0a0a0a; border: 1px solid #333; border-radius: 5px; padding: 15px; max-height: 400px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.4; color: #ddd;">
-                            <div style="color: #888; text-align: center; padding: 20px;">
-                                Klicken Sie auf "Logs laden" um Server-Logs anzuzeigen
-                            </div>
-                        </div>
                     </div>
                     
                     <div class="admin-section">
@@ -651,29 +643,54 @@
                     </div>
                     
                     <div class="admin-section">
-                        <h3 style="color: #aa00ff;">⚡ Quick Actions</h3>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button class="test-button" id="restartServer">Server neustarten</button>
-                            <button class="test-button" id="backupData">Daten sichern</button>
-                            <button class="test-button" id="viewErrors">Fehler anzeigen</button>
-                            <button class="test-button" id="systemHealth">System-Check</button>
+                        <h3 style="color: #aa00ff;">📋 Server Logs & Monitoring</h3>
+                        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                                <button class="test-button" id="viewServerLogs">📄 Server Logs</button>
+                                <button class="test-button" id="refreshServerLogs">🔄 Logs aktualisieren</button>
+                                <button class="test-button" id="downloadLogs">💾 Logs herunterladen</button>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                                <select id="logLevel" style="padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #aa00ff; border-radius: 3px;">
+                                    <option value="all">Alle Logs</option>
+                                    <option value="error">Nur Fehler</option>
+                                    <option value="warning">Warnungen</option>
+                                    <option value="info">Info</option>
+                                    <option value="debug">Debug</option>
+                                </select>
+                                <input type="number" id="logLimit" placeholder="Anzahl Logs" min="10" max="1000" value="100" style="padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #aa00ff; border-radius: 3px;">
+                            </div>
                         </div>
                         <div id="quickActionResult" style="background: #1e1e1e; padding: 10px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; display: none; margin-top: 15px;"></div>
                     </div>
                     
                     <div class="admin-section">
-                        <h3 style="color: #aa00ff;">🌐 Koyeb Backend Monitoring</h3>
+                        <h3 style="color: #aa00ff;">🖥️ Koyeb Platform Management</h3>
                         <div class="koyeb-status">
                             <div id="koyebConnection" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
                                 <div id="koyebStatusLight" style="width: 12px; height: 12px; border-radius: 50%; background: #888; animation: pulse 2s infinite;"></div>
                                 <span id="koyebStatusText" style="color: #ddd;">Verbindung wird geprüft...</span>
                                 <button id="checkKoyebStatus" style="margin-left: auto; padding: 4px 8px; background: #aa00ff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">Prüfen</button>
+                                <button id="loadKoyebDetails" style="margin-left: 5px; padding: 4px 8px; background: #2196f3; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">API Details</button>
                             </div>
                             <div id="koyebDetails" style="font-size: 12px; color: #888; line-height: 1.6; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px;">
                                 <div><strong>Backend URL:</strong> <code style="color: #4caf50; background: rgba(76,175,80,0.1); padding: 2px 4px; border-radius: 2px;">https://novel-willyt-veqro-a29cd625.koyeb.app</code></div>
                                 <div id="koyebResponseTime"><strong>Antwortzeit:</strong> <span style="color: #ff9800;">--</span></div>
                                 <div id="koyebLastCheck"><strong>Letzte Prüfung:</strong> <span style="color: #888;">--</span></div>
-                                <div id="koyebUptime"><strong>Server Uptime:</strong> <span style="color: #2196f3;">--</span></div>
+                                <div id="koyebUptime"><strong>Server Status:</strong> <span style="color: #2196f3;">--</span></div>
+                            </div>
+                            <div id="koyebExtendedInfo" style="display: none; margin-top: 15px; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 5px; border-left: 3px solid #2196f3;">
+                                <h4 style="color: #2196f3; margin-top: 0; margin-bottom: 15px;">🚀 Koyeb Platform Overview</h4>
+                                <div id="koyebServicesInfo" style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                                    <strong style="color: #4caf50;">Services:</strong> <span style="color: #ddd;">Loading...</span>
+                                </div>
+                                <div id="koyebAppsInfo" style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                                    <strong style="color: #ff9800;">Apps:</strong> <span style="color: #ddd;">Loading...</span>
+                                </div>
+                                <div id="koyebDeploymentsInfo" style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                                    <strong style="color: #2196f3;">Recent Deployments:</strong>
+                                    <div id="deploymentsList" style="font-size: 11px; margin-top: 10px; max-height: 200px; overflow-y: auto; color: #ccc;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1042,7 +1059,8 @@
         });
         
         // Admin Login
-        document.getElementById('adminLogin').addEventListener('click', async function() {
+        document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
             const password = document.getElementById('adminPassword').value;
             const errorDiv = document.getElementById('adminError');
             const loginButton = this;
@@ -1073,7 +1091,7 @@
                     adminLoggedIn = true;
                     // Token speichern für weitere Admin-Requests
                     if (result.token) {
-                        sessionStorage.setItem('adminToken', result.token);
+                        localStorage.setItem('adminToken', result.token);
                     }
                     document.getElementById('adminAuth').style.display = 'none';
                     document.getElementById('adminContent').style.display = 'block';
@@ -1103,15 +1121,50 @@
         });
         
         // Admin-Daten laden
-        function loadAdminData() {
-            // Simulierte Daten (in Realität würden diese vom Server kommen)
-            document.getElementById('uptime').textContent = '4 Tage, 12 Stunden';
-            document.getElementById('visitorsToday').textContent = '142';
-            document.getElementById('activeSessions').textContent = '23';
-            document.getElementById('spotifyLogins').textContent = '89';
-            document.getElementById('eventsCreated').textContent = '34';
-            document.getElementById('songRequests').textContent = '267';
-            document.getElementById('errorCount').textContent = '12';
+        async function loadAdminData() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                console.log('Kein Admin-Token verfügbar');
+                return;
+            }
+            
+            try {
+                // Server-Statistiken über API laden
+                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/admin/stats', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Echte API-Daten anzeigen
+                    document.getElementById('uptime').textContent = data.uptime || 'Unbekannt';
+                    document.getElementById('visitorsToday').textContent = data.visitorsToday || '--';
+                    document.getElementById('activeSessions').textContent = data.activeSessions || '--';
+                    document.getElementById('spotifyLogins').textContent = data.spotifyLogins || '--';
+                    document.getElementById('eventsCreated').textContent = data.eventsCreated || '--';
+                    document.getElementById('songRequests').textContent = data.songRequests || '--';
+                    document.getElementById('errorCount').textContent = data.errorCount || '--';
+                } else {
+                    console.log('Admin-Statistiken konnten nicht geladen werden:', response.status);
+                    // Fallback: Platzhalter anzeigen
+                    document.getElementById('uptime').textContent = 'API-Fehler';
+                    document.getElementById('visitorsToday').textContent = '--';
+                    document.getElementById('activeSessions').textContent = '--';
+                    document.getElementById('spotifyLogins').textContent = '--';
+                    document.getElementById('eventsCreated').textContent = '--';
+                    document.getElementById('songRequests').textContent = '--';
+                    document.getElementById('errorCount').textContent = '--';
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden der Admin-Daten:', error);
+                document.getElementById('uptime').textContent = 'Verbindungsfehler';
+            }
             
             updateStatusHistory();
         }
@@ -1561,7 +1614,7 @@
             }
         }
 
-        // Koyeb Status Monitoring
+        // Koyeb Status Monitoring (CORS-optimiert)
         async function checkKoyebStatus() {
             const statusLight = document.getElementById('koyebStatusLight');
             const statusText = document.getElementById('koyebStatusText');
@@ -1569,15 +1622,26 @@
             const lastCheckEl = document.getElementById('koyebLastCheck');
             const uptimeEl = document.getElementById('koyebUptime');
             
+            if (!statusLight || !statusText) return; // Elements nicht vorhanden
+            
             const startTime = Date.now();
             statusLight.style.background = '#ff9800';
             statusText.textContent = 'Koyeb-Verbindung wird geprüft...';
             
             try {
-                const healthResponse = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/health', {
-                    credentials: 'include'
+                // Verwende auth/status statt health um Redirects zu vermeiden
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const healthResponse = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
+                    credentials: 'include',
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
                 });
                 
+                clearTimeout(timeoutId);
                 const responseTime = Date.now() - startTime;
                 
                 if (healthResponse.ok) {
@@ -1587,27 +1651,119 @@
                     statusText.textContent = '✅ Koyeb Backend Online';
                     responseTimeEl.innerHTML = `<strong>Antwortzeit:</strong> <span style="color: #4caf50;">${responseTime}ms</span>`;
                     lastCheckEl.innerHTML = `<strong>Letzte Prüfung:</strong> <span style="color: #4caf50;">${new Date().toLocaleTimeString('de-DE')}</span>`;
-                    
-                    if (healthData.uptime) {
-                        uptimeEl.innerHTML = `<strong>Server Uptime:</strong> <span style="color: #2196f3;">${healthData.uptime}</span>`;
-                    }
+                    uptimeEl.innerHTML = `<strong>Server Status:</strong> <span style="color: #4caf50;">Online</span>`;
                 } else {
                     throw new Error(`HTTP ${healthResponse.status}`);
                 }
             } catch (error) {
+                const responseTime = Date.now() - startTime;
                 statusLight.style.background = '#f44336';
                 statusText.textContent = '❌ Koyeb Backend Offline';
-                responseTimeEl.innerHTML = `<strong>Antwortzeit:</strong> <span style="color: #f44336;">Timeout</span>`;
+                responseTimeEl.innerHTML = `<strong>Antwortzeit:</strong> <span style="color: #f44336;">${responseTime > 5000 ? 'Timeout' : responseTime + 'ms'}</span>`;
                 lastCheckEl.innerHTML = `<strong>Letzte Prüfung:</strong> <span style="color: #f44336;">${new Date().toLocaleTimeString('de-DE')}</span>`;
-                uptimeEl.innerHTML = `<strong>Server Uptime:</strong> <span style="color: #f44336;">Unbekannt</span>`;
+                uptimeEl.innerHTML = `<strong>Server Status:</strong> <span style="color: #f44336;">Offline</span>`;
                 
-                console.error('Koyeb Status Check fehlgeschlagen:', error);
+                console.log('Koyeb Status Check Info:', error.name === 'AbortError' ? 'Timeout' : error.message);
             }
         }
         
-        // Koyeb Status Check Button
+        // Erweiterte Koyeb-Details laden
+        async function loadKoyebDetails() {
+            const extendedInfo = document.getElementById('koyebExtendedInfo');
+            const servicesInfo = document.getElementById('koyebServicesInfo');
+            const appsInfo = document.getElementById('koyebAppsInfo');
+            const deploymentsList = document.getElementById('deploymentsList');
+            
+            if (!adminLoggedIn) {
+                alert('Admin-Anmeldung erforderlich für Koyeb-Details');
+                return;
+            }
+            
+            extendedInfo.style.display = 'block';
+            servicesInfo.innerHTML = '<strong style="color: #4caf50;">Services:</strong> <span style="color: #ff9800;">Lädt...</span>';
+            appsInfo.innerHTML = '<strong style="color: #ff9800;">Apps:</strong> <span style="color: #ff9800;">Lädt...</span>';
+            deploymentsList.innerHTML = '<div style="color: #ff9800; text-align: center; padding: 10px;">🔄 Koyeb-Details werden geladen...</div>';
+            
+            try {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/admin/koyeb-status', {
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Services anzeigen
+                servicesInfo.innerHTML = `
+                    <strong style="color: #4caf50;">Services:</strong> 
+                    <span style="color: #4caf50;">${data.services.running}/${data.services.total} online</span>
+                    <div style="margin-top: 8px; font-size: 10px;">
+                        ${data.services.services.map(service => `
+                            <div style="margin: 3px 0; padding: 3px 6px; background: ${service.status === 'healthy' ? 'rgba(76,175,80,0.2)' : 'rgba(244,67,54,0.2)'}; border-radius: 3px;">
+                                <span style="color: ${service.status === 'healthy' ? '#4caf50' : '#f44336'};">●</span> ${service.name} (${service.status})
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                // Apps anzeigen
+                appsInfo.innerHTML = `
+                    <strong style="color: #ff9800;">Apps:</strong> 
+                    <span style="color: #ddd;">${data.apps.total} total</span>
+                    <div style="margin-top: 8px; font-size: 10px;">
+                        ${data.apps.apps.map(app => `
+                            <div style="margin: 3px 0; padding: 3px 6px; background: rgba(255,152,0,0.1); border-radius: 3px; color: #ff9800;">
+                                📱 ${app.name} (${app.status || 'unknown'})
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                // Deployments anzeigen
+                if (data.deployments.recent.length > 0) {
+                    deploymentsList.innerHTML = data.deployments.recent.map(deployment => `
+                        <div style="margin: 5px 0; padding: 8px; border-left: 3px solid ${deployment.status === 'HEALTHY' ? '#4caf50' : '#ff9800'}; background: rgba(255,255,255,0.03); border-radius: 3px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: ${deployment.status === 'HEALTHY' ? '#4caf50' : '#ff9800'}; font-weight: bold;">
+                                    ${deployment.status === 'HEALTHY' ? '✅' : '🔄'} ${deployment.status}
+                                </span>
+                                <span style="color: #888; font-size: 10px;">
+                                    ${new Date(deployment.created_at).toLocaleString('de-DE')}
+                                </span>
+                            </div>
+                            ${deployment.messages && deployment.messages.length > 0 ? `
+                                <div style="margin-top: 5px; font-size: 10px; color: #aaa;">
+                                    ${deployment.messages.slice(0, 2).map(msg => `<div>📝 ${msg}</div>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    deploymentsList.innerHTML = '<div style="color: #888; text-align: center; padding: 15px;">Keine Deployments gefunden</div>';
+                }
+                
+                console.log('✅ Koyeb-Details erfolgreich geladen');
+                
+            } catch (error) {
+                console.error('Koyeb-Details Fehler:', error);
+                servicesInfo.innerHTML = '<strong style="color: #4caf50;">Services:</strong> <span style="color: #f44336;">Fehler beim Laden</span>';
+                appsInfo.innerHTML = '<strong style="color: #ff9800;">Apps:</strong> <span style="color: #f44336;">Fehler beim Laden</span>';
+                deploymentsList.innerHTML = '<div style="color: #f44336; text-align: center; padding: 15px;">❌ Fehler beim Laden der Koyeb-Details</div>';
+            }
+        }
+
+        // Koyeb Status Check Button & Details Button
         document.addEventListener('DOMContentLoaded', function() {
             const checkButton = document.getElementById('checkKoyebStatus');
+            const detailsButton = document.getElementById('loadKoyebDetails');
+            
             if (checkButton) {
                 checkButton.addEventListener('click', checkKoyebStatus);
                 
@@ -1618,6 +1774,10 @@
                 
                 // Auto-Check alle 30 Sekunden
                 setInterval(checkKoyebStatus, 30000);
+            }
+            
+            if (detailsButton) {
+                detailsButton.addEventListener('click', loadKoyebDetails);
             }
         });
 
