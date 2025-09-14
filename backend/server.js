@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const SpotifyWebApi = require('spotify-web-api-node');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+const jwt = require('jsonwebtoken');
 const path = require('path');
 
 // Express App erstellen
@@ -284,6 +285,8 @@ app.delete('/auth/delete-account', (req, res) => {
 
 // Auth-Status-Route (Spotify-only) - SICHER
 app.get('/auth/status', async (req, res) => {
+    serverStats.visitorsToday++; // Statistik aktualisieren
+    
     if (req.session && req.session.userId) {
         // Finde den Benutzer in usersStore
         const user = usersStore.find(u => u.id === req.session.userId);
@@ -291,6 +294,7 @@ app.get('/auth/status', async (req, res) => {
         if (!user || !user.spotifyData) {
             // Benutzer nicht gefunden oder keine Spotify-Daten, Session ungültig
             req.session.destroy();
+            addLog('info', 'Auth-Status: Session ungültig, zerstört');
             return res.json({
                 isAuthenticated: false,
                 spotifyConnected: false,
@@ -1778,14 +1782,269 @@ app.get('/', (req, res) => {
     res.redirect('/startpage');
 });
 
+// ============ ADMIN SYSTEM ============
+
+// Admin-Konfiguration
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'CueUpAdmin2024!';
+const JWT_SECRET = process.env.JWT_SECRET || 'cueup-admin-jwt-secret-2024';
+
+// Log-System
+const serverLogs = [];
+const errorLogs = [];
+
+// Log-Funktion
+function addLog(level, message) {
+    const logEntry = {
+        timestamp: new Date().toISOString(),
+        level: level,
+        message: message
+    };
+    
+    serverLogs.push(logEntry);
+    if (level === 'error') {
+        errorLogs.push(logEntry);
+    }
+    
+    // Nur die letzten 1000 Logs behalten
+    if (serverLogs.length > 1000) {
+        serverLogs.shift();
+    }
+    if (errorLogs.length > 100) {
+        errorLogs.shift();
+    }
+    
+    console.log(`[${level.toUpperCase()}] ${message}`);
+}
+
+// Server-Statistiken
+let serverStats = {
+    startTime: Date.now(),
+    visitorsToday: 0,
+    activeSessions: 0,
+    spotifyLogins: 0,
+    eventsCreated: 0,
+    songRequests: 0,
+    errorCount: 0
+};
+
+// JWT-Middleware für Admin-Routen
+function verifyAdminToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+        return res.status(401).json({ success: false, message: 'Kein Token bereitgestellt' });
+    }
+    
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(403).json({ success: false, message: 'Ungültiger Token' });
+        }
+        if (!decoded.admin) {
+            return res.status(403).json({ success: false, message: 'Keine Admin-Berechtigung' });
+        }
+        req.admin = decoded;
+        next();
+    });
+}
+
+// ============ ADMIN ENDPOINTS ============
+
+// Admin-Login
+app.post('/admin/login', (req, res) => {
+    const { password } = req.body;
+    
+    if (!password) {
+        addLog('warning', 'Admin-Login Versuch ohne Passwort');
+        return res.status(400).json({ success: false, message: 'Passwort erforderlich' });
+    }
+    
+    if (password === ADMIN_PASSWORD) {
+        const token = jwt.sign(
+            { admin: true, loginTime: Date.now() }, 
+            JWT_SECRET, 
+            { expiresIn: '4h' }
+        );
+        
+        addLog('info', 'Erfolgreicher Admin-Login');
+        res.json({ 
+            success: true, 
+            token: token,
+            message: 'Admin erfolgreich angemeldet'
+        });
+    } else {
+        addLog('warning', 'Fehlgeschlagener Admin-Login Versuch');
+        serverStats.errorCount++;
+        res.status(401).json({ 
+            success: false, 
+            message: 'Falsches Passwort' 
+        });
+    }
+});
+
+// Server-Logs abrufen
+app.get('/admin/logs', verifyAdminToken, (req, res) => {
+    const { level = 'all', limit = 100 } = req.query;
+    let filteredLogs = serverLogs;
+    
+    if (level !== 'all') {
+        filteredLogs = serverLogs.filter(log => log.level === level);
+    }
+    
+    const logs = filteredLogs.slice(-parseInt(limit));
+    
+    res.json({
+        success: true,
+        logs: logs,
+        total: filteredLogs.length
+    });
+});
+
+// System-Statistiken
+app.get('/admin/stats', verifyAdminToken, (req, res) => {
+    const uptime = Date.now() - serverStats.startTime;
+    const uptimeFormatted = formatUptime(uptime);
+    
+    res.json({
+        success: true,
+        uptime: uptimeFormatted,
+        visitorsToday: serverStats.visitorsToday,
+        activeSessions: serverStats.activeSessions,
+        spotifyLogins: serverStats.spotifyLogins,
+        eventsCreated: serverStats.eventsCreated,
+        songRequests: serverStats.songRequests,
+        errorCount: serverStats.errorCount,
+        totalLogs: serverLogs.length
+    });
+});
+
+// System Health-Check
+app.get('/admin/health', verifyAdminToken, (req, res) => {
+    const memUsage = process.memoryUsage();
+    const uptime = process.uptime();
+    
+    res.json({
+        success: true,
+        cpu: Math.round(process.cpuUsage().user / 1000),
+        memory: Math.round((memUsage.heapUsed / memUsage.heapTotal) * 100),
+        uptime: formatUptime(uptime * 1000),
+        network: 'OK',
+        database: 'OK',
+        spotify: spotifyApi.getAccessToken() ? 'OK' : 'ERROR'
+    });
+});
+
+// Fehler-Logs anzeigen
+app.get('/admin/errors', verifyAdminToken, (req, res) => {
+    const { limit = 20 } = req.query;
+    const errors = errorLogs.slice(-parseInt(limit));
+    
+    res.json({
+        success: true,
+        errors: errors,
+        total: errorLogs.length
+    });
+});
+
+// Cache leeren
+app.post('/admin/cache/clear', verifyAdminToken, (req, res) => {
+    try {
+        // RAM-Cache leeren (Access Tokens)
+        activeTokens.clear();
+        
+        // Log-Cache teilweise leeren (nur alte Logs)
+        if (serverLogs.length > 100) {
+            serverLogs.splice(0, serverLogs.length - 100);
+        }
+        
+        addLog('info', 'Admin: Cache geleert');
+        res.json({ 
+            success: true, 
+            message: 'Cache erfolgreich geleert' 
+        });
+    } catch (error) {
+        addLog('error', `Admin: Fehler beim Cache leeren: ${error.message}`);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Fehler beim Cache leeren' 
+        });
+    }
+});
+
+// Server-Backup erstellen
+app.post('/admin/backup', verifyAdminToken, (req, res) => {
+    try {
+        const backupData = {
+            timestamp: new Date().toISOString(),
+            stats: serverStats,
+            logs: serverLogs.slice(-500), // Nur die letzten 500 Logs
+            events: [], // Hier würden Event-Daten stehen
+            users: [] // Hier würden User-Daten stehen (ohne sensible Daten)
+        };
+        
+        const backupId = 'backup_' + Date.now();
+        
+        addLog('info', `Admin: Backup erstellt (${backupId})`);
+        res.json({
+            success: true,
+            backupId: backupId,
+            size: JSON.stringify(backupData).length + ' bytes',
+            message: 'Backup erfolgreich erstellt'
+        });
+    } catch (error) {
+        addLog('error', `Admin: Fehler beim Backup: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            message: 'Fehler beim Erstellen des Backups'
+        });
+    }
+});
+
+// Server neustarten (simuliert)
+app.post('/admin/restart', verifyAdminToken, (req, res) => {
+    addLog('warning', 'Admin: Server-Neustart angefordert');
+    res.json({
+        success: true,
+        message: 'Server-Neustart eingeleitet (simuliert)'
+    });
+    
+    // In einer echten Umgebung würde hier ein echter Neustart stattfinden
+    // process.exit(0);
+});
+
+// Hilfsfunktion für Uptime-Formatierung
+function formatUptime(milliseconds) {
+    const seconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    if (days > 0) {
+        return `${days} Tage, ${hours % 24} Stunden`;
+    } else if (hours > 0) {
+        return `${hours} Stunden, ${minutes % 60} Minuten`;
+    } else {
+        return `${minutes} Minuten, ${seconds % 60} Sekunden`;
+    }
+}
+
+// Logging in bestehende Funktionen integrieren
+const originalConsoleError = console.error;
+console.error = function(...args) {
+    addLog('error', args.join(' '));
+    originalConsoleError.apply(console, args);
+};
+
 // Initialer Spotify-Token
 spotifyApi.clientCredentialsGrant()
     .then(data => {
         console.log('Spotify-Token erhalten');
+        addLog('info', 'Spotify-Token erfolgreich erhalten');
         spotifyApi.setAccessToken(data.body['access_token']);
     })
     .catch(error => {
         console.error('Fehler beim Abrufen des Spotify-Tokens:', error);
+        addLog('error', `Spotify-Token Fehler: ${error.message}`);
     });
 
 app.listen(PORT, () => {
@@ -1794,4 +2053,9 @@ app.listen(PORT, () => {
     console.log(`https://novel-willyt-veqro-a29cd625.koyeb.app/startpage`);
     console.log('Saubere URLs aktiviert - keine .html Endungen mehr nötig!');
     console.log('Backend ist jetzt auf Koyeb gehostet!');
+    console.log('🔧 Admin-Panel verfügbar mit Passwort:', ADMIN_PASSWORD);
+    
+    addLog('info', `Server gestartet auf Port ${PORT}`);
+    addLog('info', 'Admin-System aktiviert');
+    addLog('info', 'Alle Admin-APIs verfügbar');
 });

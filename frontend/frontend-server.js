@@ -21,7 +21,8 @@ const pageRoutes = [
     'userwish',
     'spotify-login',
     'spotify-success',
-    'free'
+    'free',
+    'debug'
 ];
 
 // Route für jede HTML-Seite ohne .html Endung

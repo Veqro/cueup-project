@@ -25,7 +25,8 @@
         'userwish',
         'spotify-login',
         'spotify-success',
-        'free'
+        'free',
+        'debug'
     ];
     
     // Funktion zum Verstecken der .html Endung in der URL

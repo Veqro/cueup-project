@@ -16,6 +16,7 @@
     { "source": "/spotify-login", "destination": "/spotify-login.html" },
     { "source": "/spotify-success", "destination": "/spotify-success.html" },
     { "source": "/free", "destination": "/free.html" },
+    { "source": "/debug", "destination": "/debug.html" },
     { "source": "/:path*", "destination": "/:path*.html" }
   ]
 }

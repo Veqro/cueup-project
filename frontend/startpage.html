@@ -34,18 +34,51 @@
         text-decoration: none;
         margin: 5px 0;
       }
+      
+      /* Beta-Banner */
+      .beta-banner {
+          background: linear-gradient(90deg, #dc3545, #e74c3c, #dc3545);
+          color: white;
+          font-weight: bold;
+          font-size: 0.85rem;
+          padding: 8px 0;
+          border-bottom: 2px solid rgba(220, 53, 69, 0.3);
+          overflow: hidden;
+          position: relative;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+      
+      .beta-ticker {
+          display: inline-block;
+          padding-left: 100%;
+          animation: scroll-left 45s linear infinite;
+          white-space: nowrap;
+      }
+      
+      @keyframes scroll-left {
+          0% {
+              transform: translate3d(100%, 0, 0);
+          }
+          100% {
+              transform: translate3d(-100%, 0, 0);
+          }
+      }
+      
+      .beta-banner:hover .beta-ticker {
+          animation-play-state: paused;
+      }
    
     </style>
     <script src="url-rewriter.js"></script>
   </head>
   <body>
     <header>
-      <a href="startpage.html" class="mainLogoLink"
+      <a href="startpage" class="mainLogoLink"
         ><h1 class="mainlogo">Cueup</h1></a
       >
       <div style="display: flex; align-items: center; margin-right: 20px;">
         <div class="user-menu-container">
-          <div class="user-icon" onclick="window.location.href='profile.html'"><img src="img/icons8-benutzer-64.png" alt="User Icon" style="display: block; width: 40px;" /></div>
+          <div class="user-icon" onclick="window.location.href='profile'"><img src="img/icons8-benutzer-64.png" alt="User Icon" style="display: block; width: 40px;" /></div>
           <div class="user-menu">
             <div id="userMenuContent"></div>
           </div>
@@ -58,6 +91,13 @@
         </label>
       </div>
     </header>
+
+    <!-- Beta-Banner -->
+    <div class="beta-banner">
+        <div class="beta-ticker">
+            🚧 BETA VERSION - DEVELOPMENT PHASE - Some features may be unstable - Report issues via contact 🚧 BETA VERSION - DEVELOPMENT PHASE - Some features may be unstable - Report issues via contact 🚧 BETA VERSION - DEVELOPMENT PHASE - Some features may be unstable - Report issues via contact 🚧
+        </div>
+    </div>
 
     <div class="sidebar" id="sidebar">
       <nav>
@@ -82,10 +122,10 @@
             die Songs direkt in deine Warteschlange übernehmen.
           </p>
           <div class="hero-buttons">
-            <button class="cta-button primary" onclick="window.location.href='createevent.html'">
+            <button class="cta-button primary" onclick="window.location.href='createevent'">
               Event erstellen
             </button>
-            <button class="cta-button secondary" onclick="window.location.href='myEvents.html'">
+            <button class="cta-button secondary" onclick="window.location.href='myEvents'">
               Meine Events
             </button>
           </div>
@@ -135,17 +175,17 @@
         <div class="footer-section">
           <h3>Quick Links</h3>
           <ul class="footer-links">
-            <li><a href="startpage.html">Startseite</a></li>
-            <li><a href="createevent.html">Event erstellen</a></li>
-            <li><a href="myEvents.html">Meine Events</a></li>
-            <li><a href="contact.html">Kontakt</a></li>
+            <li><a href="startpage">Startseite</a></li>
+            <li><a href="createevent">Event erstellen</a></li>
+            <li><a href="myEvents">Meine Events</a></li>
+            <li><a href="contact">Kontakt</a></li>
           </ul>
         </div>
 
       
       </div>
       <div class="footer-bottom">
-        <p>CueUp | <a href="debug.html" style="color: #888; text-decoration: none;">Debug Tools</a></p>
+        <p>CueUp | <a href="debug" style="color: #888; text-decoration: none;">Debug Tools</a></p>
       </div>
     </footer>
     <script>
