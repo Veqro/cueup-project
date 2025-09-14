@@ -746,6 +746,10 @@ app.get('/login', (req, res) => {
     const state = generateRandomString(16);
     req.session.spotifyState = state;
     
+    // Debug: Session State loggen
+    console.log('🔑 Spotify Login State generiert:', state);
+    console.log('📱 Session ID:', req.sessionID);
+    
     const scope = [
         'user-read-private',
         'user-read-email',
@@ -781,7 +785,14 @@ app.get('/callback', async (req, res) => {
     const storedState = req.session.spotifyState;
     const frontendUrl = req.session.frontendUrl || FRONTEND_URL;
 
+    // Debug: State-Vergleich loggen
+    console.log('🔍 Callback State Check:');
+    console.log('   Empfangen:', state);
+    console.log('   Gespeichert:', storedState);
+    console.log('   Session ID:', req.sessionID);
+
     if (state === null || state !== storedState) {
+        console.log('❌ State Mismatch! Redirect zu Login mit Fehler');
         res.redirect(`${frontendUrl}/spotify-login.html?error=state_mismatch`);
         return;
     }

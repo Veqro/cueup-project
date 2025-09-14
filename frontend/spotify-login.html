@@ -87,15 +87,8 @@
             Mit Spotify verbinden
         </a>
         <script>
-            // Konfiguration vom Server laden
-            fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/config', { credentials: 'include' })
-                .then(response => response.json())
-                .then(config => {
-                    console.log('Server config loaded');
-                })
-                .catch(error => {
-                    console.error('Error loading config:', error);
-                });
+            // Config-Abfrage entfernt - nicht nötig für Login-Funktion
+            console.log('Spotify Login Seite geladen');
         </script>
         <p class="login-info">
             Melde dich mit deinem Spotify-Account an, um Musikwünsche direkt in deine Warteschlange hinzuzufügen.
