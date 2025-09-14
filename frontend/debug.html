@@ -357,43 +357,27 @@
         
         /* Footer Styles - exakt wie startpage.css */
         .footer {
-            background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(40, 40, 40, 0.9));
-            margin-top: 80px;
-            padding: 50px 0 20px;
-            border-top: 1px solid rgba(170, 0, 255, 0.2);
+            background: #222;
+            padding: 3rem 2rem 1rem;
+            margin-top: 4rem;
         }
         
         .footer-content {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-        }
-        
-        @media (min-width: 768px) {
-            .footer-content {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        @media (min-width: 1200px) {
-            .footer-content {
-                grid-template-columns: repeat(4, 1fr);
-            }
+            gap: 2rem;
         }
         
         .footer-section h3 {
             color: #aa00ff;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
+            margin-bottom: 1rem;
         }
         
-        .footer-section p {
+        .footer-section p, .footer-section a {
             color: #ccc;
             line-height: 1.6;
-            font-size: 0.9rem;
         }
         
         .footer-links {
@@ -417,17 +401,17 @@
         
         .footer-bottom {
             text-align: center;
-            padding-top: 30px;
-            margin-top: 40px;
-            border-top: 1px solid rgba(170, 0, 255, 0.1);
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid #333;
             max-width: 1200px;
             margin-left: auto;
             margin-right: auto;
         }
         
         .footer-bottom p {
-            color: #999;
-            font-size: 0.9rem;
+            color: #888;
+            margin: 0;
         }
         
         .footer-bottom a {
@@ -437,6 +421,19 @@
         
         .footer-bottom a:hover {
             text-decoration: underline;
+        }
+        
+        /* Koyeb Status Animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .koyeb-status code {
+            background: rgba(76,175,80,0.1);
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-size: 11px;
         }
     </style>
 </head>
@@ -532,10 +529,9 @@
                         <h3>Schnelltest Routen</h3>
                         <div class="quick-tests">
                             <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status">Auth-Status testen</button>
-                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/login">Login-Route testen</button>
-                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/api/events">Events-API testen</button>
-                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/wishes">Musikwunsch-System testen</button>
-                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/auth/my-events">Meine Events testen</button>
+                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/">Server Startseite</button>
+                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/health">Health Check</button>
+                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/api/status">API Status</button>
                         </div>
                         <div id="quickTestResult" class="result-container" style="display: none;"></div>
                     </div>
@@ -562,7 +558,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>CueUp | <a href="debug">Debug Tools</a> | <a href="#" id="adminFooterLink">System Administration</a></p>
+            <p>CueUp | <a href="debug" style="color: #888; text-decoration: none;">Debug Tools</a></p>
         </div>
     </footer>
         
@@ -663,6 +659,23 @@
                             <button class="test-button" id="systemHealth">System-Check</button>
                         </div>
                         <div id="quickActionResult" style="background: #1e1e1e; padding: 10px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; display: none; margin-top: 15px;"></div>
+                    </div>
+                    
+                    <div class="admin-section">
+                        <h3 style="color: #aa00ff;">🌐 Koyeb Backend Monitoring</h3>
+                        <div class="koyeb-status">
+                            <div id="koyebConnection" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                                <div id="koyebStatusLight" style="width: 12px; height: 12px; border-radius: 50%; background: #888; animation: pulse 2s infinite;"></div>
+                                <span id="koyebStatusText" style="color: #ddd;">Verbindung wird geprüft...</span>
+                                <button id="checkKoyebStatus" style="margin-left: auto; padding: 4px 8px; background: #aa00ff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">Prüfen</button>
+                            </div>
+                            <div id="koyebDetails" style="font-size: 12px; color: #888; line-height: 1.6; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px;">
+                                <div><strong>Backend URL:</strong> <code style="color: #4caf50; background: rgba(76,175,80,0.1); padding: 2px 4px; border-radius: 2px;">https://novel-willyt-veqro-a29cd625.koyeb.app</code></div>
+                                <div id="koyebResponseTime"><strong>Antwortzeit:</strong> <span style="color: #ff9800;">--</span></div>
+                                <div id="koyebLastCheck"><strong>Letzte Prüfung:</strong> <span style="color: #888;">--</span></div>
+                                <div id="koyebUptime"><strong>Server Uptime:</strong> <span style="color: #2196f3;">--</span></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1171,22 +1184,57 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.logs && data.logs.length > 0) {
-                        container.innerHTML = data.logs.map(log => {
+                        // Logs nach Zeitstempel sortieren (neueste zuerst)
+                        const sortedLogs = data.logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        
+                        container.innerHTML = `
+                            <div style="color: #4caf50; font-weight: bold; margin-bottom: 10px; padding: 5px; border-bottom: 1px solid #333;">
+                                ✅ ${sortedLogs.length} Logs gefunden | Letzte Aktualisierung: ${new Date().toLocaleTimeString('de-DE')}
+                            </div>
+                        ` + sortedLogs.map(log => {
                             let colorClass = '#ddd';
+                            let icon = '📋';
                             switch(log.level) {
-                                case 'error': colorClass = '#f44336'; break;
-                                case 'warning': colorClass = '#ff9800'; break;
-                                case 'info': colorClass = '#2196f3'; break;
-                                case 'debug': colorClass = '#4caf50'; break;
+                                case 'error': 
+                                    colorClass = '#f44336'; 
+                                    icon = '❌';
+                                    break;
+                                case 'warning': 
+                                    colorClass = '#ff9800'; 
+                                    icon = '⚠️';
+                                    break;
+                                case 'info': 
+                                    colorClass = '#2196f3'; 
+                                    icon = 'ℹ️';
+                                    break;
+                                case 'debug': 
+                                    colorClass = '#4caf50'; 
+                                    icon = '🔧';
+                                    break;
                             }
-                            return `<div style="margin-bottom: 5px; border-left: 3px solid ${colorClass}; padding-left: 10px;">
-                                <span style="color: #888;">${log.timestamp}</span> 
-                                <span style="color: ${colorClass}; font-weight: bold;">[${log.level.toUpperCase()}]</span> 
-                                <span style="color: #ddd;">${log.message}</span>
+                            
+                            const timestamp = new Date(log.timestamp).toLocaleString('de-DE');
+                            
+                            return `<div style="margin-bottom: 8px; border-left: 3px solid ${colorClass}; padding: 8px 12px; background: rgba(255,255,255,0.02); border-radius: 0 4px 4px 0;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <span style="font-size: 14px;">${icon}</span>
+                                    <span style="color: ${colorClass}; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">${log.level}</span>
+                                    <span style="color: #888; font-size: 11px; margin-left: auto;">${timestamp}</span>
+                                </div>
+                                <div style="color: #ddd; font-size: 13px; line-height: 1.4; padding-left: 22px;">${log.message}</div>
                             </div>`;
                         }).join('');
+                        
+                        // Automatisch zum neuesten Log scrollen
+                        container.scrollTop = 0;
                     } else {
-                        container.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Keine Logs gefunden</div>';
+                        container.innerHTML = `
+                            <div style="color: #888; text-align: center; padding: 40px;">
+                                <div style="font-size: 24px; margin-bottom: 10px;">📋</div>
+                                <div style="font-size: 16px; margin-bottom: 5px;">Keine Logs gefunden</div>
+                                <div style="font-size: 12px; opacity: 0.7;">Überprüfe die Log-Level-Einstellungen oder warte auf neue Server-Aktivität</div>
+                            </div>
+                        `;
                     }
                 } else if (response.status === 401) {
                     container.innerHTML = '<div style="color: #f44336; text-align: center; padding: 20px;">❌ Authentifizierung fehlgeschlagen</div>';
@@ -1201,6 +1249,37 @@
         // Logs aktualisieren
         document.getElementById('refreshServerLogs').addEventListener('click', function() {
             document.getElementById('loadLogs').click();
+        });
+        
+        // Auto-Refresh für Logs
+        let autoRefreshInterval;
+        const autoRefreshCheckbox = document.createElement('input');
+        autoRefreshCheckbox.type = 'checkbox';
+        autoRefreshCheckbox.id = 'autoRefreshLogs';
+        autoRefreshCheckbox.style.marginLeft = '10px';
+        
+        const autoRefreshLabel = document.createElement('label');
+        autoRefreshLabel.htmlFor = 'autoRefreshLogs';
+        autoRefreshLabel.innerHTML = ' Auto-Refresh (10s)';
+        autoRefreshLabel.style.color = '#ddd';
+        autoRefreshLabel.style.fontSize = '12px';
+        
+        document.getElementById('refreshServerLogs').parentNode.appendChild(autoRefreshCheckbox);
+        document.getElementById('refreshServerLogs').parentNode.appendChild(autoRefreshLabel);
+        
+        autoRefreshCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                autoRefreshInterval = setInterval(() => {
+                    document.getElementById('loadLogs').click();
+                }, 10000);
+                console.log('✅ Auto-Refresh für Logs aktiviert (10s Interval)');
+            } else {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+                console.log('⏹️ Auto-Refresh für Logs deaktiviert');
+            }
         });
         
         // Status-Verlauf erweitern
@@ -1409,6 +1488,66 @@
                 document.getElementById('errorCount').textContent = '--';
             }
         }
+
+        // Koyeb Status Monitoring
+        async function checkKoyebStatus() {
+            const statusLight = document.getElementById('koyebStatusLight');
+            const statusText = document.getElementById('koyebStatusText');
+            const responseTimeEl = document.getElementById('koyebResponseTime');
+            const lastCheckEl = document.getElementById('koyebLastCheck');
+            const uptimeEl = document.getElementById('koyebUptime');
+            
+            const startTime = Date.now();
+            statusLight.style.background = '#ff9800';
+            statusText.textContent = 'Koyeb-Verbindung wird geprüft...';
+            
+            try {
+                const healthResponse = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/health', {
+                    credentials: 'include'
+                });
+                
+                const responseTime = Date.now() - startTime;
+                
+                if (healthResponse.ok) {
+                    const healthData = await healthResponse.json();
+                    
+                    statusLight.style.background = '#4caf50';
+                    statusText.textContent = '✅ Koyeb Backend Online';
+                    responseTimeEl.innerHTML = `<strong>Antwortzeit:</strong> <span style="color: #4caf50;">${responseTime}ms</span>`;
+                    lastCheckEl.innerHTML = `<strong>Letzte Prüfung:</strong> <span style="color: #4caf50;">${new Date().toLocaleTimeString('de-DE')}</span>`;
+                    
+                    if (healthData.uptime) {
+                        uptimeEl.innerHTML = `<strong>Server Uptime:</strong> <span style="color: #2196f3;">${healthData.uptime}</span>`;
+                    }
+                } else {
+                    throw new Error(`HTTP ${healthResponse.status}`);
+                }
+            } catch (error) {
+                statusLight.style.background = '#f44336';
+                statusText.textContent = '❌ Koyeb Backend Offline';
+                responseTimeEl.innerHTML = `<strong>Antwortzeit:</strong> <span style="color: #f44336;">Timeout</span>`;
+                lastCheckEl.innerHTML = `<strong>Letzte Prüfung:</strong> <span style="color: #f44336;">${new Date().toLocaleTimeString('de-DE')}</span>`;
+                uptimeEl.innerHTML = `<strong>Server Uptime:</strong> <span style="color: #f44336;">Unbekannt</span>`;
+                
+                console.error('Koyeb Status Check fehlgeschlagen:', error);
+            }
+        }
+        
+        // Koyeb Status Check Button
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkButton = document.getElementById('checkKoyebStatus');
+            if (checkButton) {
+                checkButton.addEventListener('click', checkKoyebStatus);
+                
+                // Initialer Check
+                setTimeout(() => {
+                    checkKoyebStatus();
+                }, 1000);
+                
+                // Auto-Check alle 30 Sekunden
+                setInterval(checkKoyebStatus, 30000);
+            }
+        });
 
         // Automatischer Check beim Laden der Seite
         window.addEventListener('DOMContentLoaded', function() {
