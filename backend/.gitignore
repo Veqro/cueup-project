@@ -20,6 +20,8 @@ coverage/
 logs/
 *.log
 
+# Abhängigkeiten
+package-lock.json
 
 # Temporäre Dateien
 .tmp/

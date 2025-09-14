@@ -14,8 +14,8 @@ const app = express();
 const fs = require('fs');
 
 // URL Konfiguration
-const FRONTEND_URL = 'http://127.0.0.1:5500';
-const SERVER_URL = 'http://127.0.0.1:3000';
+const FRONTEND_URL = 'https://cueup.vercel.app'; // Dein Vercel Frontend
+const SERVER_URL = 'https://novel-willyt-veqro-a29cd625.koyeb.app:8000'; // Dein Koyeb Backend
 
 // ============ SICHERE TOKEN-VERWALTUNG ============
 // In-Memory Token Storage - Access Tokens werden nur im RAM gespeichert
@@ -158,7 +158,7 @@ function saveEvents() {
 }
 
 // Spotify API Konfiguration
-const redirectUri = 'http://127.0.0.1:3000/callback';  // Wichtig: Callback auf Backend-Port!
+const redirectUri = 'https://novel-willyt-veqro-a29cd625.koyeb.app:8000/callback';  // Koyeb Backend URL
 const spotifyApi = new SpotifyWebApi({
     clientId: process.env.SPOTIFY_CLIENT_ID,
     clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
@@ -167,7 +167,7 @@ const spotifyApi = new SpotifyWebApi({
 
 // Middleware
 app.use(cors({
-    origin: [FRONTEND_URL, 'http://localhost:5500'],
+    origin: [FRONTEND_URL, 'http://localhost:5500', 'https://cueup.vercel.app'], // Frontend URL explizit hinzugefügt
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -182,9 +182,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false, // Nur Speichern wenn nötig
     cookie: {
-        secure: false,
+        secure: true, // HTTPS erforderlich für Produktionsumgebung
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none', // Für Cross-Site Anfragen
         maxAge: 24 * 60 * 60 * 1000 // 24 Stunden
     },
     name: 'sessionId' // Eindeutiger Cookie-Name
@@ -1665,7 +1665,7 @@ app.get('/api/event/:eventCode/check-owner', (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000; // Koyeb Port
 
 // ============ URL REWRITING FÜR SAUBERE URLs ============
 // Statische Dateien für saubere URLs ohne .html Endung
@@ -1711,6 +1711,7 @@ spotifyApi.clientCredentialsGrant()
 app.listen(PORT, () => {
     console.log('Server läuft auf Port', PORT);
     console.log('Öffne im Browser:');
-    console.log(`http://127.0.0.1:${PORT}/startpage`);
+    console.log(`https://novel-willyt-veqro-a29cd625.koyeb.app:8000/startpage`);
     console.log('Saubere URLs aktiviert - keine .html Endungen mehr nötig!');
+    console.log('Backend ist jetzt auf Koyeb gehostet!');
 });

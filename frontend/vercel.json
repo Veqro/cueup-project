@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "^/$", "dest": "/index.html" },
+    { "src": "^/startpage$", "dest": "/startpage.html" },
+    { "src": "^/createevent$", "dest": "/createevent.html" },
+    { "src": "^/dashboard$", "dest": "/dashboard.html" },
+    { "src": "^/myEvents$", "dest": "/myEvents.html" },
+    { "src": "^/profile$", "dest": "/profile.html" },
+    { "src": "^/contact$", "dest": "/contact.html" },
+    { "src": "^/eventForm$", "dest": "/eventForm.html" },
+    { "src": "^/eventSuccess$", "dest": "/eventSuccess.html" },
+    { "src": "^/qrcode$", "dest": "/qrcode.html" },
+    { "src": "^/userwish$", "dest": "/userwish.html" },
+    { "src": "^/spotify-login$", "dest": "/spotify-login.html" },
+    { "src": "^/spotify-success$", "dest": "/spotify-success.html" },
+    { "src": "^/free$", "dest": "/free.html" },
+    { "handle": "filesystem" }
+  ],
+  "trailingSlash": false
+}
