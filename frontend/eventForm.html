@@ -631,8 +631,64 @@
             }
         }
 
-        // Initial Auth Status Check
-        checkAuthStatus();
+        // Initial Auth Status Check und Zugriffsschutz
+        async function checkAuthAndProtect() {
+            try {
+                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/status', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                updateUserMenu(data.isAuthenticated, data.username);
+                
+                // Wenn nicht angemeldet, zur Anmeldeseite umleiten
+                if (!data.isAuthenticated) {
+                    console.log('Nicht angemeldet, Umleitung zur Anmeldeseite...');
+                    // Overlay mit Fehlermeldung anzeigen
+                    const overlay = document.createElement('div');
+                    overlay.style.position = 'fixed';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.width = '100%';
+                    overlay.style.height = '100%';
+                    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+                    overlay.style.zIndex = '9999';
+                    overlay.style.display = 'flex';
+                    overlay.style.flexDirection = 'column';
+                    overlay.style.justifyContent = 'center';
+                    overlay.style.alignItems = 'center';
+                    overlay.style.color = 'white';
+                    overlay.style.fontSize = '1.2rem';
+                    overlay.style.textAlign = 'center';
+                    overlay.style.padding = '2rem';
+                    
+                    overlay.innerHTML = `
+                        <div style="background: #333; padding: 2rem; border-radius: 15px; max-width: 500px; box-shadow: 0 0 30px rgba(170, 0, 255, 0.5);">
+                            <h2 style="color: #aa00ff; margin-bottom: 1.5rem;">Anmeldung erforderlich</h2>
+                            <p style="margin-bottom: 1.5rem;">Du musst angemeldet sein, um ein Event zu erstellen.</p>
+                            <button id="redirectLogin" style="background: #aa00ff; color: white; padding: 1rem 2rem; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;">Zur Anmeldeseite</button>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(overlay);
+                    
+                    document.getElementById('redirectLogin').addEventListener('click', function() {
+                        window.location.href = 'free.html';
+                    });
+                    
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Fehler beim Prüfen des Auth-Status:', error);
+                // Wenn ein Fehler auftritt, gehen wir auf Nummer sicher und verweigern den Zugriff
+                alert('Fehler bei der Authentifizierung. Bitte später erneut versuchen oder neu anmelden.');
+                window.location.href = 'free.html';
+                return false;
+            }
+        }
+        
+        // Sofort prüfen und ggf. umleiten
+        checkAuthAndProtect();
 
         // ============ CUSTOM DATE/TIME PICKER ============
         let currentDate = new Date();
@@ -699,37 +755,47 @@
             // Ersten Tag des Monats finden
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
-            let startDate = new Date(firstDay);
             
-            // Zum Montag der ersten Woche gehen
-            const dayOfWeek = (firstDay.getDay() + 6) % 7; // Montag = 0
-            startDate.setDate(firstDay.getDate() - dayOfWeek);
-
-            // 6 Wochen anzeigen
+            // Berechnen, welcher Wochentag der erste Tag des Monats ist (0=Sonntag, 1=Montag, ..., 6=Samstag)
+            // Umrechnung auf Montag=0, Dienstag=1, ..., Sonntag=6
+            const dayOfWeek = (firstDay.getDay() + 6) % 7;
+            
+            // Startdatum berechnen (Montag der Woche, in der der 1. des Monats liegt)
+            let startDate = new Date(year, month, 1 - dayOfWeek);
+            
+            // 6 Wochen anzeigen (42 Tage)
             for (let i = 0; i < 42; i++) {
-                const cellDate = new Date(startDate);
-                cellDate.setDate(startDate.getDate() + i);
-
+                const currentDateValue = new Date(startDate);
+                // Tage korrekt hinzufügen
+                currentDateValue.setDate(startDate.getDate() + i);
+                
                 const div = document.createElement('div');
                 div.className = 'calendar-day';
-                div.textContent = cellDate.getDate();
-
-                if (cellDate.getMonth() !== month) {
+                div.textContent = currentDateValue.getDate();
+                
+                // Tag des Monats markieren
+                if (currentDateValue.getMonth() !== month) {
                     div.classList.add('other-month');
                 }
-
-                if (selectedDate && cellDate.toDateString() === selectedDate.toDateString()) {
+                
+                // Ausgewähltes Datum markieren
+                if (selectedDate && 
+                    currentDateValue.getDate() === selectedDate.getDate() && 
+                    currentDateValue.getMonth() === selectedDate.getMonth() && 
+                    currentDateValue.getFullYear() === selectedDate.getFullYear()) {
                     div.classList.add('selected');
                 }
-
+                
+                // Datum beim Klicken auswählen
                 div.addEventListener('click', () => {
                     document.querySelectorAll('.calendar-day.selected').forEach(el => 
                         el.classList.remove('selected')
                     );
                     div.classList.add('selected');
-                    selectedDate = new Date(cellDate);
+                    // Exaktes Datum speichern
+                    selectedDate = new Date(currentDateValue);
                 });
-
+                
                 calendarGrid.appendChild(div);
             }
         }
@@ -804,9 +870,17 @@
         // Bestätigen/Abbrechen
         document.getElementById('confirmDate').addEventListener('click', () => {
             if (selectedDate && currentInput) {
-                const formattedDate = selectedDate.toISOString().split('T')[0];
+                // Stellen sicher, dass wir das korrekte Datum formatieren
+                // WICHTIG: Wir verwenden toISOString() um das Datum im Format YYYY-MM-DD zu erhalten
+                // aber berücksichtigen die Zeitzone, um den korrekten Tag zu behalten
+                const year = selectedDate.getFullYear();
+                const month = String(selectedDate.getMonth() + 1).padStart(2, '0'); // +1 weil Monate bei 0 beginnen
+                const day = String(selectedDate.getDate()).padStart(2, '0');
+                const formattedDate = `${year}-${month}-${day}`;
+                
                 currentInput.value = formattedDate;
                 validateField(currentInput);
+                console.log('Ausgewähltes Datum:', selectedDate, 'Formatiertes Datum:', formattedDate);
             }
             dateModal.style.display = 'none';
         });
@@ -878,6 +952,13 @@
         // Formular-Validierung
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Erneute Authentifizierungsprüfung
+            const isAuthenticated = await checkAuthAndProtect();
+            if (!isAuthenticated) {
+                return; // Nicht fortfahren, wenn nicht angemeldet
+            }
+            
             let isValid = true;
             formError.style.display = 'none';
 
