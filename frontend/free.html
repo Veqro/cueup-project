@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cueup - Login</title>
     <link rel="stylesheet" href="startpage.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <style>
         .login-container {
             max-width: 400px;
@@ -239,8 +240,8 @@
             }, 3000);
         }
 
-        // Spotify Login Handler mit Timeout und verbesserten Fehlerbehandlungen
-        document.getElementById('spotifyLoginBtn').addEventListener('click', async () => {
+        // Spotify Login Handler - vereinfacht ohne Server-Prüfung
+        document.getElementById('spotifyLoginBtn').addEventListener('click', function() {
             const loginButton = document.getElementById('spotifyLoginBtn');
             const errorMessage = document.getElementById('errorMessage');
             
@@ -261,61 +262,28 @@
             `;
             document.head.appendChild(style);
             
-            try {
-                // Timeout für die Verbindung setzen (5 Sekunden)
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
-                
-                console.log('Teste Server-Verbindung...');
-                
-                // Server-Erreichbarkeit mit Timeout testen
-                const testResponse = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/status', {
-                    method: 'GET',
-                    credentials: 'include',
-                    signal: controller.signal
-                }).catch(err => {
-                    if (err.name === 'AbortError') {
-                        throw new Error('Timeout: Server antwortet nicht (5s)');
-                    }
-                    throw err;
-                });
-                
-                clearTimeout(timeoutId);
-                console.log('Server-Antwort:', testResponse.status);
-                
-                // 401 ist OK - bedeutet nur "nicht angemeldet"
-                if (!testResponse.ok && testResponse.status !== 401) {
-                    throw new Error(`Server-Fehler: ${testResponse.status}`);
+            // WICHTIG: Wir verwenden nicht async/await und try/catch mehr
+            // Stattdessen leiten wir direkt weiter
+            console.log('Direkte Weiterleitung zu Spotify-Login...');
+            
+            // Kurze Verzögerung für den Spinner
+            setTimeout(function() {
+                try {
+                    // Direkte Weiterleitung ohne Prüfung
+                    window.location.href = 'https://novel-willyt-veqro-a29cd625.koyeb.app:8000/login';
+                } catch (e) {
+                    // Falls selbst die Umleitung fehlschlägt
+                    console.error('Fehler bei der Umleitung:', e);
+                    errorMessage.textContent = 'Fehler bei der Weiterleitung. Bitte versuche es später erneut.';
+                    errorMessage.style.display = 'block';
+                    
+                    loginButton.disabled = false;
+                    loginButton.innerHTML = `
+                        <img src="img/Spotify_Full_Logo_RGB_White.png" alt="Spotify Logo" style="height: 25px; margin-right: 10px;">
+                        Mit Spotify anmelden
+                    `;
                 }
-                
-                console.log('Server erreichbar, weiterleitung zu Spotify...');
-                // Redirect zu Spotify-Autorisierung
-                window.location.href = 'https://novel-willyt-veqro-a29cd625.koyeb.app:8000/login';
-                
-            } catch (error) {
-                console.error('Fehler beim Spotify-Login:', error);
-                
-                // Detaillierte Fehlermeldung
-                let errorMsg = 'Server nicht erreichbar.';
-                
-                if (error.message.includes('Timeout')) {
-                    errorMsg = 'Zeitüberschreitung bei der Serververbindung. Bitte prüfe, ob der Server läuft und versuche es erneut.';
-                } else if (error.message.includes('Failed to fetch')) {
-                    errorMsg = 'Verbindungsfehler. Bitte stelle sicher, dass der Server läuft und keine Netzwerkprobleme vorliegen.';
-                } else if (error.message.includes('Server-Fehler')) {
-                    errorMsg = `${error.message}. Bitte kontaktiere den Administrator.`;
-                }
-                
-                errorMessage.textContent = errorMsg;
-                errorMessage.style.display = 'block';
-                showToast('Verbindungsfehler', 'error');
-                
-                loginButton.disabled = false;
-                loginButton.innerHTML = `
-                    <img src="img/Spotify_Full_Logo_RGB_White.png" alt="Spotify Logo" style="height: 25px; margin-right: 10px;">
-                    Mit Spotify anmelden
-                `;
-            }
+            }, 500);
         });
 
         // Burger Menu Toggle

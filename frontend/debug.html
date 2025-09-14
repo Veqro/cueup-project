@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CueUp - Debug Tools</title>
+    <link rel="stylesheet" href="startpage.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <style>
+        body {
+            color: #fff;
+            padding-bottom: 60px;
+        }
+        
+        .debug-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .debug-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .debug-header h1 {
+            color: #aa00ff;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .debug-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            border-left: 4px solid #aa00ff;
+        }
+        
+        .debug-section h2 {
+            color: #aa00ff;
+            margin-top: 0;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #aa00ff, #cc44ff);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            background: linear-gradient(135deg, #cc44ff, #aa00ff);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(170, 0, 255, 0.4);
+        }
+        
+        .url-input {
+            width: 100%;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        
+        .result-container {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            overflow-x: auto;
+            max-height: 300px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            color: #ddd;
+        }
+        
+        .success {
+            color: #4caf50;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .error {
+            color: #f44336;
+            border-left: 4px solid #f44336;
+        }
+        
+        .warning {
+            color: #ff9800;
+            border-left: 4px solid #ff9800;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        table, th, td {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: rgba(170, 0, 255, 0.2);
+        }
+        
+        tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .method-selector {
+            margin-bottom: 10px;
+        }
+        
+        .method-selector label {
+            margin-right: 15px;
+            cursor: pointer;
+        }
+        
+        .headers-input {
+            width: 100%;
+            height: 100px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-family: monospace;
+            padding: 10px;
+        }
+        
+        .body-input {
+            width: 100%;
+            height: 150px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-family: monospace;
+            padding: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status-2xx {
+            background-color: rgba(76, 175, 80, 0.3);
+            color: #4caf50;
+        }
+        
+        .status-3xx {
+            background-color: rgba(255, 152, 0, 0.3);
+            color: #ff9800;
+        }
+        
+        .status-4xx, .status-5xx {
+            background-color: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+        
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, .3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .connection-status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .status-online {
+            background-color: rgba(76, 175, 80, 0.3);
+            color: #4caf50;
+        }
+        
+        .status-offline {
+            background-color: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+        
+        .route-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        
+        .route-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-bottom: 5px;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .route-item:hover {
+            background-color: rgba(170, 0, 255, 0.2);
+        }
+        
+        .route-method {
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 60px;
+            text-align: center;
+            padding: 3px 8px;
+            border-radius: 3px;
+            color: white;
+        }
+        
+        .method-get {
+            background-color: #2196F3;
+        }
+        
+        .method-post {
+            background-color: #4CAF50;
+        }
+        
+        .method-put {
+            background-color: #FF9800;
+        }
+        
+        .method-delete {
+            background-color: #F44336;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="startpage.html" class="mainLogoLink">
+            <h1 class="mainlogo">Cueup</h1>
+        </a>
+        <div style="display: flex; align-items: center; margin-right: 20px;">
+            <label class="burger" for="burger">
+                <input type="checkbox" id="burger" />
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
+        </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+        <nav>
+            <ul id="navigationMenu">
+                <li><a href="startpage.html">Startseite</a></li>
+                <li><a href="free.html">Login</a></li>
+                <li><a href="debug.html">Debug</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <main>
+        <div class="debug-container">
+            <div class="debug-header">
+                <h1>CueUp Debug Tools</h1>
+                <p>Testen Sie die Verbindung zwischen Frontend und Backend</p>
+            </div>
+
+            <div class="debug-section">
+                <h2>Backend-Verbindungsstatus</h2>
+                <div id="connectionStatus" class="connection-status status-offline">
+                    Checking connection...
+                </div>
+                <button id="checkConnection" class="test-button">
+                    Verbindung prüfen
+                    <span id="connectionSpinner" class="spinner"></span>
+                </button>
+                <div id="connectionResult" class="result-container">Warte auf Verbindungstest...</div>
+            </div>
+
+            <div class="debug-section">
+                <h2>Bekannte Backend-Routen</h2>
+                <p>Klicken Sie auf eine Route, um sie zu testen:</p>
+                <ul class="route-list">
+                    <li class="route-item" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/status" data-method="GET">
+                        <span class="route-method method-get">GET</span>
+                        <span class="route-path">/auth/status</span>
+                        <span>Auth Status prüfen</span>
+                    </li>
+                    <li class="route-item" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app:8000/login" data-method="GET">
+                        <span class="route-method method-get">GET</span>
+                        <span class="route-path">/login</span>
+                        <span>Spotify Login</span>
+                    </li>
+                    <li class="route-item" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app:8000/logout" data-method="POST">
+                        <span class="route-method method-post">POST</span>
+                        <span class="route-path">/logout</span>
+                        <span>Ausloggen</span>
+                    </li>
+                    <li class="route-item" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app:8000/api/events" data-method="GET">
+                        <span class="route-method method-get">GET</span>
+                        <span class="route-path">/api/events</span>
+                        <span>Events abrufen</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="debug-section">
+                <h2>Custom API Request</h2>
+                <div class="method-selector">
+                    <input type="radio" id="methodGet" name="method" value="GET" checked>
+                    <label for="methodGet">GET</label>
+                    
+                    <input type="radio" id="methodPost" name="method" value="POST">
+                    <label for="methodPost">POST</label>
+                    
+                    <input type="radio" id="methodPut" name="method" value="PUT">
+                    <label for="methodPut">PUT</label>
+                    
+                    <input type="radio" id="methodDelete" name="method" value="DELETE">
+                    <label for="methodDelete">DELETE</label>
+                </div>
+                
+                <input type="text" id="customUrl" class="url-input" placeholder="z.B. https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/status" value="https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/status">
+                
+                <div id="headersSection">
+                    <h3>Headers</h3>
+                    <textarea id="customHeaders" class="headers-input" placeholder='{"Content-Type": "application/json", "Accept": "application/json"}'></textarea>
+                </div>
+                
+                <div id="bodySection">
+                    <h3>Request Body</h3>
+                    <textarea id="customBody" class="body-input" placeholder='{"key": "value"}'></textarea>
+                </div>
+                
+                <div>
+                    <label>
+                        <input type="checkbox" id="includeCookies" checked>
+                        Cookies mitsenden (credentials: 'include')
+                    </label>
+                </div>
+                
+                <button id="sendCustomRequest" class="test-button">
+                    Anfrage senden
+                    <span id="requestSpinner" class="spinner"></span>
+                </button>
+                <div id="customRequestResult" class="result-container">Warte auf Anfrage...</div>
+            </div>
+
+            <div class="debug-section">
+                <h2>Backend Konfiguration</h2>
+                <table>
+                    <tr>
+                        <th>Server URL</th>
+                        <td>https://novel-willyt-veqro-a29cd625.koyeb.app:8000</td>
+                    </tr>
+                    <tr>
+                        <th>Frontend URL</th>
+                        <td>https://cueup.vercel.app</td>
+                    </tr>
+                    <tr>
+                        <th>CORS Setup</th>
+                        <td>
+                            <pre>Origin: ['https://cueup.vercel.app']
+Credentials: true
+Methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+Headers: ['Content-Type', 'Authorization']</pre>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="debug-section">
+                <h2>WebSocket Test</h2>
+                <button id="testWebSocket" class="test-button">
+                    WebSocket-Verbindung testen
+                    <span id="wsSpinner" class="spinner"></span>
+                </button>
+                <div id="wsResult" class="result-container">Warte auf WebSocket-Test...</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Burger Menu Toggle
+        document.getElementById('burger').addEventListener('change', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        // Funktion zum Formatieren von JSON mit Syntax-Highlighting
+        function formatJSON(json) {
+            if (typeof json !== 'string') {
+                json = JSON.stringify(json, null, 2);
+            }
+            
+            try {
+                // Versuchen, den JSON-String zu parsen
+                const parsedJSON = JSON.parse(json);
+                json = JSON.stringify(parsedJSON, null, 2);
+            } catch(e) {
+                // Bei Fehler den String unverändert zurückgeben
+                return json;
+            }
+            
+            // Einfache Syntax-Highlighting
+            return json
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
+                    let cls = 'number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'key';
+                            match = '<span style="color: #f8c555;">' + match + '</span>';
+                        } else {
+                            cls = 'string';
+                            match = '<span style="color: #7ec699;">' + match + '</span>';
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'boolean';
+                        match = '<span style="color: #569cd6;">' + match + '</span>';
+                    } else if (/null/.test(match)) {
+                        cls = 'null';
+                        match = '<span style="color: #569cd6;">' + match + '</span>';
+                    } else {
+                        match = '<span style="color: #b5cea8;">' + match + '</span>';
+                    }
+                    return match;
+                });
+        }
+
+        // Backend-Verbindungsstatus prüfen
+        document.getElementById('checkConnection').addEventListener('click', async function() {
+            const connectionStatus = document.getElementById('connectionStatus');
+            const connectionResult = document.getElementById('connectionResult');
+            const spinner = document.getElementById('connectionSpinner');
+            
+            spinner.style.display = 'inline-block';
+            connectionResult.innerHTML = 'Verbindung wird geprüft...';
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const startTime = performance.now();
+                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/status', {
+                    method: 'GET',
+                    credentials: 'include',
+                    signal: controller.signal
+                });
+                const endTime = performance.now();
+                const latency = Math.round(endTime - startTime);
+                
+                clearTimeout(timeoutId);
+                
+                const responseData = await response.text();
+                let parsedData;
+                try {
+                    parsedData = JSON.parse(responseData);
+                } catch (e) {
+                    parsedData = responseData;
+                }
+                
+                connectionStatus.className = 'connection-status status-online';
+                connectionStatus.textContent = 'Backend online ✓';
+                
+                let resultHTML = `
+                    <p>Status: ${response.status} ${response.statusText}</p>
+                    <p>Latenz: ${latency}ms</p>
+                    <p>Headers:</p>
+                    <pre>${formatHeaders(response.headers)}</pre>
+                    <p>Response Body:</p>
+                    <pre>${typeof parsedData === 'object' ? formatJSON(parsedData) : parsedData}</pre>
+                `;
+                
+                connectionResult.innerHTML = resultHTML;
+            } catch (error) {
+                connectionStatus.className = 'connection-status status-offline';
+                connectionStatus.textContent = 'Backend offline ✗';
+                
+                let errorMessage = error.toString();
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Timeout: Der Server hat nicht innerhalb von 5 Sekunden geantwortet.';
+                }
+                
+                connectionResult.innerHTML = `
+                    <p class="error">Fehler bei der Verbindung:</p>
+                    <pre>${errorMessage}</pre>
+                    <p>Überprüfen Sie:</p>
+                    <ul>
+                        <li>Läuft der Backend-Server?</li>
+                        <li>Ist die URL korrekt?</li>
+                        <li>Gibt es Netzwerkprobleme?</li>
+                        <li>Blockiert CORS oder eine Firewall die Verbindung?</li>
+                    </ul>
+                `;
+            } finally {
+                spinner.style.display = 'none';
+            }
+        });
+        
+        // Bekannte Routen klickbar machen
+        document.querySelectorAll('.route-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const url = this.getAttribute('data-url');
+                const method = this.getAttribute('data-method');
+                
+                // URL und Methode im Custom Request ausfüllen
+                document.getElementById('customUrl').value = url;
+                document.getElementById(`method${method}`).checked = true;
+                
+                // Zur Custom Request-Sektion scrollen
+                document.querySelector('.debug-section:nth-child(3)').scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+        
+        // Custom Request senden
+        document.getElementById('sendCustomRequest').addEventListener('click', async function() {
+            const method = document.querySelector('input[name="method"]:checked').value;
+            const url = document.getElementById('customUrl').value;
+            const headersInput = document.getElementById('customHeaders').value;
+            const bodyInput = document.getElementById('customBody').value;
+            const includeCookies = document.getElementById('includeCookies').checked;
+            
+            const resultContainer = document.getElementById('customRequestResult');
+            const spinner = document.getElementById('requestSpinner');
+            
+            spinner.style.display = 'inline-block';
+            resultContainer.innerHTML = 'Sende Anfrage...';
+            
+            try {
+                let headers = {};
+                if (headersInput) {
+                    try {
+                        headers = JSON.parse(headersInput);
+                    } catch (e) {
+                        throw new Error('Ungültiges JSON-Format für Headers: ' + e.message);
+                    }
+                }
+                
+                const options = {
+                    method: method,
+                    headers: headers
+                };
+                
+                if (includeCookies) {
+                    options.credentials = 'include';
+                }
+                
+                if (method !== 'GET' && method !== 'HEAD' && bodyInput) {
+                    try {
+                        options.body = bodyInput;
+                        
+                        // Wenn Content-Type application/json, dann JSON parsen und stringifyen
+                        if (headers['Content-Type'] === 'application/json') {
+                            options.body = JSON.stringify(JSON.parse(bodyInput));
+                        }
+                    } catch (e) {
+                        throw new Error('Ungültiges Format für Request Body: ' + e.message);
+                    }
+                }
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                options.signal = controller.signal;
+                
+                const startTime = performance.now();
+                const response = await fetch(url, options);
+                const endTime = performance.now();
+                const latency = Math.round(endTime - startTime);
+                
+                clearTimeout(timeoutId);
+                
+                let responseData;
+                let contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    responseData = await response.json();
+                    responseData = formatJSON(responseData);
+                } else {
+                    responseData = await response.text();
+                }
+                
+                let statusClass = 'status-2xx';
+                if (response.status >= 300 && response.status < 400) {
+                    statusClass = 'status-3xx';
+                } else if (response.status >= 400) {
+                    statusClass = 'status-4xx';
+                }
+                
+                resultContainer.innerHTML = `
+                    <p>URL: ${url}</p>
+                    <p>Method: ${method}</p>
+                    <p>Status: <span class="status-badge ${statusClass}">${response.status} ${response.statusText}</span></p>
+                    <p>Latenz: ${latency}ms</p>
+                    <p>Headers:</p>
+                    <pre>${formatHeaders(response.headers)}</pre>
+                    <p>Response:</p>
+                    <pre>${responseData}</pre>
+                `;
+                
+            } catch (error) {
+                let errorMessage = error.toString();
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Timeout: Der Server hat nicht innerhalb von 10 Sekunden geantwortet.';
+                }
+                
+                resultContainer.innerHTML = `
+                    <p class="error">Fehler bei der Anfrage:</p>
+                    <pre>${errorMessage}</pre>
+                `;
+            } finally {
+                spinner.style.display = 'none';
+            }
+        });
+        
+        // WebSocket-Test
+        document.getElementById('testWebSocket').addEventListener('click', function() {
+            const resultContainer = document.getElementById('wsResult');
+            const spinner = document.getElementById('wsSpinner');
+            
+            spinner.style.display = 'inline-block';
+            resultContainer.innerHTML = 'WebSocket-Verbindung wird getestet...';
+            
+            try {
+                const ws = new WebSocket('wss://novel-willyt-veqro-a29cd625.koyeb.app:8000');
+                let connectTimeout;
+                
+                ws.onopen = function() {
+                    clearTimeout(connectTimeout);
+                    resultContainer.innerHTML = `
+                        <p class="success">WebSocket-Verbindung erfolgreich hergestellt! ✓</p>
+                        <p>WebSocket-URL: wss://novel-willyt-veqro-a29cd625.koyeb.app:8000</p>
+                    `;
+                    spinner.style.display = 'none';
+                    
+                    // WebSocket nach erfolgreichem Test schließen
+                    setTimeout(() => ws.close(), 1000);
+                };
+                
+                ws.onmessage = function(event) {
+                    resultContainer.innerHTML += `
+                        <p>Nachricht vom Server erhalten:</p>
+                        <pre>${event.data}</pre>
+                    `;
+                };
+                
+                ws.onerror = function(error) {
+                    clearTimeout(connectTimeout);
+                    resultContainer.innerHTML = `
+                        <p class="error">WebSocket-Verbindungsfehler ✗</p>
+                        <p>Fehler: ${error.toString()}</p>
+                        <p>Überprüfen Sie:</p>
+                        <ul>
+                            <li>Läuft der WebSocket-Server?</li>
+                            <li>Ist die URL korrekt?</li>
+                            <li>Ist HTTPS für das Frontend erforderlich (für WSS)?</li>
+                        </ul>
+                    `;
+                    spinner.style.display = 'none';
+                };
+                
+                ws.onclose = function(event) {
+                    if (event.wasClean) {
+                        resultContainer.innerHTML += `
+                            <p>WebSocket-Verbindung sauber geschlossen, Code: ${event.code}</p>
+                        `;
+                    } else {
+                        resultContainer.innerHTML += `
+                            <p class="warning">WebSocket-Verbindung unerwartet geschlossen</p>
+                        `;
+                    }
+                };
+                
+                // Timeout nach 5 Sekunden, wenn keine Verbindung hergestellt werden konnte
+                connectTimeout = setTimeout(function() {
+                    if (ws.readyState !== WebSocket.OPEN) {
+                        ws.close();
+                        resultContainer.innerHTML = `
+                            <p class="error">WebSocket-Verbindung fehlgeschlagen (Timeout) ✗</p>
+                            <p>Der Server hat nicht innerhalb von 5 Sekunden geantwortet.</p>
+                        `;
+                        spinner.style.display = 'none';
+                    }
+                }, 5000);
+                
+            } catch (error) {
+                resultContainer.innerHTML = `
+                    <p class="error">Fehler beim Erstellen der WebSocket-Verbindung:</p>
+                    <pre>${error.toString()}</pre>
+                `;
+                spinner.style.display = 'none';
+            }
+        });
+        
+        // Headers formatieren
+        function formatHeaders(headers) {
+            const headersObj = {};
+            headers.forEach((value, key) => {
+                headersObj[key] = value;
+            });
+            return formatJSON(headersObj);
+        }
+        
+        // Initialer Verbindungstest
+        window.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('checkConnection').click();
+        });
+    </script>
+</body>
+</html>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cueup</title>
     <link rel="stylesheet" href="startpage.css" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <style>
       .user-menu-container {
         position: relative;
@@ -144,7 +145,7 @@
       
       </div>
       <div class="footer-bottom">
-        <p>CueUp </p>
+        <p>CueUp | <a href="debug.html" style="color: #888; text-decoration: none;">Debug Tools</a></p>
       </div>
     </footer>
     <script>
@@ -152,17 +153,47 @@
         document.getElementById("sidebar").classList.toggle("active");
       });
 
+      // Sofort das Standard-Menü anzeigen
+      function showDefaultMenu() {
+        const navigationMenu = document.getElementById('navigationMenu');
+        navigationMenu.innerHTML = `
+          <li><a href="startpage.html">Startseite</a></li>
+          <li><a href="contact.html">Kontakt</a></li>
+          <li><a href="free.html">Einloggen</a></li>
+        `;
+      }
+
+      // Sofort Standard-Menü zeigen
+      showDefaultMenu();
+      
       // Dynamisches Menü basierend auf Login-Status
       async function updateNavigation() {
         const navigationMenu = document.getElementById('navigationMenu');
         
         try {
+          // Timeout für die Anfrage setzen
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          
           // Prüfe Login-Status
-          const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/check', {
-            credentials: 'include'
+          const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app:8000/auth/status', {
+            credentials: 'include',
+            signal: controller.signal
+          }).catch(err => {
+            if (err.name === 'AbortError') {
+              console.log('Timeout bei Auth-Status-Abfrage, behalte Standard-Menü');
+              return null;
+            }
+            throw err;
           });
           
-          const isLoggedIn = response.ok;
+          clearTimeout(timeoutId);
+          
+          // Wenn kein Response, dann bei Standard-Menü bleiben
+          if (!response) return;
+          
+          const data = await response.json();
+          const isLoggedIn = data.isAuthenticated;
           
           // Basis-Menüpunkte (immer sichtbar)
           const baseMenuItems = [
@@ -226,8 +257,14 @@
         });
       }
 
-      // Menü beim Laden der Seite aktualisieren
-      updateNavigation();
+      // Sofort nach DOMContentLoaded das Menü aktualisieren
+      document.addEventListener('DOMContentLoaded', () => {
+        // Sofort Standard-Menü anzeigen
+        showDefaultMenu();
+        
+        // Dann versuchen, das Menü zu aktualisieren
+        setTimeout(updateNavigation, 100);
+      });
     </script>
   </body>
 </html>
