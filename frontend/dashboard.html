@@ -694,7 +694,7 @@
         }
 
         // WebSocket Verbindung aufbauen
-        const ws = new WebSocket('ws://127.0.0.1:3000');
+        const ws = new WebSocket('wss://novel-willyt-veqro-a29cd625.koyeb.app:8000');
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);

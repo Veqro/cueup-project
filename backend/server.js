@@ -167,7 +167,7 @@ const spotifyApi = new SpotifyWebApi({
 
 // Middleware
 app.use(cors({
-    origin: [FRONTEND_URL, 'http://localhost:5500', 'https://cueup.vercel.app'], // Frontend URL explizit hinzugefügt
+    origin: [FRONTEND_URL, 'https://cueup.vercel.app'], // Frontend URLs
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -1400,7 +1400,7 @@ app.post('/api/events', (req, res) => {
         }
 
         // Wunsch-URL generieren
-        eventData.wishUrl = `http://127.0.0.1:5500/userwish.html?event=${eventData.eventCode}`;
+        eventData.wishUrl = `https://cueup.vercel.app/userwish?event=${eventData.eventCode}`;
         
         // Benutzer-Information hinzufügen
         eventData.userId = req.session.userId;
