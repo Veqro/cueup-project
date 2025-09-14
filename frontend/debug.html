@@ -529,9 +529,9 @@
                         <h3>Schnelltest Routen</h3>
                         <div class="quick-tests">
                             <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status">Auth-Status testen</button>
-                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/">Server Startseite</button>
                             <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/health">Health Check</button>
-                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/api/status">API Status</button>
+                            <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/admin/health">Admin Health</button>
+                            <button class="test-button" id="testKoyebPing">Koyeb Ping Test</button>
                         </div>
                         <div id="quickTestResult" class="result-container" style="display: none;"></div>
                     </div>
@@ -558,7 +558,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>CueUp | <a href="debug" style="color: #888; text-decoration: none;">Debug Tools</a></p>
+            <p>CueUp | <a href="debug" style="color: #888; text-decoration: none;">Debug Tools</a> | <a href="#" id="adminFooterLink">System Administration</a></p>
         </div>
     </footer>
         
@@ -684,8 +684,14 @@
 
     <script>
         // Burger Menu Toggle
-        document.getElementById('burger').addEventListener('change', function() {
-            document.getElementById('sidebar').classList.toggle('active');
+        document.addEventListener('DOMContentLoaded', function() {
+            const burger = document.getElementById('burger');
+            const sidebar = document.getElementById('sidebar');
+            if (burger && sidebar) {
+                burger.addEventListener('change', function() {
+                    sidebar.classList.toggle('active');
+                });
+            }
         });
 
         // Sofort das Standard-Menü anzeigen
@@ -907,41 +913,99 @@
         });
         
         // Erweiterte Tools Toggle
-        document.getElementById('toggleAdvanced').addEventListener('click', function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButton = document.getElementById('toggleAdvanced');
             const advancedTools = document.getElementById('advancedTools');
-            const button = this;
             
-            if (advancedTools.style.display === 'none') {
-                advancedTools.style.display = 'block';
-                button.textContent = 'Erweiterte Tools verstecken';
-            } else {
-                advancedTools.style.display = 'none';
-                button.textContent = 'Erweiterte Tools anzeigen';
+            if (toggleButton && advancedTools) {
+                toggleButton.addEventListener('click', function() {
+                    if (advancedTools.style.display === 'none') {
+                        advancedTools.style.display = 'block';
+                        this.textContent = 'Erweiterte Tools verstecken';
+                    } else {
+                        advancedTools.style.display = 'none';
+                        this.textContent = 'Erweiterte Tools anzeigen';
+                    }
+                });
             }
         });
         
-        // Schnelltests
-        document.querySelectorAll('.quick-test').forEach(button => {
-            button.addEventListener('click', async function() {
-                const url = this.getAttribute('data-url');
-                const resultContainer = document.getElementById('quickTestResult');
-                
-                resultContainer.style.display = 'block';
-                resultContainer.innerHTML = `Testing ${url}...`;
-                
-                try {
-                    const response = await fetch(url, {
-                        method: 'GET',
-                        credentials: 'include',
-                        signal: AbortSignal.timeout(5000)
-                    });
+        // Schnelltests (warten bis DOM geladen ist)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Standard Quick Tests
+            document.querySelectorAll('.quick-test').forEach(button => {
+                button.addEventListener('click', async function() {
+                    const url = this.getAttribute('data-url');
+                    const resultContainer = document.getElementById('quickTestResult');
                     
-                    const statusText = response.ok ? '✅ Funktioniert' : '❌ Fehler';
-                    resultContainer.innerHTML = `${url}: ${statusText} (${response.status})`;
-                } catch (error) {
-                    resultContainer.innerHTML = `${url}: ❌ Nicht erreichbar`;
-                }
+                    resultContainer.style.display = 'block';
+                    resultContainer.innerHTML = `Testing ${url}...\n`;
+                    
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 8000);
+                        
+                        const response = await fetch(url, {
+                            credentials: 'include',
+                            method: 'GET',
+                            signal: controller.signal
+                        });
+                        
+                        clearTimeout(timeoutId);
+                        const statusText = response.ok ? '✅ Funktioniert' : '❌ Fehler';
+                        resultContainer.innerHTML = `${url}:\n${statusText} (Status: ${response.status})\n`;
+                        
+                        if (response.ok) {
+                            try {
+                                const data = await response.json();
+                                resultContainer.innerHTML += `Antwort: ${JSON.stringify(data, null, 2)}`;
+                            } catch (e) {
+                                resultContainer.innerHTML += `Antwort: Text-Response erhalten`;
+                            }
+                        }
+                    } catch (error) {
+                        if (error.name === 'AbortError') {
+                            resultContainer.innerHTML = `${url}:\n❌ Timeout (>8s)`;
+                        } else {
+                            resultContainer.innerHTML = `${url}:\n❌ Verbindungsfehler: ${error.message}`;
+                        }
+                    }
+                });
             });
+            
+            // Spezieller Koyeb Ping Test
+            const koyebPingBtn = document.getElementById('testKoyebPing');
+            if (koyebPingBtn) {
+                koyebPingBtn.addEventListener('click', async function() {
+                    const resultContainer = document.getElementById('quickTestResult');
+                    resultContainer.style.display = 'block';
+                    resultContainer.innerHTML = '🏓 Koyeb Backend Ping-Test...\n';
+                    
+                    const endpoints = [
+                        { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/health', name: 'Health Endpoint' },
+                        { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', name: 'Auth Status' }
+                    ];
+                    
+                    for (const endpoint of endpoints) {
+                        try {
+                            const startTime = performance.now();
+                            const response = await fetch(endpoint.url, { 
+                                credentials: 'include',
+                                signal: AbortSignal.timeout(5000)
+                            });
+                            const endTime = performance.now();
+                            const responseTime = Math.round(endTime - startTime);
+                            
+                            const status = response.ok ? '✅' : '❌';
+                            resultContainer.innerHTML += `${status} ${endpoint.name}: ${response.status} (${responseTime}ms)\n`;
+                        } catch (error) {
+                            resultContainer.innerHTML += `❌ ${endpoint.name}: Fehler - ${error.message}\n`;
+                        }
+                    }
+                    
+                    resultContainer.innerHTML += '\n🏁 Ping-Test abgeschlossen!';
+                });
+            }
         });
 
         
@@ -958,15 +1022,23 @@
         let adminLoggedIn = false;
         let statusHistory = [];
         
-        // Admin-Zugriff über Footer
-        document.getElementById('adminFooterLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('adminModal').style.display = 'block';
-        });
-        
-        // Admin Modal schließen
-        document.getElementById('closeAdmin').addEventListener('click', function() {
-            document.getElementById('adminModal').style.display = 'none';
+        // Admin-Zugriff über Footer (warten bis DOM geladen ist)
+        document.addEventListener('DOMContentLoaded', function() {
+            const adminFooterLink = document.getElementById('adminFooterLink');
+            const closeAdmin = document.getElementById('closeAdmin');
+            
+            if (adminFooterLink) {
+                adminFooterLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.getElementById('adminModal').style.display = 'block';
+                });
+            }
+            
+            if (closeAdmin) {
+                closeAdmin.addEventListener('click', function() {
+                    document.getElementById('adminModal').style.display = 'none';
+                });
+            }
         });
         
         // Admin Login
@@ -1557,12 +1629,20 @@
             // Navigation aktualisieren
             setTimeout(updateNavigation, 100);
             
-            // Verbindung prüfen
-            document.getElementById('checkConnection').click();
+            // Verbindung prüfen (mit Verzögerung, damit Element geladen ist)
+            setTimeout(() => {
+                const checkButton = document.getElementById('checkConnection');
+                if (checkButton) {
+                    checkButton.click();
+                }
+            }, 500);
             
             // Auto-Refresh alle 30 Sekunden
             setInterval(function() {
-                document.getElementById('checkConnection').click();
+                const checkButton = document.getElementById('checkConnection');
+                if (checkButton) {
+                    checkButton.click();
+                }
             }, 30000);
         });
     </script>
