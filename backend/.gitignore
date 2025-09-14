@@ -20,7 +20,10 @@ coverage/
 logs/
 *.log
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> a288f7f5c4482c858c0814ff4239b1709454aa68
 
 # Temporäre Dateien
 .tmp/
