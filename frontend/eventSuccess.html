@@ -99,6 +99,29 @@
         flex-wrap: wrap;
       }
 
+      .create-button {
+        display: inline-block;
+        padding: 1.2rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        text-decoration: none;
+        color: white;
+        background: linear-gradient(135deg, #aa00ff, #6600cc);
+        border: 2px solid #aa00ff;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        min-width: 180px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(170, 0, 255, 0.3);
+      }
+
+      .create-button:hover {
+        background: linear-gradient(135deg, #cc00ff, #8800dd);
+        border-color: #cc00ff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(170, 0, 255, 0.4);
+      }
+
       .secondary-button {
         display: inline-block;
         padding: 1.2rem 2.5rem;
@@ -130,22 +153,49 @@
 
       @media (max-width: 768px) {
         .success-container {
-          margin: 2rem 1rem;
-          padding: 2rem;
+          margin: 1rem 0.5rem;
+          padding: 1.5rem;
+          max-width: none;
+          width: calc(100vw - 1rem);
+          border-radius: 15px;
         }
         
         .success-title {
-          font-size: 2rem;
+          font-size: 1.8rem;
+          margin-bottom: 0.8rem;
+        }
+        
+        .success-subtitle {
+          font-size: 1.1rem;
+          margin-bottom: 1.5rem;
         }
         
         .event-code {
-          font-size: 1.8rem;
+          font-size: 1.6rem;
           letter-spacing: 2px;
+          padding: 1rem 1.5rem;
+          margin: 1.5rem 0;
         }
         
         .button-container {
           flex-direction: column;
           align-items: center;
+          gap: 1rem;
+          margin-top: 2rem;
+        }
+        
+        .create-button,
+        .secondary-button {
+          width: 100%;
+          max-width: 280px;
+          padding: 1rem 2rem;
+          font-size: 1rem;
+          min-width: auto;
+        }
+        
+        .info-text {
+          font-size: 0.9rem;
+          margin: 1rem 0;
         }
       }
 

@@ -347,9 +347,18 @@
                     <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/spotify/me" data-auth="true">Spotify User*</button>
                     <button class="test-button" id="testAllEndpoints">Alle Endpunkte testen (3)</button>
                 </div>
-                <p style="font-size: 0.9rem; color: #ccc; margin-top: 10px;">
-                    * Diese Endpunkte erfordern eine aktive Spotify-Anmeldung
-                </p>
+                <div class="problem-section" style="background-color: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3;">
+                    <h3 style="color: #2196F3; margin-top: 0;">ℹ️ Wichtiger Hinweis</h3>
+                    <p><strong>API Events</strong> und <strong>Spotify User</strong> Tests funktionieren nur, wenn Sie:</p>
+                    <ul>
+                        <li>🔐 Bei CueUp über Spotify <strong>angemeldet</strong> sind</li>
+                        <li>🎵 Eine aktive <strong>Spotify-Session</strong> haben</li>
+                        <li>✅ Über <a href="free" class="contact-link">Login-Seite</a> eingeloggt sind</li>
+                    </ul>
+                    <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 0;">
+                        * Ohne Anmeldung zeigen diese Tests "401/403 Fehler" - das ist normal!
+                    </p>
+                </div>
                 <div id="testResults" class="result-container" style="display: none;"></div>
             </div>
         </div>

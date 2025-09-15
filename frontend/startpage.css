@@ -718,6 +718,20 @@ h1 {
   background-attachment: fixed;
 }
 
+/* Mobile Fix: background-attachment fixed funktioniert nicht auf mobilen Geräten */
+@media (max-width: 768px) {
+  .background-image {
+    background-attachment: scroll;
+    position: absolute;
+    min-height: 100vh;
+  }
+  
+  /* Body muss relative positioning haben für absolute background */
+  body {
+    position: relative;
+  }
+}
+
 /* Scrollbare Bildergalerie */
 .gallery-section {
   margin-top: 4rem;

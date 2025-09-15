@@ -65,6 +65,7 @@
       .events-container {
         max-width: 800px;
         margin: 2rem auto;
+        padding: 0 1rem;
       }
 
       .event-card {
@@ -398,6 +399,7 @@
         font-weight: bold;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        z-index: 10;
       }
 
       .status-upcoming {
@@ -501,26 +503,75 @@
 
       /* Responsive Design */
       @media (max-width: 768px) {
+        .events-container {
+          margin: 1rem auto;
+          padding: 0 0.5rem;
+        }
+        
+        .event-card {
+          margin-bottom: 1rem;
+          padding: 1rem;
+        }
+        
         .event-info-grid {
           grid-template-columns: 1fr;
         }
         
         .event-actions {
           flex-direction: column;
+          gap: 0.8rem;
         }
         
         .dashboard-btn, .copy-btn {
           width: 100%;
           justify-content: center;
+          padding: 0.6rem 1rem;
+          font-size: 0.9rem;
         }
 
         .filter-tabs {
-          flex-direction: column;
-          align-items: center;
+          flex-direction: row;
+          justify-content: center;
+          gap: 0.5rem;
+          margin-bottom: 1rem;
         }
 
         .filter-tab {
-          width: 200px;
+          flex: 1;
+          min-width: 0;
+          padding: 0.6rem 0.2rem;
+          font-size: 0.8rem;
+          text-align: center;
+          border-radius: 12px;
+        }
+
+        .tab-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.2rem;
+        }
+
+        .tab-icon {
+          font-size: 1rem;
+          line-height: 1;
+        }
+
+        .tab-text {
+          font-size: 0.75rem;
+          font-weight: 500;
+          line-height: 1;
+        }
+
+        .filter-tab .section-count {
+          font-size: 0.65rem;
+          padding: 0.1rem 0.3rem;
+          border-radius: 8px;
+          min-width: 16px;
+          height: 16px;
+          line-height: 14px;
+          display: flex;
+          align-items: center;
           justify-content: center;
         }
 
@@ -532,7 +583,60 @@
           font-size: 22px;
         }
 
+        .event-status-badge {
+          position: static;
+          display: inline-block;
+          margin-bottom: 0.5rem;
+          margin-right: 0;
+        }
 
+        .event-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+
+        .event-title-section {
+          width: 100%;
+        }
+
+        .delete-btn {
+          position: static;
+          align-self: flex-end;
+          margin-top: -2rem;
+        }
+
+      }
+
+      /* Extra kleine Bildschirme - nur Icons */
+      @media (max-width: 480px) {
+        .filter-tabs {
+          gap: 0.3rem;
+          margin-bottom: 1rem;
+        }
+
+        .filter-tab {
+          padding: 0.5rem 0.2rem;
+        }
+
+        .tab-content {
+          gap: 0.1rem;
+        }
+
+        .tab-text {
+          display: none;
+        }
+
+        .tab-icon {
+          font-size: 1.2rem;
+        }
+
+        .filter-tab .section-count {
+          font-size: 0.6rem;
+          min-width: 14px;
+          height: 14px;
+          line-height: 12px;
+        }
       }
     </style>
     <script src="url-rewriter.js"></script>
@@ -579,16 +683,32 @@
         <!-- Filter Tabs -->
         <div class="filter-tabs">
           <div class="filter-tab active" data-filter="all" onclick="filterEvents('all')">
-            🎵 Alle Events <span id="countAll" class="section-count">0</span>
+            <span class="tab-content">
+              <span class="tab-icon">🎵</span>
+              <span class="tab-text">Alle</span>
+              <span id="countAll" class="section-count">0</span>
+            </span>
           </div>
           <div class="filter-tab" data-filter="upcoming" onclick="filterEvents('upcoming')">
-            🚀 Kommende <span id="countUpcoming" class="section-count">0</span>
+            <span class="tab-content">
+              <span class="tab-icon">🚀</span>
+              <span class="tab-text">Kommend</span>
+              <span id="countUpcoming" class="section-count">0</span>
+            </span>
           </div>
           <div class="filter-tab" data-filter="active" onclick="filterEvents('active')">
-            🔥 Aktive <span id="countActive" class="section-count">0</span>
+            <span class="tab-content">
+              <span class="tab-icon">🔥</span>
+              <span class="tab-text">Aktiv</span>
+              <span id="countActive" class="section-count">0</span>
+            </span>
           </div>
           <div class="filter-tab" data-filter="past" onclick="filterEvents('past')">
-            📅 Vergangene <span id="countPast" class="section-count">0</span>
+            <span class="tab-content">
+              <span class="tab-icon">📅</span>
+              <span class="tab-text">Vergangen</span>
+              <span id="countPast" class="section-count">0</span>
+            </span>
           </div>
         </div>
 
