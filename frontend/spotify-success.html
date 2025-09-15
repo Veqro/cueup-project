@@ -6,12 +6,12 @@
     <title>Spotify Anmeldung Erfolgreich</title>
     <link rel="stylesheet" href="startpage.css">
     
-    <!-- Simple Auth - Einfacher Seiten-Schutz -->
+    <!-- Modern Auth - OHNE automatischen Schutz (weil Login-Prozess) -->
     <script src="modern-auth.js"></script>
     <script>
-        // Seite automatisch schützen
+        // KEIN protectThisPage() - weil wir gerade dabei sind, die Session zu speichern
         document.addEventListener('DOMContentLoaded', () => {
-            protectThisPage();
+            console.log('🎵 Spotify Success Seite geladen - Login wird verarbeitet...');
         });
     </script>
     <style>

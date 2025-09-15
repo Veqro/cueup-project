@@ -128,22 +128,39 @@ class ModernAuth {
     }
 
     /**
-     * Logout - sofort
+     * Logout - vollständig und zuverlässig
      */
-    logout() {
-        // Lokale Session sofort löschen
+    async logout() {
+        console.log('🚪 Logout gestartet...');
+        
+        // 1. Lokale Session sofort löschen
         localStorage.removeItem(this.sessionKey);
         this.isAuthenticated = false;
         this.user = null;
         
-        // Server-Logout im Hintergrund
-        fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/logout', {
-            method: 'POST',
-            credentials: 'include'
-        }).catch(() => {}); // Ignore errors
+        try {
+            // 2. Server-Session löschen (synchron warten)
+            const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/logout', {
+                method: 'POST',
+                credentials: 'include',
+                signal: AbortSignal.timeout(3000)
+            });
+            
+            if (response.ok) {
+                console.log('✅ Server-Session erfolgreich gelöscht');
+            } else {
+                console.log('⚠️ Server-Logout Fehler, aber lokale Session gelöscht');
+            }
+        } catch (error) {
+            console.log('🌐 Server nicht erreichbar für Logout, aber lokale Session gelöscht');
+        }
         
-        // Sofort zur Startseite
-        window.location.href = 'startpage.html';
+        // 3. UI sofort aktualisieren
+        this.updateUI();
+        
+        // 4. Zur Login-Seite mit force Parameter
+        console.log('🔄 Weiterleitung zu Login-Seite...');
+        window.location.href = 'free.html?force=1';
     }
 
     /**
@@ -211,12 +228,24 @@ class ModernAuth {
                 // Nur bei 401/403 ausloggen - andere Fehler ignorieren
                 if (response.status === 401 || response.status === 403) {
                     console.log('🔒 Server-Auth invalid - lokale Session entfernt');
-                    this.logout();
+                    // SILENT logout - keine Weiterleitung
+                    localStorage.removeItem(this.sessionKey);
+                    this.isAuthenticated = false;
+                    this.user = null;
+                    this.updateUI();
                 } else {
                     console.log(`⚠️ Server-Fehler ${response.status} - Session bleibt erhalten`);
                 }
             } else {
-                console.log('✅ Server-Session gültig');
+                // Server-Session ist gültig - prüfe ob Daten aktuell sind
+                const data = await response.json();
+                if (data.isAuthenticated && data.user) {
+                    // Update lokale Session mit Server-Daten
+                    this.user = data.user;
+                    console.log('✅ Server-Session gültig und lokale Daten aktualisiert');
+                } else {
+                    console.log('✅ Server-Session gültig');
+                }
             }
         } catch (error) {
             // Bei Netzwerkfehlern NICHT ausloggen

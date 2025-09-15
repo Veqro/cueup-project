@@ -310,8 +310,12 @@
         async function updateNavigation() {
             const navigationMenu = document.getElementById('navigationMenu');
             
+            // Prüfen ob User explizit ausgeloggt wurde oder neu anmelden will
+            const urlParams = new URLSearchParams(window.location.search);
+            const forceLogin = urlParams.has('login') || urlParams.has('force');
+            
             // Schnelle lokale Prüfung mit modernem Auth-System
-            const isLoggedIn = auth.isAuthenticated;
+            const isLoggedIn = auth.isAuthenticated && !forceLogin;
             
             const baseMenuItems = [
                 { text: 'Startseite', href: 'startpage.html' },
@@ -319,8 +323,8 @@
             ];
             
             let menuItems;
-            if (isLoggedIn) {
-                // Bereits angemeldet - zeige erweiterte Navigation
+            if (isLoggedIn && !forceLogin) {
+                // Bereits angemeldet UND nicht explizit Login gewünscht
                 menuItems = [
                     { text: 'Startseite', href: 'startpage.html' },
                     { text: 'Meine Events', href: 'myEvents.html' },
@@ -329,14 +333,18 @@
                     { text: 'Ausloggen', href: '#', onclick: 'auth.logout()' }
                 ];
                 
-                // Hinweis anzeigen, dass User bereits angemeldet ist
-                showToast('Sie sind bereits angemeldet! Sie können direkt zu Ihren Events gehen.', 'info');
+                // Nur zeigen wenn nicht explizit Login gewünscht
+                showToast('Sie sind bereits angemeldet! Nutzen Sie "Ausloggen" falls Sie sich mit einem anderen Account anmelden möchten.', 'info');
             } else {
-                // Nicht angemeldet - Login-Menü
+                // Nicht angemeldet ODER explizit Login gewünscht
                 menuItems = [
                     ...baseMenuItems,
-                    { text: 'Einloggen', href: 'free.html' }
+                    { text: 'Mit Spotify anmelden', href: 'free.html' }
                 ];
+                
+                if (forceLogin) {
+                    showToast('Bereit für neuen Login. Klicken Sie auf "Mit Spotify anmelden".', 'info');
+                }
             }
             
             // Menü aufbauen

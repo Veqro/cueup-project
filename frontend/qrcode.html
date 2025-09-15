@@ -251,11 +251,13 @@
             max-height: 0;
             overflow: hidden;
             transition: all 0.3s ease;
+            opacity: 0;
         }
 
         .panel-content.show {
             padding: 1.5rem;
             max-height: 1000px;
+            opacity: 1;
         }
 
         .settings-section {
@@ -525,15 +527,20 @@
 
             <!-- QR-Code Anpassungsbereich -->
             <div class="customization-panel">
-                <div class="panel-header">
+                <div class="panel-header" onclick="toggleCustomizationPanel()">
                     <h3>🎨 QR-Code Design anpassen</h3>
-                    <button class="panel-toggle" onclick="toggleCustomizationPanel()" id="panelToggle">
+                    <button class="panel-toggle" id="panelToggle">
                         <span class="toggle-text">Erweitern</span>
                         <span class="toggle-icon">▼</span>
                     </button>
                 </div>
                 
-                <div class="panel-content" id="customizationContent" style="display: none;">
+                <!-- Test Button für Debugging -->
+                <button onclick="toggleCustomizationPanel()" style="background: red; color: white; padding: 10px; margin: 10px; border: none; border-radius: 5px;">
+                    🔧 TEST: Panel umschalten
+                </button>
+                
+                <div class="panel-content" id="customizationContent">
                     <!-- Basis-Einstellungen -->
                     <div class="settings-section">
                         <h4>📱 Mobile Optimierung</h4>
@@ -916,18 +923,35 @@
 
         // Anpassungspanel ein/ausklappen
         function toggleCustomizationPanel() {
+            console.log('🎨 Toggle Customization Panel aufgerufen');
+            
             const content = document.getElementById('customizationContent');
             const toggle = document.getElementById('panelToggle');
             const toggleText = toggle.querySelector('.toggle-text');
             
-            if (content.classList.contains('show')) {
+            if (!content) {
+                console.error('❌ Content Element nicht gefunden');
+                return;
+            }
+            
+            if (!toggle) {
+                console.error('❌ Toggle Button nicht gefunden');
+                return;
+            }
+            
+            const isCurrentlyOpen = content.classList.contains('show');
+            console.log('📊 Panel aktuell geöffnet:', isCurrentlyOpen);
+            
+            if (isCurrentlyOpen) {
                 content.classList.remove('show');
                 toggle.classList.remove('active');
-                toggleText.textContent = 'Erweitern';
+                if (toggleText) toggleText.textContent = 'Erweitern';
+                console.log('📥 Panel eingeklappt');
             } else {
                 content.classList.add('show');
                 toggle.classList.add('active');
-                toggleText.textContent = 'Einklappen';
+                if (toggleText) toggleText.textContent = 'Einklappen';
+                console.log('📤 Panel ausgeklappt');
             }
         }
 
@@ -1023,10 +1047,35 @@
 
         // Event Listener für Slider initialisieren
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 QR-Code Seite geladen - Initialisiere Panel...');
+            
             const textSizeSlider = document.getElementById('textSize');
             if (textSizeSlider) {
                 textSizeSlider.addEventListener('input', updateTextSizeDisplay);
+                console.log('✅ Text-Größe Slider initialisiert');
             }
+            
+            // Panel-Elemente prüfen
+            const content = document.getElementById('customizationContent');
+            const toggle = document.getElementById('panelToggle');
+            
+            console.log('📋 Panel-Elemente Check:');
+            console.log('- Content Element:', content ? '✅ Gefunden' : '❌ Nicht gefunden');
+            console.log('- Toggle Button:', toggle ? '✅ Gefunden' : '❌ Nicht gefunden');
+            
+            if (content) {
+                console.log('- Content CSS Klassen:', content.className);
+                console.log('- Content Style Display:', content.style.display);
+            }
+            
+            // Test: Panel einmal öffnen und schließen
+            setTimeout(() => {
+                console.log('🧪 Führe Panel-Test durch...');
+                toggleCustomizationPanel();
+                setTimeout(() => {
+                    toggleCustomizationPanel();
+                }, 1000);
+            }, 2000);
         });
     </script>
 
