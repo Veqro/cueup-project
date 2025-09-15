@@ -171,6 +171,10 @@
             text-decoration: none;
             margin: 5px 0;
         }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
     <script src="url-rewriter.js"></script>
 </head>
@@ -272,12 +276,15 @@
         // Beim Laden der Seite auf Nachrichten prüfen
         document.addEventListener('DOMContentLoaded', checkForMessage);
 
-        // Spotify Login Handler - vereinfacht ohne Server-Prüfung
-        document.getElementById('spotifyLoginBtn').addEventListener('click', function() {
+        // Spotify Login Handler - vereinfacht und direkt
+        function handleSpotifyLogin() {
             const loginButton = document.getElementById('spotifyLoginBtn');
             const errorMessage = document.getElementById('errorMessage');
             
-            console.log('Spotify Login Button geklickt');
+            // Verhindere mehrfache Ausführung
+            if (loginButton.disabled) return;
+            
+            console.log('Spotify Login gestartet');
             loginButton.disabled = true;
             loginButton.innerHTML = `
                 <div style="display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; margin-right: 10px;"></div>
@@ -285,22 +292,18 @@
             `;
             errorMessage.style.display = 'none';
             
-            // Stil für den Spinner
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes spin {
-                    to { transform: rotate(360deg); }
-                }
-            `;
-            document.head.appendChild(style);
-            
-            // Modernes Auth-System - sofortige Weiterleitung
-            console.log('Spotify-Login über ModernAuth...');
-            
-            // Kurze Verzögerung für den Spinner, dann sofortige Weiterleitung
+            // Sofortige Weiterleitung zu Spotify
             setTimeout(() => {
-                auth.spotifyLogin();
-            }, 300);
+                window.location.href = 'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/spotify';
+            }, 500);
+        }
+
+        // Event Listener nur einmal setzen
+        document.addEventListener('DOMContentLoaded', function() {
+            const spotifyBtn = document.getElementById('spotifyLoginBtn');
+            if (spotifyBtn) {
+                spotifyBtn.onclick = handleSpotifyLogin;
+            }
         });
 
         // Burger Menu Toggle

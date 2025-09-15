@@ -343,7 +343,7 @@
                 <h2>🔧 Server-Tests</h2>
                 <div class="quick-tests">
                     <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status">Auth Status</button>
-                    <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/health">Health Check</button>
+                    <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/api/status">Server Status</button>
                     <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/spotify/me">Spotify API</button>
                     <button class="test-button" id="testAllEndpoints">Alle Endpunkte testen</button>
                 </div>
@@ -589,9 +589,8 @@
             
             const endpoints = [
                 { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', name: 'Auth Status' },
-                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/health', name: 'Health Check' },
-                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/spotify/me', name: 'Spotify API' },
-                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/api/events', name: 'Events API' }
+                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/api/status', name: 'Server Status' },
+                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/spotify/me', name: 'Spotify API' }
             ];
             
             let allResults = '';
