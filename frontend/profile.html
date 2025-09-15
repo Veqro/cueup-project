@@ -412,7 +412,9 @@
                 
                 if (!response.ok) {
                     if (response.status === 401) {
-                        window.location.href = 'free.html';
+                        // Nicht eingeloggt - Login-Container anzeigen
+                        document.getElementById('notLoggedInContainer').style.display = 'block';
+                        document.getElementById('loggedInContainer').style.display = 'none';
                         return;
                     }
                     throw new Error('Fehler beim Laden der Profildaten');
@@ -421,7 +423,13 @@
                 const data = await response.json();
                 
                 if (data.isAuthenticated && data.spotifyConnected) {
-                    // Spotify-Informationen sind bereits im checkAuthAndLoadProfile gesetzt
+                    // Eingeloggt und Spotify verbunden: Profil anzeigen
+                    document.getElementById('notLoggedInContainer').style.display = 'none';
+                    document.getElementById('loggedInContainer').style.display = 'block';
+                    
+                    // Benutzer-Informationen aktualisieren
+                    document.getElementById('spotifyDisplayName').textContent = data.spotifyUsername || 'Unbekannt';
+                    document.getElementById('spotifyAccountType').textContent = data.isPremium ? 'Spotify Premium' : 'Spotify Free';
 
                     // Event Statistiken laden
                     fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/api/events', {
@@ -465,6 +473,10 @@
                     document.getElementById('accountCreated').textContent = data.createdAt 
                         ? new Date(data.createdAt).toLocaleDateString() 
                         : 'Nicht verfügbar';
+                } else {
+                    // Nicht eingeloggt oder kein Spotify: Login-Container anzeigen
+                    document.getElementById('notLoggedInContainer').style.display = 'block';
+                    document.getElementById('loggedInContainer').style.display = 'none';
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -478,8 +490,7 @@
         // Globale Variable für den Server-URL
         const SERVER_URL = 'https://novel-willyt-veqro-a29cd625.koyeb.app';
 
-        // Alte checkAuthAndLoadProfile() Funktion entfernt - modern-auth.js übernimmt Auth-Schutz
-        // Die Seite wird automatisch zur Login-Seite weitergeleitet wenn nicht authentifiziert
+        // Die ursprüngliche loadProfileData() Funktion wird verwendet
 
         // logout() wird jetzt von simple-auth.js bereitgestellt
 
@@ -542,7 +553,10 @@
             }
         }
 
-        // Alte checkAuthAndLoadProfile() entfernt - modern-auth.js schützt automatisch
+        // Profil-Daten beim Laden der Seite laden
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfileData();
+        });
         
         // Menü beim Laden der Seite aktualisieren
         updateNavigation();

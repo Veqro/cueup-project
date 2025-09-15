@@ -314,8 +314,21 @@
             const urlParams = new URLSearchParams(window.location.search);
             const forceLogin = urlParams.has('login') || urlParams.has('force');
             
-            // Schnelle lokale Prüfung mit modernem Auth-System
-            const isLoggedIn = auth.isAuthenticated && !forceLogin;
+            // Auf der Login-Seite: Server-Check für echten Auth-Status
+            let isLoggedIn = false;
+            try {
+                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
+                    credentials: 'include',
+                    signal: AbortSignal.timeout(3000)
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    isLoggedIn = data.isAuthenticated && !forceLogin;
+                }
+            } catch (error) {
+                console.log('Server nicht erreichbar - lokale Session-Prüfung verwendet');
+                isLoggedIn = auth.isAuthenticated && !forceLogin;
+            }
             
             const baseMenuItems = [
                 { text: 'Startseite', href: 'startpage.html' },
