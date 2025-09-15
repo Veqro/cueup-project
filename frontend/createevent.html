@@ -302,41 +302,8 @@
         document.getElementById("sidebar").classList.toggle("active");
       });
 
-      // Auth Status Check
-      function updateUserMenu(isAuthenticated, username) {
-        const menuContent = document.getElementById('userMenuContent');
-        if (isAuthenticated) {
-          menuContent.innerHTML = `<p>${username}</p>`;
-        } else {
-          menuContent.innerHTML = '<a href="free.html">Anmelden</a>';
-        }
-      }
-
-      async function checkAuthStatus() {
-        try {
-          const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
-            credentials: 'include'
-          });
-          const data = await response.json();
-          
-          if (data.isAuthenticated) {
-            document.getElementById('loginPrompt').style.display = 'none';
-            document.getElementById('createEventContent').style.display = 'block';
-            updateUserMenu(true, data.username);
-          } else {
-            document.getElementById('loginPrompt').style.display = 'flex';
-            document.getElementById('createEventContent').style.display = 'none';
-            updateUserMenu(false);
-          }
-        } catch (error) {
-          console.error('Fehler beim Prüfen des Auth-Status:', error);
-        }
-      }
-
       // logout() wird jetzt von simple-auth.js bereitgestellt
-
-      // Initial Auth Status Check
-      checkAuthStatus();
+      // Alte checkAuthStatus() Funktion entfernt - modern-auth.js übernimmt alles
 
       // Dynamische Navigation basierend auf Auth-Status
       document.addEventListener('DOMContentLoaded', () => {

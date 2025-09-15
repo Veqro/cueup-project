@@ -478,41 +478,8 @@
         // Globale Variable für den Server-URL
         const SERVER_URL = 'https://novel-willyt-veqro-a29cd625.koyeb.app';
 
-        // Prüft den Login-Status und zeigt entsprechenden Content
-        async function checkAuthAndLoadProfile() {
-            try {
-                const response = await fetch(`${SERVER_URL}/auth/status`, {
-                    credentials: 'include'
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Fehler beim Prüfen des Auth-Status');
-                }
-
-                const data = await response.json();
-                
-                if (data.isAuthenticated && data.spotifyConnected) {
-                    // Eingeloggter Benutzer mit Spotify: Profil anzeigen und Daten laden
-                    document.getElementById('notLoggedInContainer').style.display = 'none';
-                    document.getElementById('loggedInContainer').style.display = 'block';
-                    
-                    // Benutzer-Informationen aktualisieren
-                    document.getElementById('spotifyDisplayName').textContent = data.spotifyUsername || 'Unbekannt';
-                    document.getElementById('spotifyAccountType').textContent = data.isPremium ? 'Spotify Premium' : 'Spotify Free';
-
-                    loadProfileData();
-                } else {
-                    // Nicht eingeloggt oder kein Spotify: Login-Aufforderung anzeigen
-                    document.getElementById('notLoggedInContainer').style.display = 'block';
-                    document.getElementById('loggedInContainer').style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Auth check error:', error);
-                // Bei Fehler: Login-Aufforderung anzeigen
-                document.getElementById('notLoggedInContainer').style.display = 'block';
-                document.getElementById('loggedInContainer').style.display = 'none';
-            }
-        }
+        // Alte checkAuthAndLoadProfile() Funktion entfernt - modern-auth.js übernimmt Auth-Schutz
+        // Die Seite wird automatisch zur Login-Seite weitergeleitet wenn nicht authentifiziert
 
         // logout() wird jetzt von simple-auth.js bereitgestellt
 
@@ -575,8 +542,7 @@
             }
         }
 
-        // Initial Auth-Status prüfen und Profil laden
-        checkAuthAndLoadProfile();
+        // Alte checkAuthAndLoadProfile() entfernt - modern-auth.js schützt automatisch
         
         // Menü beim Laden der Seite aktualisieren
         updateNavigation();

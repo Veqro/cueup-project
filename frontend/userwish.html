@@ -401,6 +401,7 @@
             .spotify-text {
                 font-size: 10px;
                 line-height: 1.2;
+                white-space: nowrap;
             }
 
             .contact-button {
@@ -470,13 +471,17 @@
             }
 
             .spotify-info {
-                gap: 6px;
-                padding-right: 8px;
+                gap: 4px;
+                padding-right: 6px;
+                flex-direction: column;
+                align-items: center;
             }
 
             .spotify-text {
-                font-size: 9px;
-                display: none; /* Text auf sehr kleinen Bildschirmen ausblenden */
+                font-size: 8px;
+                line-height: 1.1;
+                white-space: nowrap;
+                /* Text bleibt sichtbar, wird nur sehr klein */
             }
 
             .contact-button {
