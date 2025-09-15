@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CueUp - Debug Tools</title>
     <link rel="stylesheet" href="startpage.css">
+    <script src="simple-auth.js"></script>
     
     <!-- Favicon Integration -->
     <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
@@ -673,22 +674,7 @@
             }
         }
 
-        function logout() {
-            fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/logout', {
-                method: 'POST',
-                credentials: 'include'
-            })
-            .then(response => {
-                if (response.ok) {
-                    window.location.href = 'free';
-                }
-            })
-            .catch(error => {
-                console.error('Logout failed:', error);
-                // Fallback: Zur Login-Seite weiterleiten
-                window.location.href = 'free';
-            });
-        }
+        // logout() wird jetzt von simple-auth.js bereitgestellt
 
         // Funktion zum Formatieren von JSON mit Syntax-Highlighting
         function formatJSON(json) {

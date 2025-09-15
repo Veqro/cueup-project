@@ -6,11 +6,13 @@
     <title>Profil - Cueup</title>
     <link rel="stylesheet" href="startpage.css">
     
-    <!-- Login Guard - Schutz vor unbefugtem Zugriff -->
-    <script src="login-guard.js"></script>
+    <!-- Simple Auth - Einfacher Seiten-Schutz -->
+    <script src="simple-auth.js"></script>
     <script>
-        // Automatischer Login-Schutz aktivieren
-        window.loginGuardAutoStart = true;
+        // Seite automatisch schützen
+        document.addEventListener('DOMContentLoaded', () => {
+            protectThisPage();
+        });
     </script>
     <style>
         .profile-container {
@@ -512,31 +514,7 @@
             }
         }
 
-        async function logout() {
-            try {
-                const response = await fetch(`${SERVER_URL}/logout`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include'
-                });
-                
-                if (response.ok) {
-                    // Session-Cookie löschen
-                    document.cookie = 'connect.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                    
-                    // Zur Startseite weiterleiten
-                    window.location.href = 'startpage.html';
-                } else {
-                    console.error('Logout fehlgeschlagen');
-                    alert('Beim Ausloggen ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.');
-                }
-            } catch (error) {
-                console.error('Logout error:', error);
-                alert('Beim Ausloggen ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.');
-            }
-        }
+        // logout() wird jetzt von simple-auth.js bereitgestellt
 
         // Event-Listener NUR für den Logout-Button (nicht Spotify-Disconnect!)
         document.querySelector('button.logout-button[onclick="logout()"]')?.addEventListener('click', logout);

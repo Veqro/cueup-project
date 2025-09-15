@@ -6,11 +6,13 @@
     <title>Event erstellen - Cueup</title>
     <link rel="stylesheet" href="startpage.css">
     
-    <!-- Login Guard - Schutz vor unbefugtem Zugriff -->
-    <script src="login-guard.js"></script>
+    <!-- Simple Auth - Einfacher Seiten-Schutz -->
+    <script src="simple-auth.js"></script>
     <script>
-        // Automatischer Login-Schutz aktivieren
-        window.loginGuardAutoStart = true;
+        // Seite automatisch schützen
+        document.addEventListener('DOMContentLoaded', () => {
+            protectThisPage();
+        });
     </script>
     <style>
         .user-menu-container {
@@ -744,21 +746,7 @@
             document.getElementById('sidebar').classList.toggle('active');
         });
 
-        // Logout Funktion
-        function logout() {
-            fetch('/logout', {
-                method: 'POST',
-                credentials: 'include'
-            })
-            .then(response => {
-                if (response.ok) {
-                    window.location.href = 'free.html';
-                }
-            })
-            .catch(error => {
-                console.error('Logout failed:', error);
-            });
-        }
+        // logout() wird jetzt von simple-auth.js bereitgestellt
 
         // User Menu Funktionalität
         function updateUserMenu(isAuthenticated, username) {

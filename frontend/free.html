@@ -14,6 +14,7 @@
     <link rel="shortcut icon" href="favicon_io/favicon.ico">
     <meta name="msapplication-TileColor" content="#aa00ff">
     <meta name="theme-color" content="#aa00ff">
+    <script src="simple-auth.js"></script>
     <style>
         .login-container {
             max-width: 400px;
@@ -338,76 +339,42 @@
         // Sofort Standard-Menü zeigen
         showDefaultMenu();
         
-        // Dynamische Navigation basierend auf Login-Status
+        // Einfache Navigation basierend auf Login-Status
         async function updateNavigation() {
             const navigationMenu = document.getElementById('navigationMenu');
             
-            try {
-                // Timeout für die Verbindung setzen
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000);
-                
-                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
-                    credentials: 'include',
-                    signal: controller.signal
-                }).catch(err => {
-                    if (err.name === 'AbortError') {
-                        console.log('Timeout bei Auth-Status-Abfrage, behalte Standard-Menü');
-                        return null;
-                    }
-                    throw err;
-                });
-                
-                clearTimeout(timeoutId);
-                
-                // Wenn kein Response, dann bei Standard-Menü bleiben
-                if (!response) return;
-                
-                const data = await response.json();
-                const isLoggedIn = data.isAuthenticated && data.spotifyConnected;
-                
-                // Basis-Menüeinträge, die für alle Benutzer verfügbar sind
-                const baseMenuItems = [
-                    { text: 'Startseite', href: 'startpage.html' },
-                    { text: 'Spotify Integration', href: 'explain-spotify.html' },
-                    { text: 'Kontakt', href: 'contact.html' }
+            // Schnelle lokale Prüfung
+            const isLoggedIn = await window.simpleAuth.checkLoginForAction();
+            
+            const baseMenuItems = [
+                { text: 'Startseite', href: 'startpage.html' },
+                { text: 'Kontakt', href: 'contact.html' }
+            ];
+            
+            let menuItems;
+            if (isLoggedIn) {
+                // Bereits angemeldet - zur Startseite weiterleiten
+                showToast('Bereits angemeldet, weiterleiten...');
+                setTimeout(() => {
+                    window.location.href = 'startpage.html';
+                }, 500);
+                return;
+            } else {
+                // Nicht angemeldet - Login-Menü
+                menuItems = [
+                    ...baseMenuItems,
+                    { text: 'Einloggen', href: 'free.html' }
                 ];
-                
-                let menuItems;
-                if (isLoggedIn) {
-                    // Angemeldeter Benutzer - weiterleiten zur Startseite
-                    showToast('Bereits angemeldet, weiterleiten...');
-                    setTimeout(() => {
-                        window.location.href = 'startpage.html';
-                    }, 1000);
-                    return;
-                } else {
-                    // Nicht angemeldeter Benutzer
-                    menuItems = [
-                        ...baseMenuItems,
-                        { text: 'Einloggen', href: 'free.html' }
-                    ];
                 }
-                
-                // Menü aufbauen
-                navigationMenu.innerHTML = menuItems.map(item => {
-                    if (item.onclick) {
-                        return `<li><a href="${item.href}" onclick="${item.onclick}">${item.text}</a></li>`;
-                    } else {
-                        return `<li><a href="${item.href}">${item.text}</a></li>`;
-                    }
-                }).join('');
-                
-            } catch (error) {
-                console.log('Auth check failed, showing guest menu');
-                // Bei Fehler: Gast-Menü anzeigen
-                navigationMenu.innerHTML = `
-                    <li><a href="startpage.html">Startseite</a></li>
-                    <li><a href="explain-spotify.html">Spotify Integration</a></li>
-                    <li><a href="contact.html">Kontakt</a></li>
-                    <li><a href="free.html">Einloggen</a></li>
-                `;
-            }
+            
+            // Menü aufbauen
+            navigationMenu.innerHTML = menuItems.map(item => {
+                if (item.onclick) {
+                    return `<li><a href="${item.href}" onclick="${item.onclick}">${item.text}</a></li>`;
+                } else {
+                    return `<li><a href="${item.href}">${item.text}</a></li>`;
+                }
+            }).join('');
         }
 
         // Sofort nach DOMContentLoaded Navigation aktualisieren

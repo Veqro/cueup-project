@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kontakt</title>
     <link rel="stylesheet" href="startpage.css" />
+    <script src="simple-auth.js"></script>
     <style>
       .user-menu-container {
         position: relative;
@@ -156,22 +157,7 @@
         }
       }
 
-      function logout() {
-        fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/logout', {
-          method: 'POST',
-          credentials: 'include'
-        })
-        .then(response => {
-          if (response.ok) {
-            window.location.href = 'free.html';
-          }
-        })
-        .catch(error => {
-          console.error('Logout failed:', error);
-          // Fallback: Zur Login-Seite weiterleiten
-          window.location.href = 'free.html';
-        });
-      }
+      // logout() wird jetzt von simple-auth.js bereitgestellt
 
       // Menü beim Laden der Seite aktualisieren
       updateNavigation();

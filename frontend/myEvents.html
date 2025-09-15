@@ -6,11 +6,13 @@
     <title>Meine Events - Cueup</title>
     <link rel="stylesheet" href="startpage.css" />
     
-    <!-- Login Guard - Schutz vor unbefugtem Zugriff -->
-    <script src="login-guard.js"></script>
+    <!-- Simple Auth - Einfacher Seiten-Schutz -->
+    <script src="simple-auth.js"></script>
     <script>
-        // Automatischer Login-Schutz aktivieren
-        window.loginGuardAutoStart = true;
+        // Seite automatisch schützen
+        document.addEventListener('DOMContentLoaded', () => {
+            protectThisPage();
+        });
     </script>
     <style>
       .user-menu-container {
@@ -1011,20 +1013,7 @@
         }
       }
 
-      // Logout
-      async function logout() {
-        try {
-          const response = await fetch("https://novel-willyt-veqro-a29cd625.koyeb.app/logout", {
-            method: "POST",
-            credentials: "include",
-          });
-          if (response.ok) {
-            window.location.href = "startpage.html";
-          }
-        } catch (error) {
-          console.error("Logout error:", error);
-        }
-      }
+      // logout() wird jetzt von simple-auth.js bereitgestellt
 
       // Modal Event-Listener
       document.addEventListener('click', function(event) {

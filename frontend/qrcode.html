@@ -6,11 +6,13 @@
     <title>QR-Code Generator - Cueup</title>
     <link rel="stylesheet" href="startpage.css">
     
-    <!-- Login Guard - Schutz vor unbefugtem Zugriff -->
-    <script src="login-guard.js"></script>
+    <!-- Simple Auth - Einfacher Seiten-Schutz -->
+    <script src="simple-auth.js"></script>
     <script>
-        // Automatischer Login-Schutz aktivieren
-        window.loginGuardAutoStart = true;
+        // Seite automatisch schützen
+        document.addEventListener('DOMContentLoaded', () => {
+            protectThisPage();
+        });
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
@@ -193,22 +195,110 @@
             to { opacity: 1; }
         }
 
+        /* QR-Code Personalisierung */
+        .qr-options {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(170, 0, 255, 0.2);
+        }
+
+        .qr-options h3 {
+            color: #aa00ff;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .option-group {
+            margin-bottom: 1rem;
+        }
+
+        .option-group label {
+            color: white;
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .option-group input, .option-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid rgba(170, 0, 255, 0.3);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .option-group input:focus, .option-group select:focus {
+            outline: none;
+            border-color: #aa00ff;
+            box-shadow: 0 0 5px rgba(170, 0, 255, 0.3);
+        }
+
+        .color-picker {
+            width: 60px !important;
+            height: 40px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .toggle-options {
+            background: #aa00ff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .toggle-options:hover {
+            background: #cc33ff;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .qr-container {
-                margin: 1rem;
+                margin: 0.5rem;
                 padding: 1rem;
+                max-width: 100vw;
+            }
+            
+            .qr-code-container {
+                width: calc(100vw - 4rem);
+                max-width: 350px;
+                padding: 1rem;
+            }
+            
+            #qrcode canvas, #qrcode img {
+                max-width: 100% !important;
+                height: auto !important;
             }
             
             .action-buttons {
                 flex-direction: column;
                 align-items: center;
+                gap: 0.5rem;
             }
             
             .action-btn {
                 width: 100%;
-                max-width: 250px;
+                max-width: 280px;
                 justify-content: center;
+                padding: 1rem;
+                font-size: 1rem;
+            }
+            
+            .qr-options {
+                padding: 1rem;
+            }
+            
+            .option-group {
+                margin-bottom: 0.8rem;
             }
         }
     </style>
@@ -247,6 +337,47 @@
             <div class="event-info">
                 <p style="color: white; margin: 0;">Event-Code:</p>
                 <div class="event-code" id="eventCodeDisplay">Lädt...</div>
+            </div>
+
+            <button class="toggle-options" onclick="toggleOptions()">QR-Code anpassen</button>
+            
+            <div class="qr-options" id="qrOptions" style="display: none;">
+                <h3>QR-Code Personalisierung</h3>
+                
+                <div class="option-group">
+                    <label for="centerText">Text in der Mitte:</label>
+                    <input type="text" id="centerText" placeholder="z.B. Musikwünsche" maxlength="20">
+                </div>
+                
+                <div class="option-group">
+                    <label for="dotStyle">Punkt-Stil:</label>
+                    <select id="dotStyle">
+                        <option value="square">Eckig (Standard)</option>
+                        <option value="dots">Runde Punkte</option>
+                        <option value="rounded">Abgerundete Ecken</option>
+                    </select>
+                </div>
+                
+                <div class="option-group">
+                    <label for="cornerStyle">Ecken-Design:</label>
+                    <select id="cornerStyle">
+                        <option value="square">Eckig (Standard)</option>
+                        <option value="extra-rounded">Stark abgerundet</option>
+                        <option value="dot">Punkte</option>
+                    </select>
+                </div>
+                
+                <div class="option-group">
+                    <label for="darkColor">Farbe (Dunkel):</label>
+                    <input type="color" id="darkColor" class="color-picker" value="#000000">
+                </div>
+                
+                <div class="option-group">
+                    <label for="lightColor">Farbe (Hell):</label>
+                    <input type="color" id="lightColor" class="color-picker" value="#ffffff">
+                </div>
+                
+                <button class="toggle-options" onclick="regenerateQR()">QR-Code aktualisieren</button>
             </div>
 
             <div class="loading" id="loadingMessage">
@@ -326,7 +457,7 @@
             }
         }
 
-        async function generateQRCode() {
+        async function generateQRCode(customOptions = {}) {
             try {
                 // Ladeanimation anzeigen
                 document.getElementById('loadingMessage').style.display = 'flex';
@@ -334,32 +465,43 @@
                 // Warten bis QRCode Library geladen ist
                 if (typeof QRCode === 'undefined') {
                     console.log('QRCode Library nicht geladen, verwende Fallback...');
-                    generateQRCodeFallback();
+                    generateQRCodeFallback(customOptions);
                     return;
                 }
 
                 console.log('Generiere QR-Code für:', musicWishLink);
 
+                // QR-Code Optionen zusammenstellen
+                const isMobile = window.innerWidth <= 768;
+                const qrSize = isMobile ? Math.min(window.innerWidth - 100, 350) : 300;
+                
+                const options = {
+                    width: qrSize,
+                    margin: 2,
+                    color: {
+                        dark: customOptions.darkColor || '#000000',
+                        light: customOptions.lightColor || '#ffffff'
+                    },
+                    errorCorrectionLevel: 'M'
+                };
+
                 // QR-Code mit QRCode.js generieren
                 const canvas = document.createElement('canvas');
                 
-                // Einfachere Optionen verwenden
-                QRCode.toCanvas(canvas, musicWishLink, {
-                    width: 300,
-                    margin: 2,
-                    color: {
-                        dark: '#000000',
-                        light: '#FFFFFF'
-                    }
-                }, function (error) {
+                QRCode.toCanvas(canvas, musicWishLink, options, function (error) {
                     if (error) {
                         console.error('QRCode Generierungsfehler:', error);
                         console.log('Verwende Fallback wegen Fehler...');
-                        generateQRCodeFallback();
+                        generateQRCodeFallback(customOptions);
                         return;
                     }
                     
                     console.log('QR-Code erfolgreich generiert!');
+                    
+                    // Personalisierung hinzufügen wenn gewünscht
+                    if (customOptions.centerText || customOptions.dotStyle !== 'square' || customOptions.cornerStyle !== 'square') {
+                        personalizeQRCode(canvas, customOptions);
+                    }
                     
                     // QR-Code anzeigen
                     const qrcodeContainer = document.getElementById('qrcode');
@@ -382,12 +524,68 @@
             } catch (error) {
                 console.error('Fehler beim Generieren des QR-Codes:', error);
                 console.log('Verwende Fallback wegen Exception...');
-                generateQRCodeFallback();
+                generateQRCodeFallback(customOptions);
             }
         }
 
-        // Fallback QR-Code Generierung mit Google Charts API
-        function generateQRCodeFallback() {
+        // QR-Code personalisieren (Text in der Mitte hinzufügen)
+        function personalizeQRCode(canvas, options) {
+            const ctx = canvas.getContext('2d');
+            const centerText = options.centerText;
+            
+            if (centerText) {
+                const canvasSize = canvas.width;
+                const centerX = canvasSize / 2;
+                const centerY = canvasSize / 2;
+                const boxSize = canvasSize * 0.15; // 15% der Canvas-Größe
+                
+                // Weißen Hintergrund für Text zeichnen
+                ctx.fillStyle = options.lightColor || '#ffffff';
+                ctx.fillRect(centerX - boxSize/2, centerY - boxSize/2, boxSize, boxSize);
+                
+                // Rahmen um Textbox
+                ctx.strokeStyle = options.darkColor || '#000000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(centerX - boxSize/2, centerY - boxSize/2, boxSize, boxSize);
+                
+                // Text zentriert zeichnen
+                ctx.fillStyle = options.darkColor || '#000000';
+                ctx.font = `bold ${Math.floor(boxSize * 0.12)}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Text in mehrere Zeilen aufteilen wenn nötig
+                const words = centerText.split(' ');
+                const maxWidth = boxSize * 0.8;
+                let lines = [];
+                let currentLine = words[0];
+                
+                for (let i = 1; i < words.length; i++) {
+                    const word = words[i];
+                    const testLine = currentLine + ' ' + word;
+                    const metrics = ctx.measureText(testLine);
+                    
+                    if (metrics.width > maxWidth) {
+                        lines.push(currentLine);
+                        currentLine = word;
+                    } else {
+                        currentLine = testLine;
+                    }
+                }
+                lines.push(currentLine);
+                
+                // Text zeichnen
+                const lineHeight = boxSize * 0.15;
+                const startY = centerY - (lines.length - 1) * lineHeight / 2;
+                
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, centerX, startY + index * lineHeight);
+                });
+            }
+        }
+
+        // Fallback QR-Code Generierung mit API
+        function generateQRCodeFallback(customOptions = {}) {
             console.log('Verwende Fallback QR-Code Generation');
             
             // Ladetext aktualisieren
@@ -396,29 +594,43 @@
                 loadingText.textContent = 'Generiere QR-Code (Fallback)...';
             }
             
-            const qrSize = 300;
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(musicWishLink)}`;
+            // Responsive Größe
+            const isMobile = window.innerWidth <= 768;
+            const qrSize = isMobile ? Math.min(window.innerWidth - 100, 350) : 300;
+            
+            // Farben für URL Parameter umwandeln
+            const darkColor = (customOptions.darkColor || '#000000').replace('#', '');
+            const lightColor = (customOptions.lightColor || '#ffffff').replace('#', '');
+            
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(musicWishLink)}&color=${darkColor}&bgcolor=${lightColor}`;
             
             const img = document.createElement('img');
             img.src = qrUrl;
-            img.style.width = '300px';
-            img.style.height = '300px';
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
             img.crossOrigin = 'anonymous';
             
             img.onload = function() {
                 console.log('Fallback QR-Code erfolgreich geladen!');
                 
+                // Canvas erstellen für weitere Bearbeitung
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth || qrSize;
+                canvas.height = img.naturalHeight || qrSize;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                
+                // Personalisierung hinzufügen
+                if (customOptions.centerText) {
+                    personalizeQRCode(canvas, customOptions);
+                }
+                
                 // QR-Code anzeigen
                 const qrcodeContainer = document.getElementById('qrcode');
                 qrcodeContainer.innerHTML = '';
-                qrcodeContainer.appendChild(img);
+                qrcodeContainer.appendChild(canvas);
                 
-                // Canvas für Download erstellen
-                const canvas = document.createElement('canvas');
-                canvas.width = 300;
-                canvas.height = 300;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, 300, 300);
+                // DataURL für Download speichern
                 qrCodeDataURL = canvas.toDataURL('image/png');
                 
                 // Link anzeigen
@@ -436,6 +648,25 @@
                 document.getElementById('loadingMessage').innerHTML = 
                     '<div style="color: #ff4444; text-align: center;"><div>❌</div><div>QR-Code konnte nicht generiert werden</div><div style="font-size: 0.9rem; margin-top: 0.5rem;">Bitte versuchen Sie es später erneut</div></div>';
             };
+        }
+
+        // Optionen ein/ausblenden
+        function toggleOptions() {
+            const options = document.getElementById('qrOptions');
+            options.style.display = options.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // QR-Code mit benutzerdefinierten Optionen neu generieren
+        function regenerateQR() {
+            const customOptions = {
+                centerText: document.getElementById('centerText').value.trim(),
+                dotStyle: document.getElementById('dotStyle').value,
+                cornerStyle: document.getElementById('cornerStyle').value,
+                darkColor: document.getElementById('darkColor').value,
+                lightColor: document.getElementById('lightColor').value
+            };
+            
+            generateQRCode(customOptions);
         }
 
         // QR-Code herunterladen
