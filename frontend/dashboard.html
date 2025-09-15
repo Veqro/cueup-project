@@ -6,6 +6,13 @@
     <title>DJ Dashboard - Musikwünsche</title>
     <link rel="stylesheet" href="startpage.css">
     
+    <!-- Login Guard - Schutz vor unbefugtem Zugriff -->
+    <script src="login-guard.js"></script>
+    <script>
+        // Automatischer Login-Schutz aktivieren
+        window.loginGuardAutoStart = true;
+    </script>
+    
     <!-- Favicon Integration -->
     <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
@@ -231,6 +238,18 @@
             .header h1 {
                 font-size: 1.8rem;
                 margin-bottom: 5px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .header h1 {
+                font-size: 1.5rem;
+                margin-bottom: 3px;
+                line-height: 1.2;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
             }
         }
 
@@ -1427,7 +1446,7 @@
 
         function connectToSpotify() {
             closeSpotifyModal();
-            window.location.href = 'spotify-login.html';
+            window.location.href = 'free.html';
         }
 
         // Modal schließen wenn außerhalb geklickt wird

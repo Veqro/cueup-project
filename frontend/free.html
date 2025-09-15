@@ -140,6 +140,10 @@
             background: #ff4444;
         }
 
+        .toast.info {
+            background: #2196F3;
+        }
+
         /* User Menu CSS */
         .user-menu-container {
             position: relative;
@@ -247,6 +251,25 @@
                 toast.classList.remove('show');
             }, 3000);
         }
+
+        // URL-Parameter für Nachrichten überprüfen
+        function checkForMessage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const message = urlParams.get('message');
+            
+            if (message) {
+                // Zeige die Nachricht als Info-Toast
+                showToast(decodeURIComponent(message), 'info');
+                
+                // Entferne den Parameter aus der URL ohne Reload
+                const url = new URL(window.location);
+                url.searchParams.delete('message');
+                window.history.replaceState({}, document.title, url);
+            }
+        }
+
+        // Beim Laden der Seite auf Nachrichten prüfen
+        document.addEventListener('DOMContentLoaded', checkForMessage);
 
         // Spotify Login Handler - vereinfacht ohne Server-Prüfung
         document.getElementById('spotifyLoginBtn').addEventListener('click', function() {

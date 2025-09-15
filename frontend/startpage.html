@@ -69,10 +69,6 @@
               transform: translateX(-100%);
           }
       }
-      
-      .beta-banner:hover .beta-ticker {
-          animation-play-state: paused;
-      }
    
     </style>
     <script src="url-rewriter.js"></script>
@@ -128,10 +124,10 @@
             die Songs direkt in deine Warteschlange übernehmen.
           </p>
           <div class="hero-buttons">
-            <button class="cta-button primary" onclick="window.location.href='createevent'">
+            <button class="cta-button primary" onclick="checkLoginAndRedirect('createevent', 'Event erstellen')">
               Event erstellen
             </button>
-            <button class="cta-button secondary" onclick="window.location.href='myEvents'">
+            <button class="cta-button secondary" onclick="checkLoginAndRedirect('myEvents', 'Events verwalten')">
               Meine Events
             </button>
           </div>
@@ -301,6 +297,44 @@
           // Fallback: Zur Login-Seite weiterleiten
           window.location.href = 'free.html';
         });
+      }
+
+      // Login-Check für Event-Buttons
+      async function checkLoginAndRedirect(targetPage, actionName) {
+        try {
+          // Timeout für die Anfrage setzen
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          
+          const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
+            credentials: 'include',
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (response.ok) {
+            const data = await response.json();
+            
+            if (data.isAuthenticated) {
+              // Benutzer ist eingeloggt - zur gewünschten Seite weiterleiten
+              window.location.href = targetPage;
+            } else {
+              // Benutzer ist nicht eingeloggt - zur Login-Seite mit Hinweis
+              const message = encodeURIComponent(`Bitte zuerst einloggen, bevor du ${actionName} kannst!`);
+              window.location.href = `free?message=${message}`;
+            }
+          } else {
+            // Server-Fehler - zur Login-Seite weiterleiten
+            const message = encodeURIComponent('Bitte zuerst einloggen!');
+            window.location.href = `free?message=${message}`;
+          }
+        } catch (error) {
+          console.log('Login-Check fehlgeschlagen:', error);
+          // Bei Fehler zur Login-Seite mit Hinweis
+          const message = encodeURIComponent(`Bitte zuerst einloggen, bevor du ${actionName} kannst!`);
+          window.location.href = `free?message=${message}`;
+        }
       }
 
       // Sofort nach DOMContentLoaded das Menü aktualisieren

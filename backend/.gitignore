@@ -1,5 +1,15 @@
-# Umgebungsvariablen (enthalten sensitive Daten!)
+# 🔐 KRITISCH: Umgebungsvariablen (enthalten API Keys!)
 .env
+.env.local
+.env.production
+.env.*.local
+
+# 🚨 NIEMALS COMMITTEN: API Keys, Secrets, Tokens
+**/SPOTIFY_CLIENT_*
+**/api-key*
+**/secret*
+**/*token*
+**/*key*.txt
 
 # Node.js
 node_modules/

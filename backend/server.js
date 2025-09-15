@@ -10,6 +10,31 @@ const session = require('express-session');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 
+// ============ SICHERHEITSCHECKS ============
+// Überprüfe kritische Umgebungsvariablen
+const requiredEnvVars = [
+    'SPOTIFY_CLIENT_ID',
+    'SPOTIFY_CLIENT_SECRET', 
+    'REFRESH_TOKEN_KEY'
+];
+
+for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+        console.error(`🔴 KRITISCHER FEHLER: Umgebungsvariable ${envVar} ist nicht gesetzt!`);
+        console.error('📋 Setze diese über das Koyeb Dashboard > Service > Environment variables');
+        process.exit(1);
+    }
+    
+    // Überprüfe, ob Placeholder-Werte verwendet werden
+    if (process.env[envVar].includes('your_') || process.env[envVar].includes('here')) {
+        console.error(`🔴 SICHERHEITSFEHLER: ${envVar} enthält Placeholder-Werte!`);
+        console.error('🔑 Setze echte API Keys über das Koyeb Dashboard');
+        process.exit(1);
+    }
+}
+
+console.log('✅ Alle kritischen Umgebungsvariablen sind korrekt gesetzt');
+
 // Fetch für Koyeb-API (falls nicht nativ verfügbar)
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
@@ -1785,14 +1810,6 @@ app.get('/', (req, res) => {
     res.redirect('/startpage');
 });
 
-app.listen(PORT, () => {
-    console.log('Server läuft auf Port', PORT);
-    console.log('Öffne im Browser:');
-    console.log(`https://novel-willyt-veqro-a29cd625.koyeb.app/startpage`);
-    console.log('Saubere URLs aktiviert - keine .html Endungen mehr nötig!');
-    console.log('Backend ist jetzt auf Koyeb gehostet!');
-});
-
 // Server-Statistiken
 let serverStats = {
     startTime: Date.now(),
@@ -1801,306 +1818,9 @@ let serverStats = {
     spotifyLogins: 0,
     eventsCreated: 0,
     songRequests: 0,
-    errorCount: 0
+    errorContent: 0
 };
 
-
-
-
-
-
-
-
-
-// System Health-Check
-app.get('/admin/health', verifyAdminToken, (req, res) => {
-    const memUsage = process.memoryUsage();
-    const uptime = process.uptime();
-    
-    res.json({
-        success: true,
-        cpu: Math.round(process.cpuUsage().user / 1000),
-        memory: Math.round((memUsage.heapUsed / memUsage.heapTotal) * 100),
-        uptime: formatUptime(uptime * 1000),
-        network: 'OK',
-        database: 'OK',
-        spotify: spotifyApi.getAccessToken() ? 'OK' : 'ERROR'
-    });
-});
-
-// Fehler-Logs anzeigen
-app.get('/admin/errors', verifyAdminToken, (req, res) => {
-    const { limit = 20 } = req.query;
-    const errors = errorLogs.slice(-parseInt(limit));
-    
-    res.json({
-        success: true,
-        errors: errors,
-        total: errorLogs.length
-    });
-});
-
-// Cache leeren
-app.post('/admin/cache/clear', verifyAdminToken, (req, res) => {
-    try {
-        // RAM-Cache leeren (Access Tokens)
-        activeTokens.clear();
-        
-        // Log-Cache teilweise leeren (nur alte Logs)
-        if (serverLogs.length > 100) {
-            serverLogs.splice(0, serverLogs.length - 100);
-        }
-        
-        console.log( 'Admin: Cache geleert');
-        res.json({ 
-            success: true, 
-            message: 'Cache erfolgreich geleert' 
-        });
-    } catch (error) {
-        console.error( `Admin: Fehler beim Cache leeren: ${error.message}`);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Fehler beim Cache leeren' 
-        });
-    }
-});
-
-// Server-Backup erstellen
-app.post('/admin/backup', verifyAdminToken, (req, res) => {
-    try {
-        const backupData = {
-            timestamp: new Date().toISOString(),
-            stats: serverStats,
-            logs: serverLogs.slice(-500), // Nur die letzten 500 Logs
-            events: [], // Hier würden Event-Daten stehen
-            users: [] // Hier würden User-Daten stehen (ohne sensible Daten)
-        };
-        
-        const backupId = 'backup_' + Date.now();
-        
-        console.log( `Admin: Backup erstellt (${backupId})`);
-        res.json({
-            success: true,
-            backupId: backupId,
-            size: JSON.stringify(backupData).length + ' bytes',
-            message: 'Backup erfolgreich erstellt'
-        });
-    } catch (error) {
-        console.error( `Admin: Fehler beim Backup: ${error.message}`);
-        res.status(500).json({
-            success: false,
-            message: 'Fehler beim Erstellen des Backups'
-        });
-    }
-});
-
-// Server neustarten (simuliert)
-app.post('/admin/restart', verifyAdminToken, (req, res) => {
-    console.warn( 'Admin: Server-Neustart angefordert');
-    res.json({
-        success: true,
-        message: 'Server-Neustart eingeleitet (simuliert)'
-    });
-    
-    // In einer echten Umgebung würde hier ein echter Neustart stattfinden
-    // process.exit(0);
-});
-
-// ============ KOYEB-API INTEGRATION ============
-const KOYEB_API_TOKEN = process.env.KOYEB_API_TOKEN;
-const KOYEB_API_BASE = 'https://app.koyeb.com/v1';
-
-// Koyeb-Status abfragen (Sicherer Admin-Endpoint)
-app.get('/admin/koyeb-status', verifyAdminToken, async (req, res) => {
-    try {
-        console.log( 'Admin: Koyeb-Status wird abgerufen');
-        
-        // Services abrufen
-        const servicesResponse = await fetch(`${KOYEB_API_BASE}/services`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${KOYEB_API_TOKEN}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!servicesResponse.ok) {
-            throw new Error(`Koyeb API Error: ${servicesResponse.status}`);
-        }
-        
-        const servicesData = await servicesResponse.json();
-        
-        // Apps abrufen
-        const appsResponse = await fetch(`${KOYEB_API_BASE}/apps`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${KOYEB_API_TOKEN}`,
-                'Content-Type': 'application/json'  
-            }
-        });
-        
-        const appsData = appsResponse.ok ? await appsResponse.json() : { apps: [] };
-        
-        // Deployment-Status abrufen
-        const deploymentsResponse = await fetch(`${KOYEB_API_BASE}/deployments?limit=5`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${KOYEB_API_TOKEN}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        const deploymentsData = deploymentsResponse.ok ? await deploymentsResponse.json() : { deployments: [] };
-        
-        // Response zusammenstellen
-        const koyebStatus = {
-            success: true,
-            timestamp: new Date().toISOString(),
-            services: {
-                total: servicesData.services?.length || 0,
-                running: servicesData.services?.filter(s => s.status === 'healthy')?.length || 0,
-                services: servicesData.services?.map(service => ({
-                    id: service.id,
-                    name: service.name,
-                    status: service.status,
-                    type: service.type,
-                    created_at: service.created_at,
-                    updated_at: service.updated_at
-                })) || []
-            },
-            apps: {
-                total: appsData.apps?.length || 0,
-                apps: appsData.apps?.map(app => ({
-                    id: app.id,
-                    name: app.name,
-                    status: app.status,
-                    created_at: app.created_at
-                })) || []
-            },
-            deployments: {
-                recent: deploymentsData.deployments?.slice(0, 5).map(deployment => ({
-                    id: deployment.id,
-                    status: deployment.status,
-                    created_at: deployment.created_at,
-                    messages: deployment.messages || []
-                })) || []
-            }
-        };
-        
-        console.log( `Koyeb-Status erfolgreich abgerufen: ${koyebStatus.services.total} Services`);
-        res.json(koyebStatus);
-        
-    } catch (error) {
-        console.error( `Koyeb API Fehler: ${error.message}`);
-        res.status(500).json({
-            success: false,
-            error: 'Fehler beim Abrufen des Koyeb-Status',
-            message: error.message
-        });
-    }
-});
-
-// Koyeb-Service-Details abfragen
-app.get('/admin/koyeb-service/:serviceId', verifyAdminToken, async (req, res) => {
-    try {
-        const { serviceId } = req.params;
-        console.log( `Admin: Koyeb-Service Details für ${serviceId} werden abgerufen`);
-        
-        const response = await fetch(`${KOYEB_API_BASE}/services/${serviceId}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${KOYEB_API_TOKEN}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Service nicht gefunden: ${response.status}`);
-        }
-        
-        const serviceData = await response.json();
-        
-        res.json({
-            success: true,
-            service: {
-                id: serviceData.service.id,
-                name: serviceData.service.name,
-                status: serviceData.service.status,
-                type: serviceData.service.type,
-                app_id: serviceData.service.app_id,
-                created_at: serviceData.service.created_at,
-                updated_at: serviceData.service.updated_at,
-                definition: serviceData.service.definition
-            }
-        });
-        
-    } catch (error) {
-        console.error( `Koyeb Service Details Fehler: ${error.message}`);
-        res.status(500).json({
-            success: false,
-            error: 'Fehler beim Abrufen der Service-Details',
-            message: error.message
-        });
-    }
-});
-
-// Koyeb-Logs abfragen
-app.get('/admin/koyeb-logs/:serviceId', verifyAdminToken, async (req, res) => {
-    try {
-        const { serviceId } = req.params;
-        const { limit = 100 } = req.query;
-        
-        console.log( `Admin: Koyeb-Logs für Service ${serviceId} werden abgerufen`);
-        
-        const response = await fetch(`${KOYEB_API_BASE}/services/${serviceId}/logs?limit=${limit}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${KOYEB_API_TOKEN}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Logs nicht verfügbar: ${response.status}`);
-        }
-        
-        const logsData = await response.json();
-        
-        res.json({
-            success: true,
-            logs: logsData.logs || [],
-            service_id: serviceId
-        });
-        
-    } catch (error) {
-        console.error( `Koyeb Logs Fehler: ${error.message}`);
-        res.status(500).json({
-            success: false,
-            error: 'Fehler beim Abrufen der Koyeb-Logs',
-            message: error.message
-        });
-    }
-});
-
-// Hilfsfunktion für Uptime-Formatierung
-function formatUptime(milliseconds) {
-    const seconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    
-    if (days > 0) {
-        return `${days} Tage, ${hours % 24} Stunden`;
-    } else if (hours > 0) {
-        return `${hours} Stunden, ${minutes % 60} Minuten`;
-    } else {
-        return `${minutes} Minuten, ${seconds % 60} Sekunden`;
-    }
-}
-
-
-
-// Initialer Spotify-Token
 spotifyApi.clientCredentialsGrant()
     .then(data => {
         console.log('Spotify-Token erhalten');

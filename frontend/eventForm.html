@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event erstellen - Cueup</title>
     <link rel="stylesheet" href="startpage.css">
+    
+    <!-- Login Guard - Schutz vor unbefugtem Zugriff -->
+    <script src="login-guard.js"></script>
+    <script>
+        // Automatischer Login-Schutz aktivieren
+        window.loginGuardAutoStart = true;
+    </script>
     <style>
         .user-menu-container {
             position: relative;
@@ -443,6 +450,151 @@
         input[type="date"]::-webkit-inner-spin-button,
         input[type="time"]::-webkit-inner-spin-button {
             display: none;
+        }
+
+        /* DateTime Modal Styling */
+        .datetime-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* Sehr hoch über Burger-Menü (2000) und Sidebar (1000) */
+        }
+
+        .datetime-modal-content {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(170, 0, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(170, 0, 255, 0.3);
+            z-index: 10000; /* Noch höher als das Modal selbst */
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav-btn {
+            background: #aa00ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .calendar-nav-btn:hover {
+            background: #cc33ff;
+        }
+
+        .calendar-month-year {
+            color: #aa00ff;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .modal-btn-confirm {
+            background: #aa00ff;
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            background: #cc33ff;
+        }
+
+        .modal-btn-cancel {
+            background: #666;
+            color: white;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #888;
+        }
+
+        .time-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-left: 10px;
+        }
+
+        .time-btn {
+            background: #aa00ff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .time-btn:hover {
+            background: #cc33ff;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .form-container {
+                max-width: 100vw;
+                margin: 0;
+                padding: 15px;
+                border-radius: 0;
+            }
+            
+            .form-title {
+                font-size: 2rem;
+            }
+            
+            .time-picker {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            /* DateTime Modal Mobile Fix */
+            .datetime-modal {
+                z-index: 9999; /* Sicherstellen, dass es über dem Burger-Menü liegt */
+            }
+            
+            .datetime-modal-content {
+                z-index: 10000;
+                max-width: 95%;
+                padding: 20px;
+            }
         }
     </style>
     <script src="url-rewriter.js"></script>

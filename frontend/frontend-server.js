@@ -19,7 +19,6 @@ const pageRoutes = [
     'eventSuccess',
     'qrcode',
     'userwish',
-    'spotify-login',
     'spotify-success',
     'free',
     'debug'
