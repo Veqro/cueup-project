@@ -106,6 +106,12 @@
             transform: none;
         }
 
+        /* Spinner Animation für Loading */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .error-message {
             color: #ff4444;
             text-align: center;
@@ -231,7 +237,7 @@
                 </ul>
             </div>
             
-            <button id="spotifyLoginBtn" class="spotify-login-btn">
+            <button id="spotifyLoginBtn" class="spotify-login-btn" type="button">
                 <img src="img/Spotify_Full_Logo_RGB_White.png" alt="Spotify Logo" style="height: 25px; margin-right: 10px;">
                 Mit Spotify anmelden
             </button>
@@ -276,15 +282,23 @@
         // Beim Laden der Seite auf Nachrichten prüfen
         document.addEventListener('DOMContentLoaded', checkForMessage);
 
-        // Spotify Login Handler - vereinfacht und direkt
-        function handleSpotifyLogin() {
+        // Spotify Login Handler - direkte Implementation ohne Konflikte
+        function handleSpotifyLogin(event) {
+            // Verhindere Standard-Verhalten und Konflikte
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
             const loginButton = document.getElementById('spotifyLoginBtn');
             const errorMessage = document.getElementById('errorMessage');
             
             // Verhindere mehrfache Ausführung
-            if (loginButton.disabled) return;
+            if (loginButton.disabled) return false;
             
-            console.log('Spotify Login gestartet');
+            console.log('🎵 Spotify Login wird gestartet...');
+            
+            // Button deaktivieren und Loading anzeigen
             loginButton.disabled = true;
             loginButton.innerHTML = `
                 <div style="display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; margin-right: 10px;"></div>
@@ -292,18 +306,53 @@
             `;
             errorMessage.style.display = 'none';
             
-            // Sofortige Weiterleitung zu Spotify
-            setTimeout(() => {
-                window.location.href = 'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/spotify';
-            }, 500);
+            // Direkte Weiterleitung ohne delay
+            console.log('🔗 Weiterleitung zu:', 'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/spotify');
+            window.location.href = 'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/spotify';
+            
+            return false;
         }
 
-        // Event Listener nur einmal setzen
+        // Event Handler mit mehrfachen Fallbacks
         document.addEventListener('DOMContentLoaded', function() {
-            const spotifyBtn = document.getElementById('spotifyLoginBtn');
-            if (spotifyBtn) {
-                spotifyBtn.onclick = handleSpotifyLogin;
-            }
+            console.log('🚀 Free.html DOM geladen');
+            
+            // Warte kurz, damit alle Scripts geladen sind
+            setTimeout(function() {
+                const spotifyBtn = document.getElementById('spotifyLoginBtn');
+                console.log('🔍 Spotify Button Element:', spotifyBtn);
+                
+                if (spotifyBtn) {
+                    // Alle vorherigen Event Listener entfernen
+                    spotifyBtn.onclick = null;
+                    spotifyBtn.removeEventListener('click', handleSpotifyLogin);
+                    
+                    // Multiple Event Handler als Fallback
+                    spotifyBtn.addEventListener('click', function(e) {
+                        console.log('🎯 Click Event auf Spotify Button erkannt');
+                        return handleSpotifyLogin(e);
+                    });
+                    
+                    spotifyBtn.onclick = function(e) {
+                        console.log('🎯 Onclick Event auf Spotify Button erkannt');
+                        return handleSpotifyLogin(e);
+                    };
+                    
+                    // Test Button Funktionalität
+                    console.log('✅ Spotify Login Button bereit');
+                    console.log('📝 Button onclick:', typeof spotifyBtn.onclick);
+                    console.log('📝 Button disabled:', spotifyBtn.disabled);
+                    
+                    // Debug: Test durch Code-Ausführung
+                    window.testSpotifyLogin = function() {
+                        console.log('🧪 Test Login ausgeführt');
+                        handleSpotifyLogin();
+                    };
+                    
+                } else {
+                    console.error('❌ Spotify Login Button nicht gefunden!');
+                }
+            }, 100);
         });
 
         // Burger Menu Toggle

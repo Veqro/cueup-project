@@ -342,11 +342,14 @@
             <div class="debug-section">
                 <h2>🔧 Server-Tests</h2>
                 <div class="quick-tests">
-                    <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status">Auth Status</button>
-                    <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/api/status">Server Status</button>
-                    <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/spotify/me">Spotify API</button>
-                    <button class="test-button" id="testAllEndpoints">Alle Endpunkte testen</button>
+                    <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status">Server Status</button>
+                    <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/api/events" data-auth="true">API Events*</button>
+                    <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/spotify/me" data-auth="true">Spotify User*</button>
+                    <button class="test-button" id="testAllEndpoints">Alle Endpunkte testen (3)</button>
                 </div>
+                <p style="font-size: 0.9rem; color: #ccc; margin-top: 10px;">
+                    * Diese Endpunkte erfordern eine aktive Spotify-Anmeldung
+                </p>
                 <div id="testResults" class="result-container" style="display: none;"></div>
             </div>
         </div>
@@ -547,24 +550,37 @@
                         const endTime = performance.now();
                         const responseTime = Math.round(endTime - startTime);
                         
-                        const statusClass = response.ok ? 'success' : 'error';
-                        resultContainer.className = `result-container ${statusClass}`;
-                        
-                        let result = `✅ Status: ${response.status} ${response.statusText}\n`;
-                        result += `⏱️ Antwortzeit: ${responseTime}ms\n`;
-                        result += `🌐 URL: ${url}\n\n`;
+                        let result;
+                        let statusClass;
                         
                         if (response.ok) {
+                            statusClass = 'success';
+                            result = `✅ Status: ${response.status} ${response.statusText}\n`;
+                            result += `⏱️ Antwortzeit: ${responseTime}ms\n`;
+                            result += `🌐 URL: ${url}\n\n`;
+                            
                             try {
                                 const data = await response.json();
                                 result += `📋 Response:\n${JSON.stringify(data, null, 2)}`;
                             } catch (e) {
                                 result += `📋 Response: Text-Response oder Parse-Fehler`;
                             }
+                        } else if (response.status === 401 || response.status === 403) {
+                            statusClass = 'warning';
+                            result = `⚠️ Status: ${response.status} ${response.statusText}\n`;
+                            result += `⏱️ Antwortzeit: ${responseTime}ms\n`;
+                            result += `🌐 URL: ${url}\n\n`;
+                            result += `🔒 Endpunkt erfordert Spotify-Anmeldung\n`;
+                            result += `ℹ️ Dies ist normal - melden Sie sich zuerst bei Spotify an`;
                         } else {
-                            result = result.replace('✅', '❌');
-                            result += `❌ Fehler beim Abrufen der Daten`;
+                            statusClass = 'error';
+                            result = `❌ Status: ${response.status} ${response.statusText}\n`;
+                            result += `⏱️ Antwortzeit: ${responseTime}ms\n`;
+                            result += `🌐 URL: ${url}\n\n`;
+                            result += `❌ Server-Fehler oder Endpunkt nicht gefunden`;
                         }
+                        
+                        resultContainer.className = `result-container ${statusClass}`;
                         
                         resultContainer.innerHTML = result;
                         
@@ -588,15 +604,15 @@
             resultContainer.innerHTML = '🔄 Teste alle Server-Endpunkte...\n\n';
             
             const endpoints = [
-                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', name: 'Auth Status' },
-                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/api/status', name: 'Server Status' },
-                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/spotify/me', name: 'Spotify API' }
+                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', name: 'Server Status' },
+                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/api/events', name: 'API Events (Anmeldung erforderlich)' },
+                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/spotify/me', name: 'Spotify User (Anmeldung erforderlich)' }
             ];
             
             let allResults = '';
             let successCount = 0;
             
-            for (const endpoint of endpoints) {
+                for (const endpoint of endpoints) {
                 try {
                     const startTime = performance.now();
                     const response = await fetch(endpoint.url, {
@@ -607,22 +623,33 @@
                     const endTime = performance.now();
                     const responseTime = Math.round(endTime - startTime);
                     
-                    const status = response.ok ? '✅' : '❌';
-                    if (response.ok) successCount++;
+                    let status, description;
+                    if (response.ok) {
+                        status = '✅';
+                        successCount++;
+                        description = `${response.status}`;
+                    } else if (response.status === 401 || response.status === 403) {
+                        status = '⚠️';
+                        description = `${response.status} (Anmeldung erforderlich)`;
+                        // Zählen als teilweiser Erfolg, da der Server antwortet
+                        successCount += 0.5;
+                    } else {
+                        status = '❌';
+                        description = `${response.status}`;
+                    }
                     
-                    allResults += `${status} ${endpoint.name}: ${response.status} (${responseTime}ms)\n`;
+                    allResults += `${status} ${endpoint.name}: ${description} (${responseTime}ms)\n`;
                 } catch (error) {
                     allResults += `❌ ${endpoint.name}: ${error.name === 'TimeoutError' ? 'Timeout' : 'Fehler'}\n`;
                 }
-            }
-            
-            const summary = `📊 Ergebnis: ${successCount}/${endpoints.length} Endpunkte funktionieren\n\n`;
+            }            const maxScore = endpoints.length;
+            const summary = `📊 Ergebnis: ${successCount.toFixed(1)}/${maxScore} Endpunkte funktionieren\n\n`;
             resultContainer.innerHTML = summary + allResults + '\n🏁 Test aller Endpunkte abgeschlossen!';
             
             // CSS-Klasse je nach Erfolg setzen
-            if (successCount === endpoints.length) {
+            if (successCount >= maxScore * 0.9) {
                 resultContainer.className = 'result-container success';
-            } else if (successCount > 0) {
+            } else if (successCount >= maxScore * 0.5) {
                 resultContainer.className = 'result-container warning';
             } else {
                 resultContainer.className = 'result-container error';
