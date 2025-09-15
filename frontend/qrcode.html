@@ -195,54 +195,238 @@
             to { opacity: 1; }
         }
 
-        /* QR-Code Personalisierung */
-        .qr-options {
+        /* QR-Code Anpassungsbereich */
+        .customization-panel {
             background: rgba(255, 255, 255, 0.05);
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin-bottom: 2rem;
-            border: 1px solid rgba(170, 0, 255, 0.2);
+            border-radius: 15px;
+            margin: 1.5rem 0;
+            border: 1px solid rgba(170, 0, 255, 0.3);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        .qr-options h3 {
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: rgba(170, 0, 255, 0.1);
+            border-bottom: 1px solid rgba(170, 0, 255, 0.2);
+            cursor: pointer;
+        }
+
+        .panel-header h3 {
             color: #aa00ff;
-            margin-bottom: 1rem;
+            margin: 0;
             font-size: 1.2rem;
+        }
+
+        .panel-toggle {
+            background: none;
+            border: none;
+            color: #aa00ff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .panel-toggle:hover {
+            color: #cc44ff;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .panel-toggle.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .panel-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .panel-content.show {
+            padding: 1.5rem;
+            max-height: 1000px;
+        }
+
+        .settings-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .settings-section h4 {
+            color: #cc44ff;
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            font-weight: 600;
         }
 
         .option-group {
             margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
         .option-group label {
-            color: white;
-            display: block;
-            margin-bottom: 0.5rem;
+            color: #fff;
+            font-weight: 500;
             font-size: 0.9rem;
         }
 
-        .option-group input, .option-group select {
-            width: 100%;
-            padding: 0.5rem;
+        .option-group input,
+        .option-group select {
+            padding: 0.75rem;
             border: 1px solid rgba(170, 0, 255, 0.3);
-            border-radius: 5px;
+            border-radius: 8px;
             background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 0.9rem;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
         }
 
-        .option-group input:focus, .option-group select:focus {
+        .option-group input:focus,
+        .option-group select:focus {
             outline: none;
             border-color: #aa00ff;
-            box-shadow: 0 0 5px rgba(170, 0, 255, 0.3);
+            box-shadow: 0 0 0 2px rgba(170, 0, 255, 0.2);
         }
 
         .color-picker {
-            width: 60px !important;
+            width: 80px !important;
             height: 40px;
-            border: none;
-            border-radius: 5px;
+            padding: 5px;
+            border-radius: 8px;
             cursor: pointer;
+        }
+
+        .color-presets {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .color-preset {
+            width: 50px;
+            height: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .color-preset:hover {
+            border-color: #aa00ff;
+            transform: scale(1.1);
+        }
+
+        .switch-label {
+            display: flex !important;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+
+        .switch-label input[type="checkbox"] {
+            width: 50px;
+            height: 25px;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .switch-label input[type="checkbox"]:checked {
+            background: #aa00ff;
+        }
+
+        .switch-label input[type="checkbox"]::before {
+            content: '';
+            position: absolute;
+            width: 21px;
+            height: 21px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .switch-label input[type="checkbox"]:checked::before {
+            transform: translateX(25px);
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, #aa00ff, #cc44ff);
+            color: white;
+        }
+
+        .primary-btn:hover {
+            background: linear-gradient(135deg, #cc44ff, #aa00ff);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(170, 0, 255, 0.4);
+        }
+
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-icon {
+            font-size: 1.1rem;
+        }
+
+        #textSizeValue {
+            color: #aa00ff;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
 
         .toggle-options {
@@ -339,45 +523,102 @@
                 <div class="event-code" id="eventCodeDisplay">Lädt...</div>
             </div>
 
-            <button class="toggle-options" onclick="toggleOptions()">QR-Code anpassen</button>
-            
-            <div class="qr-options" id="qrOptions" style="display: none;">
-                <h3>QR-Code Personalisierung</h3>
-                
-                <div class="option-group">
-                    <label for="centerText">Text in der Mitte:</label>
-                    <input type="text" id="centerText" placeholder="z.B. Musikwünsche" maxlength="20">
+            <!-- QR-Code Anpassungsbereich -->
+            <div class="customization-panel">
+                <div class="panel-header">
+                    <h3>🎨 QR-Code Design anpassen</h3>
+                    <button class="panel-toggle" onclick="toggleCustomizationPanel()" id="panelToggle">
+                        <span class="toggle-text">Erweitern</span>
+                        <span class="toggle-icon">▼</span>
+                    </button>
                 </div>
                 
-                <div class="option-group">
-                    <label for="dotStyle">Punkt-Stil:</label>
-                    <select id="dotStyle">
-                        <option value="square">Eckig (Standard)</option>
-                        <option value="dots">Runde Punkte</option>
-                        <option value="rounded">Abgerundete Ecken</option>
-                    </select>
+                <div class="panel-content" id="customizationContent" style="display: none;">
+                    <!-- Basis-Einstellungen -->
+                    <div class="settings-section">
+                        <h4>📱 Mobile Optimierung</h4>
+                        <div class="option-group">
+                            <label class="switch-label">
+                                <input type="checkbox" id="mobileOptimized" checked onchange="regenerateQR()">
+                                <span class="slider">Handy-optimierte Größe</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Text-Overlay -->
+                    <div class="settings-section">
+                        <h4>📝 Text-Overlay</h4>
+                        <div class="option-group">
+                            <label for="centerText">Text in der Mitte:</label>
+                            <input type="text" id="centerText" placeholder="z.B. Event Code, Musikwünsche" maxlength="25" oninput="regenerateQR()">
+                        </div>
+                        <div class="option-group">
+                            <label for="textColor">Text-Farbe:</label>
+                            <input type="color" id="textColor" class="color-picker" value="#aa00ff" onchange="regenerateQR()">
+                        </div>
+                        <div class="option-group">
+                            <label for="textSize">Text-Größe:</label>
+                            <input type="range" id="textSize" min="10" max="30" value="16" oninput="regenerateQR()">
+                            <span id="textSizeValue">16px</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Design-Stile -->
+                    <div class="settings-section">
+                        <h4>🎨 Design-Stil</h4>
+                        <div class="option-group">
+                            <label for="dotStyle">Punkt-Stil:</label>
+                            <select id="dotStyle" onchange="regenerateQR()">
+                                <option value="square">■ Eckig (Klassisch)</option>
+                                <option value="dots">● Runde Punkte (Modern)</option>
+                                <option value="rounded">▢ Abgerundete Ecken</option>
+                            </select>
+                        </div>
+                        
+                        <div class="option-group">
+                            <label for="cornerStyle">Ecken-Design:</label>
+                            <select id="cornerStyle" onchange="regenerateQR()">
+                                <option value="square">⬜ Standard Ecken</option>
+                                <option value="extra-rounded">🔘 Stark abgerundet</option>
+                                <option value="dot">⚪ Punkt-Ecken</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Farben -->
+                    <div class="settings-section">
+                        <h4>🌈 Farb-Schema</h4>
+                        <div class="color-presets">
+                            <button class="color-preset" onclick="setColorScheme('#000000', '#ffffff')" title="Klassisch">⚫⚪</button>
+                            <button class="color-preset" onclick="setColorScheme('#aa00ff', '#ffffff')" title="CueUp Purple">🟣⚪</button>
+                            <button class="color-preset" onclick="setColorScheme('#1DB954', '#ffffff')" title="Spotify Green">🟢⚪</button>
+                            <button class="color-preset" onclick="setColorScheme('#FF1744', '#ffffff')" title="Rot">🔴⚪</button>
+                            <button class="color-preset" onclick="setColorScheme('#2196F3', '#ffffff')" title="Blau">🔵⚪</button>
+                        </div>
+                        
+                        <div class="option-group">
+                            <label for="darkColor">Vordergrund-Farbe:</label>
+                            <input type="color" id="darkColor" class="color-picker" value="#000000" onchange="regenerateQR()">
+                        </div>
+                        
+                        <div class="option-group">
+                            <label for="lightColor">Hintergrund-Farbe:</label>
+                            <input type="color" id="lightColor" class="color-picker" value="#ffffff" onchange="regenerateQR()">
+                        </div>
+                    </div>
+                    
+                    <!-- Aktions-Buttons -->
+                    <div class="panel-actions">
+                        <button class="action-btn primary-btn" onclick="regenerateQR()">
+                            <span class="btn-icon">🔄</span>
+                            QR-Code aktualisieren
+                        </button>
+                        <button class="action-btn secondary-btn" onclick="resetToDefaults()">
+                            <span class="btn-icon">↺</span>
+                            Zurücksetzen
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="option-group">
-                    <label for="cornerStyle">Ecken-Design:</label>
-                    <select id="cornerStyle">
-                        <option value="square">Eckig (Standard)</option>
-                        <option value="extra-rounded">Stark abgerundet</option>
-                        <option value="dot">Punkte</option>
-                    </select>
-                </div>
-                
-                <div class="option-group">
-                    <label for="darkColor">Farbe (Dunkel):</label>
-                    <input type="color" id="darkColor" class="color-picker" value="#000000">
-                </div>
-                
-                <div class="option-group">
-                    <label for="lightColor">Farbe (Hell):</label>
-                    <input type="color" id="lightColor" class="color-picker" value="#ffffff">
-                </div>
-                
-                <button class="toggle-options" onclick="regenerateQR()">QR-Code aktualisieren</button>
             </div>
 
             <div class="loading" id="loadingMessage">
@@ -473,7 +714,19 @@
 
                 // QR-Code Optionen zusammenstellen
                 const isMobile = window.innerWidth <= 768;
-                const qrSize = isMobile ? Math.min(window.innerWidth - 100, 350) : 300;
+                const mobileOptimized = customOptions.mobileOptimized !== false; // Standard: true
+                
+                let qrSize;
+                if (mobileOptimized && isMobile) {
+                    // Handy-optimierte Größe: Nimmt fast die ganze Bildschirmbreite
+                    qrSize = Math.min(window.innerWidth - 60, 400);
+                } else if (isMobile) {
+                    // Standard mobile Größe
+                    qrSize = Math.min(window.innerWidth - 100, 300);
+                } else {
+                    // Desktop Größe
+                    qrSize = 350;
+                }
                 
                 const options = {
                     width: qrSize,
@@ -528,7 +781,7 @@
             }
         }
 
-        // QR-Code personalisieren (Text in der Mitte hinzufügen)
+        // QR-Code personalisieren (Text, Farben, Stile)
         function personalizeQRCode(canvas, options) {
             const ctx = canvas.getContext('2d');
             const centerText = options.centerText;
@@ -537,46 +790,57 @@
                 const canvasSize = canvas.width;
                 const centerX = canvasSize / 2;
                 const centerY = canvasSize / 2;
-                const boxSize = canvasSize * 0.15; // 15% der Canvas-Größe
                 
-                // Weißen Hintergrund für Text zeichnen
+                // Mobile Optimierung für Text-Box Größe
+                const isSmallScreen = canvasSize < 300;
+                const boxSizeFactor = options.mobileOptimized && isSmallScreen ? 0.2 : 0.15;
+                const boxSize = canvasSize * boxSizeFactor;
+                
+                // Hintergrund für Text zeichnen
                 ctx.fillStyle = options.lightColor || '#ffffff';
                 ctx.fillRect(centerX - boxSize/2, centerY - boxSize/2, boxSize, boxSize);
                 
                 // Rahmen um Textbox
-                ctx.strokeStyle = options.darkColor || '#000000';
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = options.textColor || options.darkColor || '#000000';
+                ctx.lineWidth = isSmallScreen ? 1 : 2;
                 ctx.strokeRect(centerX - boxSize/2, centerY - boxSize/2, boxSize, boxSize);
                 
-                // Text zentriert zeichnen
-                ctx.fillStyle = options.darkColor || '#000000';
-                ctx.font = `bold ${Math.floor(boxSize * 0.12)}px Arial`;
+                // Text-Einstellungen
+                const fontSize = options.textSize || 16;
+                const fontSizeFactor = isSmallScreen ? 0.8 : 1;
+                const finalFontSize = Math.max(Math.floor(fontSize * fontSizeFactor), 10);
+                
+                ctx.fillStyle = options.textColor || options.darkColor || '#000000';
+                ctx.font = `bold ${finalFontSize}px Arial, sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
                 // Text in mehrere Zeilen aufteilen wenn nötig
                 const words = centerText.split(' ');
-                const maxWidth = boxSize * 0.8;
+                const maxWidth = boxSize * 0.85;
                 let lines = [];
-                let currentLine = words[0];
+                let currentLine = words[0] || '';
                 
                 for (let i = 1; i < words.length; i++) {
                     const word = words[i];
                     const testLine = currentLine + ' ' + word;
                     const metrics = ctx.measureText(testLine);
                     
-                    if (metrics.width > maxWidth) {
+                    if (metrics.width > maxWidth && currentLine.length > 0) {
                         lines.push(currentLine);
                         currentLine = word;
                     } else {
                         currentLine = testLine;
                     }
                 }
-                lines.push(currentLine);
+                if (currentLine.length > 0) {
+                    lines.push(currentLine);
+                }
                 
                 // Text zeichnen
-                const lineHeight = boxSize * 0.15;
-                const startY = centerY - (lines.length - 1) * lineHeight / 2;
+                const lineHeight = finalFontSize * 1.2;
+                const totalTextHeight = lines.length * lineHeight;
+                const startY = centerY - totalTextHeight / 2 + lineHeight / 2;
                 
                 lines.forEach((line, index) => {
                     ctx.fillText(line, centerX, startY + index * lineHeight);
@@ -650,10 +914,49 @@
             };
         }
 
-        // Optionen ein/ausblenden
-        function toggleOptions() {
-            const options = document.getElementById('qrOptions');
-            options.style.display = options.style.display === 'none' ? 'block' : 'none';
+        // Anpassungspanel ein/ausklappen
+        function toggleCustomizationPanel() {
+            const content = document.getElementById('customizationContent');
+            const toggle = document.getElementById('panelToggle');
+            const toggleText = toggle.querySelector('.toggle-text');
+            
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                toggle.classList.remove('active');
+                toggleText.textContent = 'Erweitern';
+            } else {
+                content.classList.add('show');
+                toggle.classList.add('active');
+                toggleText.textContent = 'Einklappen';
+            }
+        }
+
+        // Farb-Schema setzen
+        function setColorScheme(darkColor, lightColor) {
+            document.getElementById('darkColor').value = darkColor;
+            document.getElementById('lightColor').value = lightColor;
+            regenerateQR();
+        }
+
+        // Auf Standard zurücksetzen
+        function resetToDefaults() {
+            document.getElementById('centerText').value = '';
+            document.getElementById('dotStyle').value = 'square';
+            document.getElementById('cornerStyle').value = 'square';
+            document.getElementById('darkColor').value = '#000000';
+            document.getElementById('lightColor').value = '#ffffff';
+            document.getElementById('textColor').value = '#aa00ff';
+            document.getElementById('textSize').value = '16';
+            document.getElementById('textSizeValue').textContent = '16px';
+            document.getElementById('mobileOptimized').checked = true;
+            regenerateQR();
+        }
+
+        // Text-Größe Slider Update
+        function updateTextSizeDisplay() {
+            const slider = document.getElementById('textSize');
+            const display = document.getElementById('textSizeValue');
+            display.textContent = slider.value + 'px';
         }
 
         // QR-Code mit benutzerdefinierten Optionen neu generieren
@@ -663,8 +966,14 @@
                 dotStyle: document.getElementById('dotStyle').value,
                 cornerStyle: document.getElementById('cornerStyle').value,
                 darkColor: document.getElementById('darkColor').value,
-                lightColor: document.getElementById('lightColor').value
+                lightColor: document.getElementById('lightColor').value,
+                textColor: document.getElementById('textColor').value,
+                textSize: parseInt(document.getElementById('textSize').value),
+                mobileOptimized: document.getElementById('mobileOptimized').checked
             };
+            
+            // Text-Größe Display aktualisieren
+            updateTextSizeDisplay();
             
             generateQRCode(customOptions);
         }
@@ -711,6 +1020,14 @@
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 2300);
         }
+
+        // Event Listener für Slider initialisieren
+        document.addEventListener('DOMContentLoaded', function() {
+            const textSizeSlider = document.getElementById('textSize');
+            if (textSizeSlider) {
+                textSizeSlider.addEventListener('input', updateTextSizeDisplay);
+            }
+        });
     </script>
 
     <!-- Footer -->

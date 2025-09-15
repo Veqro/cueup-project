@@ -320,19 +320,24 @@
             
             let menuItems;
             if (isLoggedIn) {
-                // Bereits angemeldet - zur Startseite weiterleiten
-                showToast('Bereits angemeldet, weiterleiten...');
-                setTimeout(() => {
-                    window.location.href = 'startpage.html';
-                }, 500);
-                return;
+                // Bereits angemeldet - zeige erweiterte Navigation
+                menuItems = [
+                    { text: 'Startseite', href: 'startpage.html' },
+                    { text: 'Meine Events', href: 'myEvents.html' },
+                    { text: 'Event erstellen', href: 'createevent.html' },
+                    { text: 'Kontakt', href: 'contact.html' },
+                    { text: 'Ausloggen', href: '#', onclick: 'auth.logout()' }
+                ];
+                
+                // Hinweis anzeigen, dass User bereits angemeldet ist
+                showToast('Sie sind bereits angemeldet! Sie können direkt zu Ihren Events gehen.', 'info');
             } else {
                 // Nicht angemeldet - Login-Menü
                 menuItems = [
                     ...baseMenuItems,
                     { text: 'Einloggen', href: 'free.html' }
                 ];
-                }
+            }
             
             // Menü aufbauen
             navigationMenu.innerHTML = menuItems.map(item => {

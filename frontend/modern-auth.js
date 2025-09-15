@@ -51,7 +51,7 @@ class ModernAuth {
     isSessionValid(session) {
         if (!session || !session.expires) return false;
         
-        // Session 24 Stunden gültig
+        // Session 7 Tage gültig (verlängert für bessere UX)
         return session.expires > Date.now();
     }
 
@@ -61,7 +61,7 @@ class ModernAuth {
     saveSession(userData) {
         const session = {
             user: userData,
-            expires: Date.now() + (24 * 60 * 60 * 1000), // 24 Stunden
+            expires: Date.now() + (7 * 24 * 60 * 60 * 1000), // 7 Tage
             created: Date.now()
         };
         
@@ -69,6 +69,8 @@ class ModernAuth {
         this.isAuthenticated = true;
         this.user = userData;
         this.updateUI();
+        
+        console.log('✅ Session gespeichert für 7 Tage');
     }
 
     /**
@@ -202,15 +204,23 @@ class ModernAuth {
         try {
             const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
                 credentials: 'include',
-                signal: AbortSignal.timeout(3000) // Max 3 Sekunden
+                signal: AbortSignal.timeout(5000) // Max 5 Sekunden
             });
 
             if (!response.ok) {
-                // Server sagt nicht authentifiziert -> lokale Session löschen
-                this.logout();
+                // Nur bei 401/403 ausloggen - andere Fehler ignorieren
+                if (response.status === 401 || response.status === 403) {
+                    console.log('🔒 Server-Auth invalid - lokale Session entfernt');
+                    this.logout();
+                } else {
+                    console.log(`⚠️ Server-Fehler ${response.status} - Session bleibt erhalten`);
+                }
+            } else {
+                console.log('✅ Server-Session gültig');
             }
         } catch (error) {
-            // Ignore - bleibt bei lokaler Session
+            // Bei Netzwerkfehlern NICHT ausloggen
+            console.log('🌐 Server nicht erreichbar - Session bleibt erhalten:', error.name);
         }
     }
 }
