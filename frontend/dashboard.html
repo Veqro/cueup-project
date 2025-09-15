@@ -133,6 +133,12 @@
                 margin: 40px 0 20px 0;
                 padding: 0 60px 0 10px;
                 flex-direction: column;
+                text-align: center;
+            }
+            
+            .header-content {
+                width: 100%;
+                text-align: center;
             }
         }
 
@@ -963,6 +969,18 @@
     <script src="url-rewriter.js"></script>
 </head>
 <body>
+    <!-- Header mit Navigation -->
+    <header style="background: rgba(0, 0, 0, 0.8); padding: 1rem; border-bottom: 1px solid rgba(170, 0, 255, 0.3);">
+        <div style="max-width: 1600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <h1 style="color: #aa00ff; margin: 0; font-size: 1.8rem;">DJ Dashboard</h1>
+            <nav>
+                <ul id="navigationMenu" style="list-style: none; margin: 0; padding: 0; display: flex; gap: 1rem;">
+                    <!-- Dynamische Navigation -->
+                </ul>
+            </nav>
+        </div>
+    </header>
+
     <div id="toast" class="toast">
         <span class="icon">✓</span>
         <span class="message"></span>
@@ -1485,6 +1503,11 @@
 
         // Dashboard initialisieren
         initializeDashboard();
+
+        // Dynamische Navigation basierend auf Auth-Status
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.updateUI();
+        });
     </script>
 
     <!-- Footer -->

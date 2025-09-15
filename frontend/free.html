@@ -343,7 +343,15 @@
                 ];
                 
                 if (forceLogin) {
-                    showToast('Bereit für neuen Login. Klicken Sie auf "Mit Spotify anmelden".', 'info');
+                    // Prüfen ob von Logout gekommen
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.has('logout')) {
+                        showToast('✅ Erfolgreich ausgeloggt! Sie können sich jetzt neu anmelden.', 'success');
+                        // URL Parameter entfernen für saubere URL
+                        window.history.replaceState({}, document.title, 'free.html');
+                    } else {
+                        showToast('Bereit für neuen Login. Klicken Sie auf "Mit Spotify anmelden".', 'info');
+                    }
                 }
             }
             

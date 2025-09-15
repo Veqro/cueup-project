@@ -722,11 +722,15 @@ h1 {
 @media (max-width: 768px) {
   .background-image {
     background-attachment: scroll;
-    position: absolute;
-    min-height: 100vh;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-size: cover;
+    background-position: center center;
+    transform: none;
   }
   
-  /* Body muss relative positioning haben für absolute background */
+  /* Body positioning für mobile */
   body {
     position: relative;
   }

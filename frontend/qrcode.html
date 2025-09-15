@@ -513,12 +513,8 @@
 
     <div class="sidebar" id="sidebar">
         <nav>
-            <ul>
-                <li><a href="startpage.html">Startseite</a></li>
-                <li><a href="createevent.html">Event erstellen</a></li>
-                <li><a href="myEvents.html">Meine Events</a></li>
-                <li><a href="contact.html">Kontakt</a></li>
-                <li><a href="free.html">Einloggen</a></li>
+            <ul id="navigationMenu">
+                <!-- Menü wird dynamisch basierend auf Login-Status gefüllt -->
             </ul>
         </nav>
     </div>
@@ -1015,6 +1011,9 @@
             if (textSizeSlider) {
                 textSizeSlider.addEventListener('input', updateTextSizeDisplay);
             }
+
+            // Dynamische Navigation basierend auf Auth-Status
+            auth.updateUI();
         });
     </script>
 

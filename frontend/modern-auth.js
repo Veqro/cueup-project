@@ -51,8 +51,29 @@ class ModernAuth {
     isSessionValid(session) {
         if (!session || !session.expires) return false;
         
-        // Session 7 Tage gültig (verlängert für bessere UX)
-        return session.expires > Date.now();
+        // Session 1 Jahr gültig (bis Browser-Cache gelöscht) + Update bei Aktivität
+        const isValid = session.expires > Date.now();
+        
+        if (isValid) {
+            // Bei Aktivität Session-Gültigkeit verlängern
+            this.updateSessionActivity(session);
+        }
+        
+        return isValid;
+    }
+
+    /**
+     * Session-Aktivität aktualisieren (verlängert automatisch)
+     */
+    updateSessionActivity(session) {
+        const now = Date.now();
+        // Nur alle 24h aktualisieren um localStorage-Calls zu minimieren
+        if (!session.lastActivity || (now - session.lastActivity) > (24 * 60 * 60 * 1000)) {
+            session.lastActivity = now;
+            session.expires = now + (365 * 24 * 60 * 60 * 1000); // Wieder 1 Jahr verlängern
+            localStorage.setItem(this.sessionKey, JSON.stringify(session));
+            console.log('🔄 Session automatisch verlängert um 1 Jahr');
+        }
     }
 
     /**
@@ -61,8 +82,9 @@ class ModernAuth {
     saveSession(userData) {
         const session = {
             user: userData,
-            expires: Date.now() + (7 * 24 * 60 * 60 * 1000), // 7 Tage
-            created: Date.now()
+            expires: Date.now() + (365 * 24 * 60 * 60 * 1000), // 1 Jahr (wie Amazon)
+            created: Date.now(),
+            lastActivity: Date.now()
         };
         
         localStorage.setItem(this.sessionKey, JSON.stringify(session));
@@ -70,7 +92,7 @@ class ModernAuth {
         this.user = userData;
         this.updateUI();
         
-        console.log('✅ Session gespeichert für 7 Tage');
+        console.log('✅ Session gespeichert für 1 Jahr (bis Browser-Cache gelöscht wird)');
     }
 
     /**
@@ -133,34 +155,51 @@ class ModernAuth {
     async logout() {
         console.log('🚪 Logout gestartet...');
         
-        // 1. Lokale Session sofort löschen
-        localStorage.removeItem(this.sessionKey);
+        // 1. KOMPLETT alle Auth-Daten löschen (verschiedene Varianten für Robustheit)
+        const keysToRemove = [this.sessionKey, 'cueup_session', 'spotify_session', 'user_session'];
+        keysToRemove.forEach(key => {
+            localStorage.removeItem(key);
+            sessionStorage.removeItem(key);
+        });
+        
         this.isAuthenticated = false;
         this.user = null;
         
+        // 2. Browser-Cookies löschen (falls vorhanden)
+        document.cookie.split(";").forEach(function(c) { 
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        
         try {
-            // 2. Server-Session löschen (synchron warten)
-            const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/logout', {
-                method: 'POST',
-                credentials: 'include',
-                signal: AbortSignal.timeout(3000)
-            });
+            // 3. Server-Session löschen (mit mehreren Versuchen)
+            const logoutUrls = [
+                'https://novel-willyt-veqro-a29cd625.koyeb.app/logout',
+                'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/logout'
+            ];
             
-            if (response.ok) {
-                console.log('✅ Server-Session erfolgreich gelöscht');
-            } else {
-                console.log('⚠️ Server-Logout Fehler, aber lokale Session gelöscht');
+            for (const url of logoutUrls) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        credentials: 'include',
+                        signal: AbortSignal.timeout(2000)
+                    });
+                    console.log(`Server-Logout ${url}: ${response.status}`);
+                } catch (e) {
+                    console.log(`Server-Logout ${url} fehlgeschlagen:`, e.name);
+                }
             }
         } catch (error) {
-            console.log('🌐 Server nicht erreichbar für Logout, aber lokale Session gelöscht');
+            console.log('🌐 Server-Logout komplett fehlgeschlagen, aber lokale Session gelöscht');
         }
         
-        // 3. UI sofort aktualisieren
+        // 4. UI sofort aktualisieren
         this.updateUI();
         
-        // 4. Zur Login-Seite mit force Parameter
+        // 5. Zur Login-Seite mit Cache-Busting und force Parameter
         console.log('🔄 Weiterleitung zu Login-Seite...');
-        window.location.href = 'free.html?force=1';
+        const timestamp = Date.now();
+        window.location.href = `free.html?force=1&logout=${timestamp}`;
     }
 
     /**
@@ -215,41 +254,77 @@ class ModernAuth {
     }
 
     /**
-     * Server-Sync im Hintergrund (non-blocking)
+     * Server-Sync im Hintergrund (non-blocking) - robuste Multi-URL-Behandlung
      */
     async syncWithServerInBackground() {
         try {
-            const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
-                credentials: 'include',
-                signal: AbortSignal.timeout(5000) // Max 5 Sekunden
-            });
-
-            if (!response.ok) {
-                // Nur bei 401/403 ausloggen - andere Fehler ignorieren
-                if (response.status === 401 || response.status === 403) {
-                    console.log('🔒 Server-Auth invalid - lokale Session entfernt');
-                    // SILENT logout - keine Weiterleitung
-                    localStorage.removeItem(this.sessionKey);
-                    this.isAuthenticated = false;
-                    this.user = null;
-                    this.updateUI();
-                } else {
-                    console.log(`⚠️ Server-Fehler ${response.status} - Session bleibt erhalten`);
-                }
-            } else {
-                // Server-Session ist gültig - prüfe ob Daten aktuell sind
-                const data = await response.json();
-                if (data.isAuthenticated && data.user) {
-                    // Update lokale Session mit Server-Daten
-                    this.user = data.user;
-                    console.log('✅ Server-Session gültig und lokale Daten aktualisiert');
-                } else {
-                    console.log('✅ Server-Session gültig');
+            // Mehrere Auth-Check URLs versuchen (für bessere Server-Restart-Behandlung)
+            const authUrls = [
+                'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status',
+                'https://novel-willyt-veqro-a29cd625.koyeb.app/check-auth',
+                'https://novel-willyt-veqro-a29cd625.koyeb.app/api/auth'
+            ];
+            
+            let lastError = null;
+            
+            for (const url of authUrls) {
+                try {
+                    const response = await fetch(url, {
+                        credentials: 'include',
+                        signal: AbortSignal.timeout(3000)
+                    });
+                    
+                    if (response.status === 308 || response.status === 301) {
+                        // Redirect - Server ist da, aber Route falsch
+                        console.log(`🔄 Server Redirect von ${url} - versuche nächste Route`);
+                        continue;
+                    }
+                    
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) {
+                            console.log('🔒 Server-Auth invalid - Session nach Server-Restart ungültig');
+                            // SILENT logout nur bei wiederholten 401-Fehlern (Server-Restart-Schutz)
+                            const retryCount = parseInt(localStorage.getItem('auth_retry_count') || '0');
+                            if (retryCount > 2) {
+                                console.log('💀 Mehrfache Auth-Fehler - lokale Session entfernt');
+                                localStorage.removeItem(this.sessionKey);
+                                localStorage.removeItem('auth_retry_count');
+                                this.isAuthenticated = false;
+                                this.user = null;
+                                this.updateUI();
+                            } else {
+                                localStorage.setItem('auth_retry_count', (retryCount + 1).toString());
+                                console.log(`⏳ Auth-Retry ${retryCount + 1}/3 - Session bleibt erstmal erhalten`);
+                            }
+                            return;
+                        } else {
+                            console.log(`⚠️ Server-Fehler ${response.status} von ${url} - versuche nächste Route`);
+                            continue;
+                        }
+                    } else {
+                        // Success!
+                        localStorage.removeItem('auth_retry_count');
+                        const data = await response.json();
+                        if (data.isAuthenticated && data.user) {
+                            this.user = data.user;
+                            console.log('✅ Server-Session gültig und lokale Daten aktualisiert');
+                        } else {
+                            console.log('✅ Server-Session gültig');
+                        }
+                        return; // Erfolgreich, stoppe hier
+                    }
+                } catch (error) {
+                    lastError = error;
+                    console.log(`🌐 ${url} nicht erreichbar:`, error.name);
+                    continue;
                 }
             }
+            
+            // Alle URLs fehlgeschlagen - aber Session NICHT löschen
+            console.log('🌐 Alle Server-URLs nicht erreichbar - Session bleibt erhalten (Offline-Modus)');
+            
         } catch (error) {
-            // Bei Netzwerkfehlern NICHT ausloggen
-            console.log('🌐 Server nicht erreichbar - Session bleibt erhalten:', error.name);
+            console.log('🌐 Server-Sync komplett fehlgeschlagen - Session bleibt erhalten:', error.name);
         }
     }
 }
@@ -276,6 +351,28 @@ function checkLoginForAction(callback) {
 
 function requireLoginForAction(callback) {
     return auth.requireAuth(callback);
+}
+
+// Zusätzliche Funktionen für Problemlösung
+function forceLogout() {
+    // Komplett-Reset für hartnäckige Fälle
+    localStorage.clear();
+    sessionStorage.clear();
+    document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+    console.log('🧹 Komplett-Reset durchgeführt');
+    window.location.href = 'free.html?force=1&reset=' + Date.now();
+}
+
+function extendSession() {
+    // Session manuell um 1 Jahr verlängern
+    const session = auth.getStoredSession();
+    if (session) {
+        session.expires = Date.now() + (365 * 24 * 60 * 60 * 1000);
+        localStorage.setItem(auth.sessionKey, JSON.stringify(session));
+        console.log('🔄 Session manuell um 1 Jahr verlängert');
+    }
 }
 
 // Auto-Navigation nach DOM-Load

@@ -442,12 +442,14 @@
       }
 
       .section-count {
-        background: rgba(170, 0, 255, 0.2);
-        color: #aa00ff;
-        padding: 0.2rem 0.6rem;
+        background: rgba(170, 0, 255, 0.8);
+        color: white;
+        padding: 0.25rem 0.7rem;
         border-radius: 12px;
-        font-size: 0.9rem;
-        font-weight: normal;
+        font-size: 0.95rem;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(170, 0, 255, 1);
       }
 
       .no-events-message {
@@ -505,7 +507,8 @@
       @media (max-width: 768px) {
         .events-container {
           margin: 1rem auto;
-          padding: 0 0.5rem;
+          padding: 0 0.25rem;
+          max-width: 100%;
         }
         
         .event-card {
@@ -525,8 +528,8 @@
         .dashboard-btn, .copy-btn {
           width: 100%;
           justify-content: center;
-          padding: 0.6rem 1rem;
-          font-size: 0.9rem;
+          padding: 0.5rem 0.8rem;
+          font-size: 0.85rem;
         }
 
         .filter-tabs {
@@ -564,15 +567,19 @@
         }
 
         .filter-tab .section-count {
-          font-size: 0.65rem;
-          padding: 0.1rem 0.3rem;
+          font-size: 0.7rem;
+          padding: 0.15rem 0.4rem;
           border-radius: 8px;
-          min-width: 16px;
-          height: 16px;
-          line-height: 14px;
+          min-width: 18px;
+          height: 18px;
+          line-height: 16px;
           display: flex;
           align-items: center;
           justify-content: center;
+          background: rgba(170, 0, 255, 0.9);
+          color: white;
+          font-weight: bold;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         .floating-add-btn {
@@ -610,6 +617,10 @@
 
       /* Extra kleine Bildschirme - nur Icons */
       @media (max-width: 480px) {
+        .events-container {
+          padding: 0 0.15rem;
+        }
+        
         .filter-tabs {
           gap: 0.3rem;
           margin-bottom: 1rem;
@@ -665,13 +676,8 @@
 
     <div class="sidebar" id="sidebar">
       <nav>
-        <ul>
-          <li><a href="startpage.html">Startseite</a></li>
-          <li><a href="createevent.html">Event erstellen</a></li>
-          <li><a href="myEvents.html">Meine Events</a></li>
-          <li><a href="contact.html">Kontakt</a></li>
-          <li><a href="#" onclick="logout()">Ausloggen</a></li>
-          <li><a href="free.html">Einloggen</a></li>
+        <ul id="navigationMenu">
+          <!-- Menü wird dynamisch basierend auf Login-Status gefüllt -->
         </ul>
       </nav>
     </div>
@@ -1153,6 +1159,11 @@
       window.addEventListener("load", () => {
         loadEvents();
         checkAuthStatus();
+      });
+
+      // Dynamische Navigation basierend auf Auth-Status
+      document.addEventListener('DOMContentLoaded', () => {
+        auth.updateUI();
       });
     </script>
 
