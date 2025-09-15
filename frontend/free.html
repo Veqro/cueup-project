@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="favicon_io/favicon.ico">
     <meta name="msapplication-TileColor" content="#aa00ff">
     <meta name="theme-color" content="#aa00ff">
-    <script src="simple-auth.js"></script>
+    <script src="modern-auth.js"></script>
     <style>
         .login-container {
             max-width: 400px;
@@ -294,28 +294,13 @@
             `;
             document.head.appendChild(style);
             
-            // WICHTIG: Wir verwenden nicht async/await und try/catch mehr
-            // Stattdessen leiten wir direkt weiter
-            console.log('Direkte Weiterleitung zu Spotify-Login...');
+            // Modernes Auth-System - sofortige Weiterleitung
+            console.log('Spotify-Login über ModernAuth...');
             
-            // Kurze Verzögerung für den Spinner
-            setTimeout(function() {
-                try {
-                    // Direkte Weiterleitung ohne Prüfung
-                    window.location.href = 'https://novel-willyt-veqro-a29cd625.koyeb.app/login';
-                } catch (e) {
-                    // Falls selbst die Umleitung fehlschlägt
-                    console.error('Fehler bei der Umleitung:', e);
-                    errorMessage.textContent = 'Fehler bei der Weiterleitung. Bitte versuche es später erneut.';
-                    errorMessage.style.display = 'block';
-                    
-                    loginButton.disabled = false;
-                    loginButton.innerHTML = `
-                        <img src="img/Spotify_Full_Logo_RGB_White.png" alt="Spotify Logo" style="height: 25px; margin-right: 10px;">
-                        Mit Spotify anmelden
-                    `;
-                }
-            }, 500);
+            // Kurze Verzögerung für den Spinner, dann sofortige Weiterleitung
+            setTimeout(() => {
+                auth.spotifyLogin();
+            }, 300);
         });
 
         // Burger Menu Toggle
@@ -343,8 +328,8 @@
         async function updateNavigation() {
             const navigationMenu = document.getElementById('navigationMenu');
             
-            // Schnelle lokale Prüfung
-            const isLoggedIn = await window.simpleAuth.checkLoginForAction();
+            // Schnelle lokale Prüfung mit modernem Auth-System
+            const isLoggedIn = auth.isAuthenticated;
             
             const baseMenuItems = [
                 { text: 'Startseite', href: 'startpage.html' },

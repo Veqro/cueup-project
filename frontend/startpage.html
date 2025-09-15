@@ -87,7 +87,7 @@
    
     </style>
     <script src="url-rewriter.js"></script>
-    <script src="simple-auth.js"></script>
+    <script src="modern-auth.js"></script>
   </head>
   <body>
     <header>
@@ -211,67 +211,23 @@
         document.getElementById("sidebar").classList.toggle("active");
       });
 
-      // Sofort das Standard-Menü anzeigen
-      function showDefaultMenu() {
-        const navigationMenu = document.getElementById('navigationMenu');
-        navigationMenu.innerHTML = `
-          <li><a href="startpage">Startseite</a></li>
-          <li><a href="contact">Kontakt</a></li>
-          <li><a href="free">Einloggen</a></li>
-        `;
-      }
 
-      // Sofort Standard-Menü zeigen
-      showDefaultMenu();
-      
-      // Einfaches Menü basierend auf Login-Status
-      async function updateNavigation() {
-        const navigationMenu = document.getElementById('navigationMenu');
-        
-        // Schnelle lokale Prüfung ohne Server-Call
-        const isLoggedIn = await window.simpleAuth.checkLoginForAction();
-        
-        const baseMenuItems = [
-          { text: 'Startseite', href: 'startpage.html' },
-          { text: 'Kontakt', href: 'contact.html' }
-        ];
-        
-        let menuItems = [];
-        
-        if (isLoggedIn) {
-          menuItems = [
-            ...baseMenuItems,
-            { text: 'Event erstellen', href: 'createevent.html' },
-            { text: 'Meine Events', href: 'myEvents.html' },
-            { text: 'Profil', href: 'profile.html' },
-            { text: 'Ausloggen', href: '#', onclick: 'logout()' }
-          ];
+
+      // Moderne Auth-System Integration
+      function checkLoginAndRedirect(page, action) {
+        if (auth.isAuthenticated) {
+          window.location.href = `${page}.html`;
         } else {
-          menuItems = [
-            ...baseMenuItems,
-            { text: 'Einloggen', href: 'free.html' }
-          ];
+          window.location.href = 'free.html';
         }
-        
-        // Menü aufbauen
-        navigationMenu.innerHTML = menuItems.map(item => {
-          if (item.onclick) {
-            return `<li><a href="${item.href}" onclick="${item.onclick}">${item.text}</a></li>`;
-          } else {
-            return `<li><a href="${item.href}">${item.text}</a></li>`;
-          }
-        }).join('');
       }
 
-      // checkLoginAndRedirect wird jetzt von simple-auth.js bereitgestellt
-
-      // Sofort nach DOMContentLoaded das Menü aktualisieren
+      // Navigation wird automatisch vom ModernAuth-System verwaltet
       document.addEventListener('DOMContentLoaded', () => {
-        // Sofort Standard-Menü anzeigen
-        showDefaultMenu();
-        
-        // Dann versuchen, das Menü zu aktualisieren
-        setTimeout(updateNavigation, 100);
+        // Auth-System übernimmt automatisch die Navigation
+        setTimeout(() => {
+          auth.updateUI();
+        }, 100);
       });
     </script>
   </body>

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="startpage.css">
     
     <!-- Simple Auth - Einfacher Seiten-Schutz -->
-    <script src="simple-auth.js"></script>
+    <script src="modern-auth.js"></script>
     <script>
         // Seite automatisch schützen
         document.addEventListener('DOMContentLoaded', () => {
@@ -151,87 +151,63 @@
     </div>
 
     <script>
-        const SERVER_URL = 'https://novel-willyt-veqro-a29cd625.koyeb.app';
-        
         // Burger Menu Toggle
         document.getElementById('burger').addEventListener('change', function() {
             document.getElementById('sidebar').classList.toggle('active');
         });
 
-        // Dynamische Navigation basierend auf Login-Status
-        async function updateNavigation() {
-            const navigationMenu = document.getElementById('navigationMenu');
+        // Modernes Auth-System - Login-Session nach Spotify-Success speichern
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Spotify Success - Speichere Login-Session...');
             
             try {
-                const response = await fetch(`${SERVER_URL}/auth/status`, {
+                // Benutzerdaten vom Server abrufen
+                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/spotify/me', {
                     credentials: 'include'
                 });
-                const data = await response.json();
-                const isLoggedIn = data.isAuthenticated && data.spotifyConnected;
                 
-                // Basis-Menüeinträge, die für alle Benutzer verfügbar sind
-                const baseMenuItems = [
-                    { text: 'Startseite', href: 'startpage.html' },
-                    { text: 'Spotify Integration', href: 'explain-spotify.html' },
-                    { text: 'Kontakt', href: 'contact.html' }
-                ];
-                
-                let menuItems;
-                if (isLoggedIn) {
-                    // Angemeldeter Benutzer
-                    menuItems = [
-                        ...baseMenuItems,
-                        { text: 'Event erstellen', href: 'createevent.html' },
-                        { text: 'Meine Events', href: 'myEvents.html' },
-                        { text: 'Profil', href: 'profile.html' },
-                        { text: 'Ausloggen', href: '#', onclick: 'logout()' }
-                    ];
+                if (response.ok) {
+                    const userData = await response.json();
+                    console.log('Benutzerdaten erhalten:', userData);
+                    
+                    // Session im neuen Auth-System speichern
+                    auth.saveSession({
+                        id: userData.id,
+                        display_name: userData.display_name,
+                        email: userData.email,
+                        spotify_id: userData.id,
+                        isAuthenticated: true
+                    });
+                    
+                    // Benutzername anzeigen
+                    document.getElementById('userName').textContent = userData.display_name || 'DJ';
+                    
+                    console.log('✅ Login-Session erfolgreich gespeichert');
                 } else {
-                    // Nicht angemeldeter Benutzer
-                    menuItems = [
-                        ...baseMenuItems,
-                        { text: 'Einloggen', href: 'free.html' }
-                    ];
+                    console.error('❌ Fehler beim Abrufen der Benutzerdaten');
+                    document.getElementById('userName').textContent = 'DJ';
+                    
+                    // Fallback: Session trotzdem als eingeloggt markieren
+                    auth.saveSession({
+                        display_name: 'DJ',
+                        isAuthenticated: true
+                    });
                 }
                 
-                // Menü aufbauen
-                navigationMenu.innerHTML = menuItems.map(item => {
-                    if (item.onclick) {
-                        return `<li><a href="${item.href}" onclick="${item.onclick}">${item.text}</a></li>`;
-                    } else {
-                        return `<li><a href="${item.href}">${item.text}</a></li>`;
-                    }
-                }).join('');
-                
             } catch (error) {
-                console.log('Auth check failed, showing guest menu');
-                // Bei Fehler: Gast-Menü anzeigen
-                navigationMenu.innerHTML = `
-                    <li><a href="startpage.html">Startseite</a></li>
-                    <li><a href="explain-spotify.html">Spotify Integration</a></li>
-                    <li><a href="contact.html">Kontakt</a></li>
-                    <li><a href="free.html">Einloggen</a></li>
-                `;
-            }
-        }
-
-        // logout() wird jetzt von simple-auth.js bereitgestellt
-        
-        // Hole den Benutzernamen vom Server
-        fetch(`${SERVER_URL}/spotify/me`, {
-            credentials: 'include'  // Wichtig für Session-Cookies
-        })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('userName').textContent = data.display_name;
-            })
-            .catch(error => {
-                console.error('Fehler beim Laden der Benutzerdaten:', error);
+                console.error('Fehler beim Speichern der Session:', error);
                 document.getElementById('userName').textContent = 'DJ';
-            });
-
-        // Menü beim Laden der Seite aktualisieren
-        updateNavigation();
+                
+                // Auch bei Fehler: Session als eingeloggt markieren
+                auth.saveSession({
+                    display_name: 'DJ',
+                    isAuthenticated: true
+                });
+            }
+            
+            // Navigation aktualisieren
+            auth.updateUI();
+        });
     </script>
 
     <!-- Footer -->
