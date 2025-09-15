@@ -122,7 +122,7 @@ class ModernAuth {
      * Spotify-Login
      */
     spotifyLogin() {
-        window.location.href = 'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/spotify';
+        window.location.href = 'https://novel-willyt-veqro-a29cd625.koyeb.app/login';
     }
 
     /**
