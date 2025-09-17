@@ -4,6 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event erstellen - Cueup</title>
+
+    <!-- Favicon Integration - Firefox-optimiert -->
+    <!-- Standard ICO für alle Browser (Firefox bevorzugt) -->
+    <link rel="icon" href="favicon_io/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon_io/favicon.ico" type="image/x-icon">
+    
+    <!-- PNG Favicons für moderne Browser -->
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="favicon_io/site.webmanifest">
+    
+    <!-- Browser-spezifische Meta-Tags -->
+    <meta name="msapplication-TileColor" content="#aa00ff">
+    <meta name="theme-color" content="#aa00ff">
+    
+    <!-- Firefox-spezifischer Fallback -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="startpage.css">
     
     <!-- Simple Auth - Einfacher Seiten-Schutz -->
@@ -761,7 +783,7 @@
         // Auth Status Check
         async function checkAuthStatus() {
             try {
-                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
+                const response = await fetch('https://cueup-project.onrender.com/auth/status', {
                     credentials: 'include'
                 });
                 const data = await response.json();
@@ -774,7 +796,7 @@
         // Initial Auth Status Check und Zugriffsschutz
         async function checkAuthAndProtect() {
             try {
-                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
+                const response = await fetch('https://cueup-project.onrender.com/auth/status', {
                     credentials: 'include'
                 });
                 const data = await response.json();
@@ -1152,7 +1174,7 @@
                 console.log('Sende Event-Daten:', eventData);
                 
                 // Event zum Server senden
-                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/api/events', {
+                const response = await fetch('https://cueup-project.onrender.com/api/events', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1219,3 +1241,5 @@
     </footer>
 </body>
 </html>
+
+

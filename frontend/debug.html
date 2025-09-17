@@ -7,14 +7,7 @@
     <link rel="stylesheet" href="startpage.css">
     <script src="modern-auth.js"></script>
     
-    <!-- Favicon Integration -->
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
-    <link rel="manifest" href="favicon_io/site.webmanifest">
-    <link rel="shortcut icon" href="favicon_io/favicon.ico">
-    <meta name="msapplication-TileColor" content="#aa00ff">
-    <meta name="theme-color" content="#aa00ff">
+    <!-- Favicon Integration - Firefox-optimiert -->`n    <!-- Standard ICO für alle Browser (Firefox bevorzugt) -->`n    <link rel="icon" href="favicon_io/favicon.ico" type="image/x-icon">`n    <link rel="shortcut icon" href="favicon_io/favicon.ico" type="image/x-icon">`n    `n    <!-- PNG Favicons für moderne Browser -->`n    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">`n    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">`n    `n    <!-- Apple Touch Icons -->`n    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">`n    `n    <!-- Web App Manifest -->`n    <link rel="manifest" href="favicon_io/site.webmanifest">`n    `n    <!-- Browser-spezifische Meta-Tags -->`n    <meta name="msapplication-TileColor" content="#aa00ff">`n    <meta name="theme-color" content="#aa00ff">`n    `n    <!-- Firefox-spezifischer Fallback -->`n    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
         body {
             color: #fff;
@@ -342,9 +335,9 @@
             <div class="debug-section">
                 <h2>ðŸ”§ Server-Tests</h2>
                 <div class="quick-tests">
-                    <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status">Server Status</button>
-                    <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/api/events" data-auth="true">API Events*</button>
-                    <button class="test-button quick-test" data-url="https://novel-willyt-veqro-a29cd625.koyeb.app/spotify/me" data-auth="true">Spotify User*</button>
+                    <button class="test-button quick-test" data-url="https://cueup-project.onrender.com/auth/status">Server Status</button>
+                    <button class="test-button quick-test" data-url="https://cueup-project.onrender.com/api/events" data-auth="true">API Events*</button>
+                    <button class="test-button quick-test" data-url="https://cueup-project.onrender.com/spotify/me" data-auth="true">Spotify User*</button>
                     <button class="test-button" id="testAllEndpoints">Alle Endpunkte testen (3)</button>
                 </div>
                 <div class="problem-section" style="background-color: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3;">
@@ -417,7 +410,7 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 3000);
                 
-                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
+                const response = await fetch('https://cueup-project.onrender.com/auth/status', {
                     credentials: 'include',
                     signal: controller.signal
                 }).catch(err => {
@@ -487,7 +480,7 @@
                 const timeoutId = setTimeout(() => controller.abort(), 8000);
                 
                 const startTime = performance.now();
-                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
+                const response = await fetch('https://cueup-project.onrender.com/auth/status', {
                     method: 'GET',
                     credentials: 'include',
                     signal: controller.signal
@@ -613,9 +606,9 @@
             resultContainer.innerHTML = 'ðŸ”„ Teste alle Server-Endpunkte...\n\n';
             
             const endpoints = [
-                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', name: 'Server Status' },
-                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/api/events', name: 'API Events (Anmeldung erforderlich)' },
-                { url: 'https://novel-willyt-veqro-a29cd625.koyeb.app/spotify/me', name: 'Spotify User (Anmeldung erforderlich)' }
+                { url: 'https://cueup-project.onrender.com/auth/status', name: 'Server Status' },
+                { url: 'https://cueup-project.onrender.com/api/events', name: 'API Events (Anmeldung erforderlich)' },
+                { url: 'https://cueup-project.onrender.com/spotify/me', name: 'Spotify User (Anmeldung erforderlich)' }
             ];
             
             let allResults = '';
@@ -700,3 +693,6 @@
     </script>
 </body>
 </html>
+
+
+

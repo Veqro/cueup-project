@@ -1,10 +1,28 @@
-body {
+/* ========== MOBILE OVERSCROLL FIX ========== */
+html, body {
+  /* iPad/Firefox Scroll-Fix - verhindert Overscroll-Bounce */
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+  
+  /* iOS Safari zusätzlicher Fix */
+  -webkit-overflow-scrolling: touch;
+  
+  /* Verhindert horizontales Scrollen */
+  overflow-x: hidden;
+  
+  /* Standard Body-Styles */
   background-color: rgb(50, 50, 50);
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
-  overflow-x: hidden;
+  
+  /* Feste Höhe für konsistentes Verhalten */
+  min-height: 100vh;
+  
+  /* Firefox-spezifische Fixes */
+  scrollbar-width: thin;
 }
 
 /* ========== NEUE PC-FORMATIERUNG ========== */

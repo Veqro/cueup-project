@@ -51,7 +51,8 @@ class ModernAuth {
     isSessionValid(session) {
         if (!session || !session.expires) return false;
         
-        // Session 1 Jahr gültig (bis Browser-Cache gelöscht) + Update bei Aktivität
+        // Session über CONFIG-Datei konfigurierbare Dauer (Standard: 30 Tage)
+        const sessionDuration = window.CONFIG?.SESSION_DURATION || (30 * 24 * 60 * 60 * 1000);
         const isValid = session.expires > Date.now();
         
         if (isValid) {
@@ -67,12 +68,16 @@ class ModernAuth {
      */
     updateSessionActivity(session) {
         const now = Date.now();
+        const sessionDuration = window.CONFIG?.SESSION_DURATION || (30 * 24 * 60 * 60 * 1000);
+        
         // Nur alle 24h aktualisieren um localStorage-Calls zu minimieren
         if (!session.lastActivity || (now - session.lastActivity) > (24 * 60 * 60 * 1000)) {
             session.lastActivity = now;
-            session.expires = now + (365 * 24 * 60 * 60 * 1000); // Wieder 1 Jahr verlängern
+            session.expires = now + sessionDuration; // Verlängert um konfigurierte Dauer
             localStorage.setItem(this.sessionKey, JSON.stringify(session));
-            console.log('🔄 Session automatisch verlängert um 1 Jahr');
+            
+            const daysLeft = Math.round(sessionDuration / (24 * 60 * 60 * 1000));
+            console.log(`🔄 Session automatisch verlängert um ${daysLeft} Tage`);
         }
     }
 
@@ -80,9 +85,11 @@ class ModernAuth {
      * Session speichern (nach erfolgreichem Login)
      */
     saveSession(userData) {
+        const sessionDuration = window.CONFIG?.SESSION_DURATION || (30 * 24 * 60 * 60 * 1000);
+        
         const session = {
             user: userData,
-            expires: Date.now() + (365 * 24 * 60 * 60 * 1000), // 1 Jahr (wie Amazon)
+            expires: Date.now() + sessionDuration, // Konfigurierbare Dauer
             created: Date.now(),
             lastActivity: Date.now()
         };
@@ -92,7 +99,8 @@ class ModernAuth {
         this.user = userData;
         this.updateUI();
         
-        console.log('✅ Session gespeichert für 1 Jahr (bis Browser-Cache gelöscht wird)');
+        const daysLeft = Math.round(sessionDuration / (24 * 60 * 60 * 1000));
+        console.log(`✅ Session gespeichert für ${daysLeft} Tage (bis Browser-Cache gelöscht wird)`);
     }
 
     /**
@@ -123,7 +131,7 @@ class ModernAuth {
      */
     async login(credentials) {
         try {
-            const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/login', {
+            const response = await fetch('https://cueup-project.onrender.com/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -146,7 +154,8 @@ class ModernAuth {
      * Spotify-Login
      */
     spotifyLogin() {
-        window.location.href = 'https://novel-willyt-veqro-a29cd625.koyeb.app/login';
+        const loginUrl = window.ENDPOINTS?.LOGIN || 'https://cueup-project.onrender.com/login';
+        window.location.href = loginUrl;
     }
 
     /**
@@ -173,8 +182,8 @@ class ModernAuth {
         try {
             // 3. Server-Session löschen (mit mehreren Versuchen)
             const logoutUrls = [
-                'https://novel-willyt-veqro-a29cd625.koyeb.app/logout',
-                'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/logout'
+                window.ENDPOINTS?.LOGOUT || 'https://cueup-project.onrender.com/logout',
+                window.ENDPOINTS?.AUTH_STATUS?.replace('/auth/status', '/auth/logout') || 'https://cueup-project.onrender.com/auth/logout'
             ];
             
             for (const url of logoutUrls) {
@@ -258,11 +267,11 @@ class ModernAuth {
      */
     async syncWithServerInBackground() {
         try {
-            // Mehrere Auth-Check URLs versuchen (für bessere Server-Restart-Behandlung)
+            // Mehrere Auth-Check URLs versuchen (mit CONFIG-Integration)
             const authUrls = [
-                'https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status',
-                'https://novel-willyt-veqro-a29cd625.koyeb.app/check-auth',
-                'https://novel-willyt-veqro-a29cd625.koyeb.app/api/auth'
+                window.ENDPOINTS?.AUTH_STATUS || 'https://cueup-project.onrender.com/auth/status',
+                (window.ENDPOINTS?.AUTH_STATUS || 'https://cueup-project.onrender.com').replace('/auth/status', '/check-auth'),
+                (window.ENDPOINTS?.AUTH_STATUS || 'https://cueup-project.onrender.com').replace('/auth/status', '/api/auth')
             ];
             
             let lastError = null;

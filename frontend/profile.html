@@ -4,6 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil - Cueup</title>
+
+    <!-- Favicon Integration - Firefox-optimiert -->
+    <!-- Standard ICO für alle Browser (Firefox bevorzugt) -->
+    <link rel="icon" href="favicon_io/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon_io/favicon.ico" type="image/x-icon">
+    
+    <!-- PNG Favicons für moderne Browser -->
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="favicon_io/site.webmanifest">
+    
+    <!-- Browser-spezifische Meta-Tags -->
+    <meta name="msapplication-TileColor" content="#aa00ff">
+    <meta name="theme-color" content="#aa00ff">
+    
+    <!-- Firefox-spezifischer Fallback -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="startpage.css">
     
     <!-- Simple Auth - Einfacher Seiten-Schutz -->
@@ -352,7 +374,7 @@
             
             try {
                 // Prüfe Login-Status
-                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/check', {
+                const response = await fetch('https://cueup-project.onrender.com/auth/check', {
                     credentials: 'include'
                 });
                 
@@ -406,7 +428,7 @@
         // Profildaten laden
         async function loadProfileData() {
             try {
-                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
+                const response = await fetch('https://cueup-project.onrender.com/auth/status', {
                     credentials: 'include'
                 });
                 
@@ -432,7 +454,7 @@
                     document.getElementById('spotifyAccountType').textContent = data.isPremium ? 'Spotify Premium' : 'Spotify Free';
 
                     // Event Statistiken laden
-                    fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/api/events', {
+                    fetch('https://cueup-project.onrender.com/api/events', {
                         credentials: 'include'
                     })
                     .then(response => response.json())
@@ -488,7 +510,7 @@
         }
 
         // Globale Variable für den Server-URL
-        const SERVER_URL = 'https://novel-willyt-veqro-a29cd625.koyeb.app';
+        const SERVER_URL = 'https://cueup-project.onrender.com';
 
         // Die ursprüngliche loadProfileData() Funktion wird verwendet
 
@@ -587,3 +609,5 @@
     </footer>
 </body>
 </html>
+
+

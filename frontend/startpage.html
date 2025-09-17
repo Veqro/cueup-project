@@ -6,14 +6,30 @@
     <title>Cueup</title>
     <link rel="stylesheet" href="startpage.css" />
     
-    <!-- Favicon Integration -->
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
+    <!-- Backend-Konfiguration (MUSS vor anderen Scripts geladen werden) -->
+    <script src="config.js"></script>
+    
+    <!-- Favicon Integration - Firefox-optimiert -->
+    <!-- Standard ICO für alle Browser (Firefox bevorzugt) -->
+    <link rel="icon" href="favicon_io/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon_io/favicon.ico" type="image/x-icon">
+    
+    <!-- PNG Favicons für moderne Browser -->
     <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
+    
+    <!-- Web App Manifest -->
     <link rel="manifest" href="favicon_io/site.webmanifest">
-    <link rel="shortcut icon" href="favicon_io/favicon.ico">
+    
+    <!-- Browser-spezifische Meta-Tags -->
     <meta name="msapplication-TileColor" content="#aa00ff">
     <meta name="theme-color" content="#aa00ff">
+    
+    <!-- Firefox-spezifischer Fallback -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
       .user-menu-container {
         position: relative;
@@ -222,8 +238,25 @@
         }
       }
 
+      // Server Auto-Wake System für Render
+      async function wakeUpServer() {
+        try {
+          console.log('Waking up server...');
+          const response = await fetch('https://cueup-project.onrender.com/health', {
+            method: 'GET',
+            timeout: 10000 // 10 Sekunden Timeout
+          });
+          console.log('Server wakeup response:', response.status);
+        } catch (error) {
+          console.log('Server wakeup failed (normal for first request):', error.message);
+        }
+      }
+
       // Navigation wird automatisch vom ModernAuth-System verwaltet
       document.addEventListener('DOMContentLoaded', () => {
+        // Server beim ersten Besuch aufwecken
+        wakeUpServer();
+        
         // Auth-System übernimmt automatisch die Navigation
         setTimeout(() => {
           auth.updateUI();
@@ -232,3 +265,4 @@
     </script>
   </body>
 </html>
+

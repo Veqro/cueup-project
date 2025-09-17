@@ -15,14 +15,7 @@
         });
     </script>
     
-    <!-- Favicon Integration -->
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
-    <link rel="manifest" href="favicon_io/site.webmanifest">
-    <link rel="shortcut icon" href="favicon_io/favicon.ico">
-    <meta name="msapplication-TileColor" content="#aa00ff">
-    <meta name="theme-color" content="#aa00ff">
+    <!-- Favicon Integration - Firefox-optimiert -->`n    <!-- Standard ICO für alle Browser (Firefox bevorzugt) -->`n    <link rel="icon" href="favicon_io/favicon.ico" type="image/x-icon">`n    <link rel="shortcut icon" href="favicon_io/favicon.ico" type="image/x-icon">`n    `n    <!-- PNG Favicons für moderne Browser -->`n    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">`n    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">`n    `n    <!-- Apple Touch Icons -->`n    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">`n    `n    <!-- Web App Manifest -->`n    <link rel="manifest" href="favicon_io/site.webmanifest">`n    `n    <!-- Browser-spezifische Meta-Tags -->`n    <meta name="msapplication-TileColor" content="#aa00ff">`n    <meta name="theme-color" content="#aa00ff">`n    `n    <!-- Firefox-spezifischer Fallback -->`n    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
         .dashboard-container {
             width: calc(100% - 40px);
@@ -1017,7 +1010,7 @@
     </div>
 
     <script>
-        const SERVER_URL = 'https://novel-willyt-veqro-a29cd625.koyeb.app';
+        const SERVER_URL = 'https://cueup-project.onrender.com';
         const wishesContainer = document.getElementById('wishesContainer');
         let wishes = [];
         let currentEventCode = null;
@@ -1128,7 +1121,7 @@
         }
 
         // WebSocket Verbindung aufbauen
-        const ws = new WebSocket('wss://novel-willyt-veqro-a29cd625.koyeb.app');
+        const ws = new WebSocket('wss://cueup-project.onrender.com');
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -1518,3 +1511,6 @@
     </footer>
 </body>
 </html>
+
+
+

@@ -6,14 +6,10 @@
     <title>Cueup - Login</title>
     <link rel="stylesheet" href="startpage.css">
     
-    <!-- Favicon Integration -->
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
-    <link rel="manifest" href="favicon_io/site.webmanifest">
-    <link rel="shortcut icon" href="favicon_io/favicon.ico">
-    <meta name="msapplication-TileColor" content="#aa00ff">
-    <meta name="theme-color" content="#aa00ff">
+    <!-- Backend-Konfiguration (MUSS vor anderen Scripts geladen werden) -->
+    <script src="config.js"></script>
+    
+    <!-- Favicon Integration - Firefox-optimiert -->`n    <!-- Standard ICO f�r alle Browser (Firefox bevorzugt) -->`n    <link rel="icon" href="favicon_io/favicon.ico" type="image/x-icon">`n    <link rel="shortcut icon" href="favicon_io/favicon.ico" type="image/x-icon">`n    `n    <!-- PNG Favicons f�r moderne Browser -->`n    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">`n    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">`n    `n    <!-- Apple Touch Icons -->`n    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">`n    `n    <!-- Web App Manifest -->`n    <link rel="manifest" href="favicon_io/site.webmanifest">`n    `n    <!-- Browser-spezifische Meta-Tags -->`n    <meta name="msapplication-TileColor" content="#aa00ff">`n    <meta name="theme-color" content="#aa00ff">`n    `n    <!-- Firefox-spezifischer Fallback -->`n    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="modern-auth.js"></script>
     <style>
         .login-container {
@@ -104,6 +100,92 @@
             background-color: #666;
             cursor: not-allowed;
             transform: none;
+        }
+
+        /* Server Status System */
+        .server-status {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-left: 4px solid #aa00ff;
+            transition: all 0.3s ease;
+        }
+
+        .server-status.loading {
+            border-left-color: #ffa500;
+            animation: pulse 2s infinite;
+        }
+
+        .server-status.online {
+            border-left-color: #1ED760;
+        }
+
+        .server-status.offline {
+            border-left-color: #ff4444;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.loading {
+            background: #ffa500;
+            animation: blink 1.5s infinite;
+        }
+
+        .status-dot.online {
+            background: #1ED760;
+        }
+
+        .status-dot.offline {
+            background: #ff4444;
+            animation: blink 2s infinite;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            border-top-color: #aa00ff;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .server-message {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-top: 8px;
+            font-style: italic;
         }
 
         /* Spinner Animation für Loading */
@@ -224,8 +306,18 @@
         </div>
 
         <div class="spotify-login-section">
-            <div class="spotify-info">
+            <!-- Server Status Anzeige -->
+            <div id="serverStatus" class="server-status loading">
+                <div class="status-indicator">
+                    <div class="loading-spinner"></div>
+                    <span id="statusText">Server wird gestartet...</span>
+                </div>
+                <div class="server-message" id="statusMessage">
+                    Bitte warten, der Server fährt hoch. Dies kann bis zu 30 Sekunden dauern.
+                </div>
+            </div>
 
+            <div class="spotify-info">
                 <p style="color: #ccc; margin-bottom: 20px; line-height: 1.5; display: flex; align-items: center; justify-content: center;">
                     CueUp nutzt jetzt ausschließlich Spotify zur Anmeldung.
                     Nur mit Spotify Premium möglich.
@@ -237,10 +329,10 @@
                 </ul>
             </div>
             
-            <a href="https://novel-willyt-veqro-a29cd625.koyeb.app/login" class="spotify-login-btn" style="display: inline-flex; align-items: center; text-decoration: none; justify-content: center;">
+            <button id="spotifyLoginBtn" class="spotify-login-btn" disabled style="display: inline-flex; align-items: center; text-decoration: none; justify-content: center;">
                 <img src="img/Spotify_Full_Logo_RGB_White.png" alt="Spotify Logo" style="height: 25px; margin-right: 10px;">
-                Mit Spotify anmelden
-            </a>
+                <span id="loginBtnText">Server startet...</span>
+            </button>
             <div class="error-message" id="errorMessage"></div>
         </div>
     </div>
@@ -317,7 +409,7 @@
             // Auf der Login-Seite: Server-Check für echten Auth-Status
             let isLoggedIn = false;
             try {
-                const response = await fetch('https://novel-willyt-veqro-a29cd625.koyeb.app/auth/status', {
+                const response = await fetch('https://cueup-project.onrender.com/auth/status', {
                     credentials: 'include',
                     signal: AbortSignal.timeout(3000)
                 });
@@ -378,10 +470,128 @@
             }).join('');
         }
 
+        // ============ SERVER STATUS SYSTEM ============
+        class ServerStatusTracker {
+            constructor() {
+                this.statusElement = document.getElementById('serverStatus');
+                this.statusTextElement = document.getElementById('statusText');
+                this.statusMessageElement = document.getElementById('statusMessage');
+                this.loginBtn = document.getElementById('spotifyLoginBtn');
+                this.loginBtnText = document.getElementById('loginBtnText');
+                
+                this.serverUrl = window.ENDPOINTS?.HEALTH || 'https://cueup-project.onrender.com/health';
+                this.maxRetries = 20; // 20 Versuche = ca. 60 Sekunden
+                this.retryDelay = 3000; // 3 Sekunden zwischen Versuchen
+                this.currentTry = 0;
+                
+                this.init();
+            }
+            
+            async init() {
+                console.log('🚀 Server Status Tracker gestartet');
+                this.setStatus('loading', 'Server wird gestartet...', 'Bitte warten, der Server fährt hoch. Dies kann bis zu 30 Sekunden dauern.');
+                await this.checkServerStatus();
+            }
+            
+            async checkServerStatus() {
+                this.currentTry++;
+                
+                try {
+                    console.log(`🔍 Server-Check ${this.currentTry}/${this.maxRetries}...`);
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+                    
+                    const response = await fetch(this.serverUrl, {
+                        method: 'GET',
+                        signal: controller.signal,
+                        credentials: 'include'
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (response.ok) {
+                        console.log('✅ Server ist online!');
+                        this.setStatus('online', 'Server online', 'Bereit für Spotify-Login!');
+                        this.enableLogin();
+                        return;
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                } catch (error) {
+                    console.log(`⚠️ Server-Check ${this.currentTry} fehlgeschlagen:`, error.name);
+                    
+                    if (this.currentTry >= this.maxRetries) {
+                        console.log('❌ Server nicht erreichbar nach allen Versuchen');
+                        this.setStatus('offline', 'Server nicht erreichbar', 'Bitte versuchen Sie es später erneut oder kontaktieren Sie den Support.');
+                        this.showRetryButton();
+                        return;
+                    }
+                    
+                    // Nächster Versuch
+                    const remainingSeconds = Math.ceil((this.maxRetries - this.currentTry) * this.retryDelay / 1000);
+                    this.setStatus('loading', `Server startet... (${this.currentTry}/${this.maxRetries})`, 
+                        `Nächster Versuch in ${this.retryDelay/1000} Sekunden. Noch ca. ${remainingSeconds}s verbleibend.`);
+                    
+                    setTimeout(() => this.checkServerStatus(), this.retryDelay);
+                }
+            }
+            
+            setStatus(status, text, message) {
+                // Status-Klassen aktualisieren
+                this.statusElement.className = `server-status ${status}`;
+                this.statusTextElement.textContent = text;
+                this.statusMessageElement.textContent = message;
+                
+                // Spinner ein/aus
+                const spinner = this.statusElement.querySelector('.loading-spinner');
+                const statusDot = this.statusElement.querySelector('.status-dot');
+                
+                if (status === 'loading') {
+                    if (!spinner) {
+                        this.statusTextElement.insertAdjacentHTML('beforebegin', '<div class="loading-spinner"></div>');
+                    }
+                    if (statusDot) statusDot.remove();
+                } else {
+                    if (spinner) spinner.remove();
+                    if (!statusDot) {
+                        this.statusTextElement.insertAdjacentHTML('beforebegin', `<div class="status-dot ${status}"></div>`);
+                    }
+                }
+            }
+            
+            enableLogin() {
+                this.loginBtn.disabled = false;
+                this.loginBtn.style.cursor = 'pointer';
+                this.loginBtnText.textContent = 'Mit Spotify anmelden';
+                
+                // Click-Handler für Login
+                this.loginBtn.onclick = () => {
+                    const loginUrl = window.ENDPOINTS?.LOGIN || 'https://cueup-project.onrender.com/login';
+                    window.location.href = loginUrl;
+                };
+            }
+            
+            showRetryButton() {
+                this.loginBtn.disabled = false;
+                this.loginBtn.style.backgroundColor = '#666';
+                this.loginBtnText.textContent = 'Server-Check wiederholen';
+                
+                this.loginBtn.onclick = () => {
+                    this.currentTry = 0;
+                    this.init();
+                };
+            }
+        }
+
         // Sofort nach DOMContentLoaded Navigation aktualisieren
         document.addEventListener('DOMContentLoaded', () => {
             // Sofort Standard-Menü anzeigen
             showDefaultMenu();
+            
+            // Server Status Tracker starten
+            new ServerStatusTracker();
             
             // Dann versuchen, das Menü zu aktualisieren
             setTimeout(updateNavigation, 100);
@@ -413,3 +623,6 @@
     </footer>
 </body>
 </html>
+
+
+

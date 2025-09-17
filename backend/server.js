@@ -44,7 +44,7 @@ const fs = require('fs');
 
 // URL Konfiguration
 const FRONTEND_URL = 'https://cueup.vercel.app'; // Dein Vercel Frontend
-const SERVER_URL = 'https://novel-willyt-veqro-a29cd625.koyeb.app'; // Dein Koyeb Backend (ohne Port, da Koyeb weiterleitet)
+const SERVER_URL = process.env.SERVER_URL || 'https://cueup-project.onrender.com'; // Render Backend URL
 
 // ============ SICHERE TOKEN-VERWALTUNG ============
 // In-Memory Token Storage - Access Tokens werden nur im RAM gespeichert
@@ -187,7 +187,7 @@ function saveEvents() {
 }
 
 // Spotify API Konfiguration
-const redirectUri = 'https://novel-willyt-veqro-a29cd625.koyeb.app/callback';  // Koyeb Backend URL (ohne Port, da Koyeb weiterleitet)
+const redirectUri = `${SERVER_URL}/callback`;  // Render Backend URL
 const spotifyApi = new SpotifyWebApi({
     clientId: process.env.SPOTIFY_CLIENT_ID,
     clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
@@ -1835,8 +1835,8 @@ spotifyApi.clientCredentialsGrant()
 app.listen(PORT, () => {
     console.log('Server läuft auf Port', PORT);
     console.log('Öffne im Browser:');
-    console.log(`https://novel-willyt-veqro-a29cd625.koyeb.app/startpage`);
+    console.log(`${SERVER_URL}/startpage`);
     console.log('Saubere URLs aktiviert - keine .html Endungen mehr nötig!');
-    console.log('Backend ist jetzt auf Koyeb gehostet!');
+    console.log('Backend ist jetzt auf Render gehostet!');
     console.log(`Server gestartet auf Port ${PORT}`);
 });
