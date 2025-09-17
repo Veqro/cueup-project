@@ -533,21 +533,14 @@
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 2000); // Nur 2s warten
                     
-                    // Cache-busting Parameter hinzufügen um Redirects zu vermeiden
-                    const url = `${this.serverUrl}?t=${Date.now()}`;
-                    
-                    const response = await fetch(url, {
-                        method: 'GET',
-                        signal: controller.signal,
+                    // Einfacher Request wie Debug-Seite (KEINE Cache-busting Parameter!)
+                    const response = await fetch(this.serverUrl, {
                         credentials: 'include',
-                        headers: {
-                            'Cache-Control': 'no-cache',
-                            'Pragma': 'no-cache'
-                        }
+                        signal: controller.signal
                     });
                     
                     clearTimeout(timeoutId);
-                    console.log(`🔍 Quick-Check Antwort: ${response.status} von ${url}`);
+                    console.log(`🔍 Quick-Check Antwort: ${response.status}`);
                     return response.ok;
                 } catch (error) {
                     console.log(`⚠️ Quick-Check Fehler: ${error.name}`);
@@ -564,17 +557,10 @@
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
                     
-                    // Cache-busting Parameter hinzufügen um Redirects zu vermeiden
-                    const url = `${this.serverUrl}?t=${Date.now()}`;
-                    
-                    const response = await fetch(url, {
-                        method: 'GET',
-                        signal: controller.signal,
+                    // Einfacher Request ohne CORS-problematische Parameter
+                    const response = await fetch(this.serverUrl, {
                         credentials: 'include',
-                        headers: {
-                            'Cache-Control': 'no-cache',
-                            'Pragma': 'no-cache'
-                        }
+                        signal: controller.signal
                     });
                     
                     clearTimeout(timeoutId);
