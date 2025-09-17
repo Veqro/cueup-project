@@ -29,7 +29,7 @@ const CONFIG = {
 const ENDPOINTS = {
     // Authentication
     AUTH_STATUS: `${CONFIG.BACKEND_URL}/auth/status`,
-    LOGIN: `${CONFIG.BACKEND_URL}/auth/login`,
+    LOGIN: `${CONFIG.BACKEND_URL}/login`,  // Spotify Login Route
     LOGOUT: `${CONFIG.BACKEND_URL}/auth/logout`,
     
     // Spotify Endpoints

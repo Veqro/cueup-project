@@ -623,7 +623,8 @@
                 
                 // Click-Handler für Login
                 this.loginBtn.onclick = () => {
-                    const loginUrl = window.ENDPOINTS?.LOGIN || 'https://cueup-project.onrender.com/login';
+                    const loginUrl = `${window.CONFIG?.BACKEND_URL || 'https://cueup-project.onrender.com'}/login`;
+                    console.log('🎵 Spotify Login zu:', loginUrl);
                     window.location.href = loginUrl;
                 };
             }
