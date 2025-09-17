@@ -1,17 +1,22 @@
 /* ========== MOBILE OVERSCROLL FIX ========== */
-html, body {
+html {
   /* iPad/Firefox Scroll-Fix - verhindert Overscroll-Bounce */
   overscroll-behavior: none;
   overscroll-behavior-y: none;
   overscroll-behavior-x: none;
   
+  /* Firefox-spezifische Fixes */
+  scrollbar-width: thin;
+}
+
+body {
   /* iOS Safari zusätzlicher Fix */
   -webkit-overflow-scrolling: touch;
   
   /* Verhindert horizontales Scrollen */
   overflow-x: hidden;
   
-  /* Standard Body-Styles */
+  /* Standard Body-Styles - NICHT ÜBERSCHREIBEN */
   background-color: rgb(50, 50, 50);
   margin: 0;
   padding: 0;
@@ -21,8 +26,8 @@ html, body {
   /* Feste Höhe für konsistentes Verhalten */
   min-height: 100vh;
   
-  /* Firefox-spezifische Fixes */
-  scrollbar-width: thin;
+  /* Overscroll-Verhalten auch für body */
+  overscroll-behavior: none;
 }
 
 /* ========== NEUE PC-FORMATIERUNG ========== */

@@ -9,7 +9,7 @@
     <!-- Backend-Konfiguration (MUSS vor anderen Scripts geladen werden) -->
     <script src="config.js"></script>
     
-    <!-- Favicon Integration - Firefox-optimiert -->`n    <!-- Standard ICO f�r alle Browser (Firefox bevorzugt) -->`n    <link rel="icon" href="favicon_io/favicon.ico" type="image/x-icon">`n    <link rel="shortcut icon" href="favicon_io/favicon.ico" type="image/x-icon">`n    `n    <!-- PNG Favicons f�r moderne Browser -->`n    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">`n    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">`n    `n    <!-- Apple Touch Icons -->`n    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">`n    `n    <!-- Web App Manifest -->`n    <link rel="manifest" href="favicon_io/site.webmanifest">`n    `n    <!-- Browser-spezifische Meta-Tags -->`n    <meta name="msapplication-TileColor" content="#aa00ff">`n    <meta name="theme-color" content="#aa00ff">`n    `n    <!-- Firefox-spezifischer Fallback -->`n    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- Favicon Integration - Firefox-optimiert -->`n    <!-- Standard ICO f�r alle Browser (Firefox bevorzugt) -->`n    <link rel="icon" href="favicon_io/favicon.ico" type="image/x-icon">`n    <link rel="shortcut icon" href="favicon_io/favicon.ico" type="image/x-icon">`n    `n    <!-- PNG Favicons f�r moderne Browser -->`n    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">`n    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">`n    `n    <!-- Apple Touch Icons -->`n    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">`n    `n    <!-- Web App Manifest -->`n    <link rel="manifest" href="favicon_io/site.webmanifest">`n    `n    <!-- Browser-spezifische Meta-Tags -->`n    <meta name="msapplication-TileColor" content="#aa00ff">`n    <meta name="theme-color" content="#aa00ff">`n    `n    <!-- Firefox-spezifischer Fallback -->`n    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="modern-auth.js"></script>
     <style>
         .login-container {
@@ -489,8 +489,41 @@
             
             async init() {
                 console.log('🚀 Server Status Tracker gestartet');
+                
+                // Erst mal schnell prüfen ob Server bereits läuft
+                this.setStatus('loading', 'Server wird geprüft...', 'Einen Moment bitte...');
+                
+                // Schneller erster Check (2s Timeout)
+                const isOnline = await this.quickServerCheck();
+                if (isOnline) {
+                    console.log('✅ Server bereits online - kein Loading nötig');
+                    this.setStatus('online', 'Server online', 'Bereit für Spotify-Login!');
+                    this.enableLogin();
+                    return;
+                }
+                
+                // Nur wenn Server offline ist, zeige Loading-Animation
+                console.log('⏳ Server offline - starte Wake-Up-Prozess');
                 this.setStatus('loading', 'Server wird gestartet...', 'Bitte warten, der Server fährt hoch. Dies kann bis zu 30 Sekunden dauern.');
                 await this.checkServerStatus();
+            }
+            
+            async quickServerCheck() {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 2000); // Nur 2s warten
+                    
+                    const response = await fetch(this.serverUrl, {
+                        method: 'GET',
+                        signal: controller.signal,
+                        credentials: 'include'
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    return response.ok;
+                } catch (error) {
+                    return false; // Server nicht erreichbar
+                }
             }
             
             async checkServerStatus() {
