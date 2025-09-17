@@ -9,7 +9,27 @@
     <!-- Backend-Konfiguration (MUSS vor anderen Scripts geladen werden) -->
     <script src="config.js"></script>
     
-    <!-- Favicon Integration - Firefox-optimiert -->`n    <!-- Standard ICO f�r alle Browser (Firefox bevorzugt) -->`n    <link rel="icon" href="favicon_io/favicon.ico" type="image/x-icon">`n    <link rel="shortcut icon" href="favicon_io/favicon.ico" type="image/x-icon">`n    `n    <!-- PNG Favicons f�r moderne Browser -->`n    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">`n    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">`n    `n    <!-- Apple Touch Icons -->`n    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">`n    `n    <!-- Web App Manifest -->`n    <link rel="manifest" href="favicon_io/site.webmanifest">`n    `n    <!-- Browser-spezifische Meta-Tags -->`n    <meta name="msapplication-TileColor" content="#aa00ff">`n    <meta name="theme-color" content="#aa00ff">`n    `n    <!-- Firefox-spezifischer Fallback -->`n    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- Favicon Integration - Firefox-optimiert -->
+    <!-- Standard ICO für alle Browser (Firefox bevorzugt) -->
+    <link rel="icon" href="favicon_io/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon_io/favicon.ico" type="image/x-icon">
+    
+    <!-- PNG Favicons für moderne Browser -->
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="favicon_io/site.webmanifest">
+    
+    <!-- Browser-spezifische Meta-Tags -->
+    <meta name="msapplication-TileColor" content="#aa00ff">
+    <meta name="theme-color" content="#aa00ff">
+    
+    <!-- Firefox-spezifischer Fallback -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="modern-auth.js"></script>
     <style>
         .login-container {
@@ -310,10 +330,10 @@
             <div id="serverStatus" class="server-status loading">
                 <div class="status-indicator">
                     <div class="loading-spinner"></div>
-                    <span id="statusText">Server wird gestartet...</span>
+                    <span id="statusText">Server wird geprüft...</span>
                 </div>
                 <div class="server-message" id="statusMessage">
-                    Bitte warten, der Server fährt hoch. Dies kann bis zu 30 Sekunden dauern.
+                    Einen Moment bitte...
                 </div>
             </div>
 
@@ -331,7 +351,7 @@
             
             <button id="spotifyLoginBtn" class="spotify-login-btn" disabled style="display: inline-flex; align-items: center; text-decoration: none; justify-content: center;">
                 <img src="img/Spotify_Full_Logo_RGB_White.png" alt="Spotify Logo" style="height: 25px; margin-right: 10px;">
-                <span id="loginBtnText">Server startet...</span>
+                <span id="loginBtnText">Wird geprüft...</span>
             </button>
             <div class="error-message" id="errorMessage"></div>
         </div>
@@ -496,8 +516,8 @@
                 // Schneller erster Check (2s Timeout)
                 const isOnline = await this.quickServerCheck();
                 if (isOnline) {
-                    console.log('✅ Server bereits online - kein Loading nötig');
-                    this.setStatus('online', 'Server online', 'Bereit für Spotify-Login!');
+                    console.log('✅ Server bereits online - verstecke Status-Box');
+                    this.hideStatusBox();
                     this.enableLogin();
                     return;
                 }
@@ -606,6 +626,12 @@
                 };
             }
             
+            hideStatusBox() {
+                // Server läuft bereits - Status-Box komplett ausblenden
+                this.statusElement.style.display = 'none';
+                console.log('🎯 Server-Status-Box ausgeblendet - Server bereits aktiv');
+            }
+            
             showRetryButton() {
                 this.loginBtn.disabled = false;
                 this.loginBtn.style.backgroundColor = '#666';
@@ -613,6 +639,7 @@
                 
                 this.loginBtn.onclick = () => {
                     this.currentTry = 0;
+                    this.statusElement.style.display = 'block'; // Status-Box wieder zeigen
                     this.init();
                 };
             }
