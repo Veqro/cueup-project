@@ -1,0 +1,41 @@
+User-agent: *
+Allow: /
+
+# Hauptseiten bevorzugen
+Allow: /startpage.html
+Allow: /free.html
+Allow: /createevent.html
+Allow: /myEvents.html
+
+# Private/Protected Seiten ausschließen
+Disallow: /dashboard.html
+Disallow: /profile.html
+Disallow: /debug.html
+
+# Statische Assets erlauben
+Allow: /img/
+Allow: /favicon_io/
+Allow: *.css
+Allow: *.js
+Allow: *.png
+Allow: *.jpg
+Allow: *.ico
+
+# Crawl-Delay für höfliches Crawling
+Crawl-delay: 1
+
+# Sitemap Location
+Sitemap: https://cueup.vercel.app/sitemap.xml
+
+# Spezielle Anweisungen für große Suchmaschinen
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0.5
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2

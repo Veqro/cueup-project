@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" 
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+        
+    <!-- Hauptseite -->
+    <url>
+        <loc>https://cueup.vercel.app/</loc>
+        <lastmod>2025-09-17</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+        <image:image>
+            <image:loc>https://cueup.vercel.app/img/og-image.png</image:loc>
+            <image:title>CueUp - DJ Event Management Platform</image:title>
+            <image:caption>Professionelle DJ Tools mit Spotify Integration</image:caption>
+        </image:image>
+    </url>
+    
+    <!-- Startseite -->
+    <url>
+        <loc>https://cueup.vercel.app/startpage.html</loc>
+        <lastmod>2025-09-17</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+    </url>
+    
+    <!-- Login Seite -->
+    <url>
+        <loc>https://cueup.vercel.app/free.html</loc>
+        <lastmod>2025-09-17</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <!-- Event erstellen -->
+    <url>
+        <loc>https://cueup.vercel.app/createevent.html</loc>
+        <lastmod>2025-09-17</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    
+    <!-- Meine Events -->
+    <url>
+        <loc>https://cueup.vercel.app/myEvents.html</loc>
+        <lastmod>2025-09-17</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <!-- Kontakt -->
+    <url>
+        <loc>https://cueup.vercel.app/contact.html</loc>
+        <lastmod>2025-09-17</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    
+    <!-- Event Form -->
+    <url>
+        <loc>https://cueup.vercel.app/eventForm.html</loc>
+        <lastmod>2025-09-17</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    
+    <!-- QR Code -->
+    <url>
+        <loc>https://cueup.vercel.app/qrcode.html</loc>
+        <lastmod>2025-09-17</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    
+    <!-- Musikwunsch -->
+    <url>
+        <loc>https://cueup.vercel.app/userwish.html</loc>
+        <lastmod>2025-09-17</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+</urlset>

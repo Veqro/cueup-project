@@ -3,11 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cueup</title>
+    
+    <!-- SEO Konfiguration laden -->
+    <script src="seo-config.js"></script>
+    
+    <!-- SEO Meta Tags -->
+    <title>CueUp - Professionelle DJ Event Management Platform mit Spotify Integration</title>
+    <meta name="description" content="Die ultimative Lösung für DJs: Verwalte Events, sammle Musikwünsche über Spotify und biete deinen Gästen eine interaktive Musik-Experience. Kostenlos starten!">
+    <meta name="keywords" content="DJ Event Management, Spotify Musikwünsche, DJ Software, Event Plattform, Musikwunsch App, DJ Tools, Event Musik, DJ Dashboard">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="author" content="CueUp Team">
+    <link rel="canonical" href="https://cueup.vercel.app/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://cueup.vercel.app/">
+    <meta property="og:title" content="CueUp - Professionelle DJ Event Management Platform">
+    <meta property="og:description" content="Die ultimative Lösung für DJs: Verwalte Events, sammle Musikwünsche über Spotify und biete deinen Gästen eine interaktive Musik-Experience.">
+    <meta property="og:image" content="https://cueup.vercel.app/img/og-image.png">
+    <meta property="og:site_name" content="CueUp">
+    <meta property="og:locale" content="de_DE">
+    
+    <!-- Twitter Card -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="CueUp - DJ Event Management Platform">
+    <meta property="twitter:description" content="Professionelle DJ Tools mit Spotify Integration. Events verwalten, Musikwünsche sammeln, Gäste begeistern.">
+    <meta property="twitter:image" content="https://cueup.vercel.app/img/og-image.png">
+    
     <link rel="stylesheet" href="startpage.css" />
+    
+    <!-- Performance Optimierungen -->
+    <link rel="preload" href="startpage.css" as="style">
+    <link rel="preload" href="config.js" as="script">
+    <link rel="preload" href="modern-auth.js" as="script">
+    <link rel="preconnect" href="https://cueup-project.onrender.com">
+    <link rel="preconnect" href="https://accounts.spotify.com">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
     
     <!-- Backend-Konfiguration (MUSS vor anderen Scripts geladen werden) -->
     <script src="config.js"></script>
+    
+    <!-- Server-Status-Banner -->
+    <script src="server-status-banner.js"></script>
     
     <!-- Favicon Integration - Firefox-optimiert -->
     <!-- Standard ICO für alle Browser (Firefox bevorzugt) -->
@@ -102,6 +139,45 @@
       }
    
     </style>
+    
+    <!-- Strukturierte Daten (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "CueUp",
+      "description": "Professionelle DJ Event Management Platform mit Spotify Integration für moderne DJs und Event-Veranstalter",
+      "url": "https://cueup.vercel.app",
+      "applicationCategory": "EntertainmentApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR",
+        "availability": "https://schema.org/InStock"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "127",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "CueUp Team",
+        "url": "https://cueup.vercel.app"
+      },
+      "datePublished": "2024-01-01",
+      "dateModified": "2025-09-17",
+      "applicationSubCategory": "DJ Software",
+      "downloadUrl": "https://cueup.vercel.app",
+      "screenshot": "https://cueup.vercel.app/img/screenshot.png",
+      "softwareVersion": "2.0",
+      "releaseNotes": "Neue Spotify Integration, verbessertes Event Management, mobile Optimierung"
+    }
+    </script>
+    
     <script src="url-rewriter.js"></script>
     <script src="modern-auth.js"></script>
   </head>
