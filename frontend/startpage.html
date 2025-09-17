@@ -242,7 +242,7 @@
       async function wakeUpServer() {
         try {
           console.log('Waking up server...');
-          const response = await fetch('https://cueup-project.onrender.com/health', {
+          const response = await fetch(window.ENDPOINTS?.HEALTH || 'https://cueup-project.onrender.com/auth/status', {
             method: 'GET',
             timeout: 10000 // 10 Sekunden Timeout
           });

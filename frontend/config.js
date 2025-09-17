@@ -47,8 +47,8 @@ const ENDPOINTS = {
     // WebSocket
     WEBSOCKET: `${CONFIG.BACKEND_URL.replace('https://', 'wss://')}/ws`,
     
-    // Health Check
-    HEALTH: `${CONFIG.BACKEND_URL}/health`,
+    // Health Check (verwendet auth/status da /health nicht existiert)
+    HEALTH: `${CONFIG.BACKEND_URL}/auth/status`,
     
     // Event Management
     CREATE_EVENT: `${CONFIG.BACKEND_URL}/api/events`,
