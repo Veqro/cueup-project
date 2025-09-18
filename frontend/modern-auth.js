@@ -38,74 +38,160 @@ class ModernAuth {
     }
     
     /**
-     * Safari-spezifische Spotify-Callback-Behandlung
+     * Safari-spezifische Spotify-Callback-Behandlung - iOS optimiert
      */
     async handleSafariSpotifyCallback() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('spotify_login') === 'success' || 
-            urlParams.get('auth') === 'success' ||
-            document.referrer.includes('spotify.com')) {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        
+        // Erkennung von Spotify-Callback für Safari/iOS
+        const indicators = [
+            urlParams.get('spotify_login') === 'success',
+            urlParams.get('auth') === 'success',
+            urlParams.get('code'), // Spotify Authorization Code
+            document.referrer.includes('spotify.com'),
+            document.referrer.includes('accounts.spotify.com'),
+            window.location.href.includes('spotify')
+        ];
+        
+        if (indicators.some(Boolean)) {
+            console.log('🍎📱 Safari iOS Spotify-Login erkannt, starte erweiterte Auth-Wiederherstellung...');
             
-            console.log('🍎 Safari Spotify-Login erkannt, erzwinge Auth-Check...');
+            // Für iOS mehrfache Versuche mit verschiedenen Delays
+            const delays = isIOS ? [500, 1500, 3000, 5000] : [1000, 2000];
             
-            // Kurz warten und dann Auth-Status forcieren
-            setTimeout(async () => {
-                try {
-                    const response = await fetch(window.ENDPOINTS?.AUTH_STATUS || 'https://cueup-project.onrender.com/auth/status', {
-                        credentials: 'include'
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.isAuthenticated && data.spotifyUsername) {
-                            this.saveSession({
-                                spotifyUsername: data.spotifyUsername,
-                                spotifyConnected: true,
-                                isAuthenticated: true
-                            });
-                            console.log('🍎 Safari Session erfolgreich wiederhergestellt');
+            for (const delay of delays) {
+                setTimeout(async () => {
+                    try {
+                        console.log(`🍎 Safari Auth-Check Versuch nach ${delay}ms...`);
+                        
+                        // Erweiterte Request-Optionen für Safari iOS
+                        const response = await fetch(window.ENDPOINTS?.AUTH_STATUS || 'https://cueup-project.onrender.com/auth/status', {
+                            method: 'GET',
+                            credentials: 'include',
+                            cache: 'no-cache',
+                            headers: {
+                                'Cache-Control': 'no-cache',
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        console.log(`🍎 Safari Response Status: ${response.status}`);
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('🍎 Safari Auth Response:', data);
                             
-                            // URL bereinigen
-                            const cleanUrl = window.location.pathname;
-                            window.history.replaceState({}, document.title, cleanUrl);
+                            if (data.isAuthenticated) {
+                                const userData = {
+                                    spotifyUsername: data.spotifyUsername || data.username || 'Spotify User',
+                                    spotifyConnected: data.spotifyConnected || true,
+                                    isAuthenticated: true,
+                                    loginTime: Date.now(),
+                                    browser: 'Safari iOS'
+                                };
+                                
+                                this.saveSession(userData);
+                                console.log('🍎✅ Safari iOS Session erfolgreich wiederhergestellt:', userData);
+                                
+                                // Sofortige UI-Aktualisierung
+                                this.isAuthenticated = true;
+                                this.user = userData;
+                                this.updateUI();
+                                
+                                // URL bereinigen
+                                const cleanUrl = window.location.pathname;
+                                window.history.replaceState({}, document.title, cleanUrl);
+                                
+                                // Nach erfolgreichem Login andere Versuche abbrechen
+                                return;
+                            }
                         }
+                    } catch (error) {
+                        console.log(`🍎❌ Safari Auth-Check (${delay}ms) fehlgeschlagen:`, error);
                     }
-                } catch (error) {
-                    console.log('🍎 Safari Auth-Check fehlgeschlagen:', error);
-                }
-            }, 1000);
+                }, delay);
+            }
         }
     }
 
     /**
-     * Session aus localStorage laden - Safari-optimiert
+     * Session aus localStorage laden - Safari iOS optimiert
      */
     getStoredSession() {
-        try {
-            // Primär: localStorage versuchen
-            let stored = localStorage.getItem(this.sessionKey);
-            
-            // Safari Fallback: sessionStorage prüfen
-            if (!stored && this.isSafari()) {
-                stored = sessionStorage.getItem(this.sessionKey + '_safari');
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const storageKeys = [
+            this.sessionKey,
+            this.sessionKey + '_safari', 
+            this.sessionKey + '_ios',
+            'spotify_session_backup'
+        ];
+        
+        console.log('🔍 Suche Session für', this.detectBrowser(), 'iOS:', isIOS);
+        
+        // Multi-Source Session-Suche
+        for (const key of storageKeys) {
+            try {
+                // localStorage versuchen
+                let stored = localStorage.getItem(key);
                 if (stored) {
-                    console.log('🍎 Safari Session aus sessionStorage wiederhergestellt');
+                    console.log('✅ Session gefunden in localStorage[' + key + ']');
+                    return JSON.parse(stored);
                 }
+                
+                // sessionStorage versuchen
+                stored = sessionStorage.getItem(key);
+                if (stored) {
+                    console.log('✅ Session gefunden in sessionStorage[' + key + ']');
+                    return JSON.parse(stored);
+                }
+            } catch (error) {
+                console.warn('⚠️ Session-Key ' + key + ' beschädigt:', error.name);
+                this.cleanupCorruptedSession(key);
             }
-            
-            // Weiterer Fallback: sessionStorage normal
-            if (!stored) {
-                stored = sessionStorage.getItem(this.sessionKey);
+        }
+        
+        // Cookie Fallback für Safari iOS
+        if (this.isSafari() && isIOS) {
+            try {
+                const cookies = document.cookie.split(';');
+                for (const cookie of cookies) {
+                    const [name, value] = cookie.trim().split('=');
+                    if (name === 'cueup_auth' && value) {
+                        const decoded = JSON.parse(atob(value));
+                        if (decoded.auth && decoded.user) {
+                            console.log('🍪 Session aus iOS Safari Cookie wiederhergestellt');
+                            return {
+                                user: {
+                                    spotifyUsername: decoded.user,
+                                    isAuthenticated: true,
+                                    spotifyConnected: true
+                                },
+                                expires: Date.now() + (30 * 24 * 60 * 60 * 1000),
+                                created: decoded.time || Date.now(),
+                                lastActivity: Date.now()
+                            };
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('🍪 Cookie-Fallback fehlgeschlagen:', error);
             }
-            
-            return stored ? JSON.parse(stored) : null;
+        }
+        
+        console.log('❌ Keine gültige Session gefunden');
+        return null;
+    }
+    
+    /**
+     * Beschädigte Session-Daten bereinigen
+     */
+    cleanupCorruptedSession(key) {
+        try {
+            localStorage.removeItem(key);
+            sessionStorage.removeItem(key);
         } catch (error) {
-            console.error('Session-Laden fehlgeschlagen:', error);
-            // Cleanup bei Fehlern
-            localStorage.removeItem(this.sessionKey);
-            sessionStorage.removeItem(this.sessionKey);
-            sessionStorage.removeItem(this.sessionKey + '_safari');
-            return null;
+            console.warn('Cleanup für ' + key + ' fehlgeschlagen');
         }
     }
     
@@ -166,37 +252,86 @@ class ModernAuth {
     }
 
     /**
-     * Session speichern (nach erfolgreichem Login) - Safari-optimiert
+     * Session speichern (nach erfolgreichem Login) - Safari iOS optimiert
      */
     saveSession(userData) {
         const sessionDuration = window.CONFIG?.SESSION_DURATION || (30 * 24 * 60 * 60 * 1000);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         
         const session = {
             user: userData,
-            expires: Date.now() + sessionDuration, // Konfigurierbare Dauer
+            expires: Date.now() + sessionDuration,
             created: Date.now(),
             lastActivity: Date.now(),
-            browser: this.detectBrowser()
+            browser: this.detectBrowser(),
+            isIOS: isIOS,
+            safariVersion: this.getSafariVersion()
         };
         
-        // Safari-spezifische Session-Speicherung
-        try {
-            localStorage.setItem(this.sessionKey, JSON.stringify(session));
-            
-            // Safari Fallback: Auch in sessionStorage speichern
-            if (this.isSafari()) {
-                sessionStorage.setItem(this.sessionKey + '_safari', JSON.stringify(session));
-                console.log('🍎 Safari-Fallback Session gespeichert');
+        console.log('💾 Speichere Session für', this.detectBrowser(), session);
+        
+        // Multi-Level Speicherung für Safari iOS
+        const storageKeys = [
+            this.sessionKey,
+            this.sessionKey + '_safari',
+            this.sessionKey + '_ios',
+            'spotify_session_backup'
+        ];
+        
+        let successCount = 0;
+        
+        // localStorage Versuche
+        storageKeys.forEach(key => {
+            try {
+                localStorage.setItem(key, JSON.stringify(session));
+                successCount++;
+                console.log(`✅ Session gespeichert in localStorage[${key}]`);
+            } catch (error) {
+                console.warn(`⚠️ localStorage[${key}] fehlgeschlagen:`, error.name);
             }
-        } catch (error) {
-            console.error('Session-Speicherung fehlgeschlagen:', error);
-            // Fallback: Nur sessionStorage bei Fehlern
-            sessionStorage.setItem(this.sessionKey, JSON.stringify(session));
+        });
+        
+        // sessionStorage Versuche (iOS Fallback)
+        storageKeys.forEach(key => {
+            try {
+                sessionStorage.setItem(key, JSON.stringify(session));
+                successCount++;
+                console.log(`✅ Session gespeichert in sessionStorage[${key}]`);
+            } catch (error) {
+                console.warn(`⚠️ sessionStorage[${key}] fehlgeschlagen:`, error.name);
+            }
+        });
+        
+        // Cookie Fallback für Safari iOS
+        if (this.isSafari() && isIOS) {
+            try {
+                const cookieValue = btoa(JSON.stringify({
+                    user: userData.spotifyUsername || 'user',
+                    auth: true,
+                    time: Date.now()
+                }));
+                document.cookie = `cueup_auth=${cookieValue}; path=/; max-age=${sessionDuration/1000}; SameSite=Lax`;
+                console.log('🍪 iOS Safari Cookie-Fallback gesetzt');
+                successCount++;
+            } catch (error) {
+                console.warn('🍪 Cookie-Fallback fehlgeschlagen:', error);
+            }
         }
+        
+        console.log(`💾 Session-Speicherung: ${successCount} von ${storageKeys.length * 2 + (isIOS ? 1 : 0)} Methoden erfolgreich`);
         
         this.isAuthenticated = true;
         this.user = userData;
         this.updateUI();
+    }
+    
+    /**
+     * Safari-Version ermitteln für Debug-Zwecke
+     */
+    getSafariVersion() {
+        const match = navigator.userAgent.match(/Version\/(\d+\.\d+)/);
+        return match ? match[1] : 'unknown';
+    }
         
         const daysLeft = Math.round(sessionDuration / (24 * 60 * 60 * 1000));
         console.log(`✅ Session gespeichert für ${daysLeft} Tage (bis Browser-Cache gelöscht wird)`);

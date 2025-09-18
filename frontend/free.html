@@ -45,6 +45,102 @@
     <!-- Firefox-spezifischer Fallback -->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="modern-auth.js"></script>
+    <script>
+        // Safari iOS spezielle Session-Wiederherstellung
+        document.addEventListener('DOMContentLoaded', () => {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            
+            if (isIOS && isSafari) {
+                console.log('🍎📱 Safari iOS erkannt - starte erweiterte Auth-Wiederherstellung');
+                
+                // Prüfe URL-Parameter auf Spotify-Callback
+                const urlParams = new URLSearchParams(window.location.search);
+                const hasSpotifyCode = urlParams.get('code');
+                const fromSpotify = document.referrer.includes('spotify.com') || document.referrer.includes('accounts.spotify.com');
+                
+                if (hasSpotifyCode || fromSpotify) {
+                    console.log('🎵 Spotify-Callback in Safari iOS erkannt');
+                    
+                    // Mehrfache Auth-Checks mit verschiedenen Delays
+                    const delays = [500, 1500, 3000, 5000];
+                    
+                    delays.forEach((delay, index) => {
+                        setTimeout(async () => {
+                            try {
+                                console.log(`🍎 Safari iOS Auth-Check ${index + 1}/4 (${delay}ms)...`);
+                                
+                                const response = await fetch('https://cueup-project.onrender.com/auth/status', {
+                                    method: 'GET',
+                                    credentials: 'include',
+                                    cache: 'no-cache'
+                                });
+                                
+                                if (response.ok) {
+                                    const data = await response.json();
+                                    console.log('🍎 Safari Auth Response:', data);
+                                    
+                                    if (data.isAuthenticated && data.spotifyUsername) {
+                                        console.log('✅ Safari iOS Login erfolgreich:', data.spotifyUsername);
+                                        
+                                        // Session in mehreren Speichern ablegen
+                                        const session = {
+                                            user: {
+                                                spotifyUsername: data.spotifyUsername,
+                                                spotifyConnected: true,
+                                                isAuthenticated: true
+                                            },
+                                            expires: Date.now() + (30 * 24 * 60 * 60 * 1000),
+                                            created: Date.now(),
+                                            browser: 'Safari iOS'
+                                        };
+                                        
+                                        // Mehrfach-Speicherung für Safari iOS
+                                        try {
+                                            localStorage.setItem('cueup_session', JSON.stringify(session));
+                                            localStorage.setItem('cueup_session_safari', JSON.stringify(session));
+                                            sessionStorage.setItem('cueup_session_ios', JSON.stringify(session));
+                                            
+                                            // Cookie-Fallback
+                                            const cookieData = btoa(JSON.stringify({
+                                                user: data.spotifyUsername,
+                                                auth: true,
+                                                time: Date.now()
+                                            }));
+                                            document.cookie = `cueup_auth=${cookieData}; path=/; max-age=2592000; SameSite=Lax`;
+                                            
+                                            console.log('💾 Safari iOS Session gespeichert in allen Speichern');
+                                            
+                                            // Auth-Objekt aktualisieren falls verfügbar
+                                            if (window.auth) {
+                                                auth.isAuthenticated = true;
+                                                auth.user = session.user;
+                                                auth.updateUI();
+                                            }
+                                            
+                                            // URL bereinigen und zur Startseite
+                                            window.history.replaceState({}, document.title, '/');
+                                            
+                                            // Nach erfolgreichem Login zur Startseite
+                                            setTimeout(() => {
+                                                window.location.href = 'startpage.html';
+                                            }, 1000);
+                                            
+                                            return; // Weitere Versuche stoppen
+                                        } catch (storageError) {
+                                            console.error('🍎 Safari Session-Speicherung fehlgeschlagen:', storageError);
+                                        }
+                                    }
+                                }
+                            } catch (error) {
+                                console.log(`🍎 Safari Auth-Check ${index + 1} fehlgeschlagen:`, error.name);
+                            }
+                        }, delay);
+                    });
+                }
+            }
+        });
+    </script>
     <style>
         .login-container {
             max-width: 400px;
