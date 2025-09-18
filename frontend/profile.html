@@ -371,7 +371,7 @@
                 </div>
             </div>
 
-            <button class="logout-button" onclick="logout()">Ausloggen</button>
+            <button class="logout-button" onclick="auth.logout()">Ausloggen</button>
         </div>
     </main>
 
@@ -407,7 +407,7 @@
                         { text: 'Event erstellen', href: 'createevent.html' },
                         { text: 'Meine Events', href: 'myEvents.html' },
                         { text: 'Profil', href: 'profile.html' },
-                        { text: 'Ausloggen', href: '#', onclick: 'logout()' }
+                        { text: 'Ausloggen', href: '#', onclick: 'auth.logout()' }
                     ];
                 } else {
                     // Nicht angemeldeter Benutzer
@@ -526,10 +526,10 @@
 
         // Die ursprüngliche loadProfileData() Funktion wird verwendet
 
-        // logout() wird jetzt von simple-auth.js bereitgestellt
+        // logout() wird jetzt von modern-auth.js bereitgestellt
 
         // Event-Listener NUR für den Logout-Button (nicht Spotify-Disconnect!)
-        document.querySelector('button.logout-button[onclick="logout()"]')?.addEventListener('click', logout);
+        document.querySelector('button.logout-button[onclick="auth.logout()"]')?.addEventListener('click', function() { auth.logout(); });
 
         // Konto-Löschung-Funktion
         async function disconnectAndLogout() {
@@ -579,7 +579,7 @@
                 alert('Ihr Konto wurde erfolgreich gelöscht.');
                 
                 // Session löschen und zur Startseite weiterleiten
-                await logout();
+                auth.logout();
                 
             } catch (error) {
                 console.error('Delete account error:', error);
