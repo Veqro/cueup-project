@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CueUp System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #222;
+            color: #fff;
+        }
+        .test-section {
+            background: #333;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #2d5a27; color: #90ee90; }
+        .error { background: #5a2d2d; color: #ff9090; }
+        .info { background: #2d4a5a; color: #90d0ee; }
+        button {
+            background: #1db954;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1ed760;
+        }
+        #navigation {
+            background: #444;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        #navigation ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 20px;
+        }
+        #navigation a {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background: #555;
+        }
+        #navigation a:hover {
+            background: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 CueUp System Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Skript-Loading Test</h2>
+        <div id="script-test" class="test-result info">Teste Scripts...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Auth-System Test</h2>
+        <div id="auth-test" class="test-result info">Teste Auth-System...</div>
+        <div id="auth-details"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Navigation Test</h2>
+        <div id="navigation">
+            <ul id="navigationMenu">
+                <li><a href="#">Loading...</a></li>
+            </ul>
+        </div>
+        <div id="nav-test" class="test-result info">Navigation wird geladen...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Funktions-Tests</h2>
+        <button onclick="testSpotifyLogin()">Test Spotify Login</button>
+        <button onclick="testLogout()">Test Logout</button>
+        <button onclick="testPageProtection()">Test Page Protection</button>
+        <div id="function-test" class="test-result info">Bereit für Tests...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Server-Verbindung Test</h2>
+        <button onclick="testServerConnection()">Test Server</button>
+        <div id="server-test" class="test-result info">Bereit für Server-Test...</div>
+    </div>
+
+    <!-- Load our scripts -->
+    <script src="config.js"></script>
+    <script src="modern-auth.js"></script>
+    
+    <script>
+        function log(elementId, message, type) {
+            var element = document.getElementById(elementId);
+            element.className = 'test-result ' + type;
+            element.innerHTML = message;
+        }
+        
+        function logAppend(elementId, message) {
+            var element = document.getElementById(elementId);
+            element.innerHTML += '<br>' + message;
+        }
+        
+        // Test 1: Script Loading
+        setTimeout(function() {
+            var configLoaded = typeof CONFIG !== 'undefined';
+            var authLoaded = typeof ModernAuth !== 'undefined';
+            var authInstance = typeof window.auth !== 'undefined';
+            
+            if (configLoaded && authLoaded && authInstance) {
+                log('script-test', '✅ Alle Scripts erfolgreich geladen', 'success');
+                logAppend('script-test', 'CONFIG: ' + (configLoaded ? '✅' : '❌'));
+                logAppend('script-test', 'ModernAuth: ' + (authLoaded ? '✅' : '❌'));
+                logAppend('script-test', 'window.auth: ' + (authInstance ? '✅' : '❌'));
+            } else {
+                log('script-test', '❌ Script-Loading fehlgeschlagen', 'error');
+                logAppend('script-test', 'CONFIG: ' + (configLoaded ? '✅' : '❌'));
+                logAppend('script-test', 'ModernAuth: ' + (authLoaded ? '✅' : '❌'));
+                logAppend('script-test', 'window.auth: ' + (authInstance ? '✅' : '❌'));
+            }
+        }, 500);
+        
+        // Test 2: Auth System
+        setTimeout(function() {
+            if (window.auth) {
+                log('auth-test', '✅ Auth-System funktionsfähig', 'success');
+                document.getElementById('auth-details').innerHTML = 
+                    '<strong>Status:</strong> ' + (window.auth.isAuthenticated ? 'Angemeldet' : 'Nicht angemeldet') + '<br>' +
+                    '<strong>User:</strong> ' + (window.auth.user ? JSON.stringify(window.auth.user) : 'Kein User') + '<br>' +
+                    '<strong>Session Key:</strong> ' + window.auth.sessionKey;
+            } else {
+                log('auth-test', '❌ Auth-System nicht verfügbar', 'error');
+            }
+        }, 1000);
+        
+        // Test 3: Navigation
+        setTimeout(function() {
+            var navMenu = document.getElementById('navigationMenu');
+            if (navMenu && navMenu.innerHTML.indexOf('Loading...') === -1) {
+                log('nav-test', '✅ Navigation erfolgreich geladen', 'success');
+            } else {
+                log('nav-test', '❌ Navigation nicht geladen', 'error');
+            }
+        }, 1500);
+        
+        // Function Tests
+        function testSpotifyLogin() {
+            try {
+                if (window.auth && window.auth.spotifyLogin) {
+                    log('function-test', '✅ Spotify Login verfügbar - würde zu: ' + (window.ENDPOINTS ? window.ENDPOINTS.LOGIN : 'Default URL'), 'success');
+                    // Don't actually redirect during test
+                    // window.auth.spotifyLogin();
+                } else {
+                    log('function-test', '❌ Spotify Login nicht verfügbar', 'error');
+                }
+            } catch (error) {
+                log('function-test', '❌ Spotify Login Fehler: ' + error.message, 'error');
+            }
+        }
+        
+        function testLogout() {
+            try {
+                if (window.auth && window.auth.logout) {
+                    log('function-test', '✅ Logout-Funktion verfügbar', 'success');
+                    // Don't actually logout during test
+                    // window.auth.logout();
+                } else {
+                    log('function-test', '❌ Logout-Funktion nicht verfügbar', 'error');
+                }
+            } catch (error) {
+                log('function-test', '❌ Logout Fehler: ' + error.message, 'error');
+            }
+        }
+        
+        function testPageProtection() {
+            try {
+                if (window.auth && window.auth.protectPage) {
+                    var result = window.auth.protectPage();
+                    log('function-test', '✅ Page Protection: ' + (result ? 'Zugriff gewährt' : 'Weiterleitung würde erfolgen'), 'success');
+                } else {
+                    log('function-test', '❌ Page Protection nicht verfügbar', 'error');
+                }
+            } catch (error) {
+                log('function-test', '❌ Page Protection Fehler: ' + error.message, 'error');
+            }
+        }
+        
+        function testServerConnection() {
+            if (!window.CONFIG || !window.CONFIG.BACKEND_URL) {
+                log('server-test', '❌ Keine Backend-URL konfiguriert', 'error');
+                return;
+            }
+            
+            log('server-test', 'Teste Verbindung zu: ' + window.CONFIG.BACKEND_URL, 'info');
+            
+            var xhr = new XMLHttpRequest();
+            xhr.timeout = 5000;
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    log('server-test', '✅ Server erreichbar (Status: ' + xhr.status + ')', 'success');
+                } else {
+                    log('server-test', '⚠️ Server antwortet (Status: ' + xhr.status + ')', 'info');
+                }
+            };
+            
+            xhr.onerror = function() {
+                log('server-test', '❌ Server nicht erreichbar', 'error');
+            };
+            
+            xhr.ontimeout = function() {
+                log('server-test', '❌ Server-Timeout nach 5s', 'error');
+            };
+            
+            xhr.open('GET', window.CONFIG.BACKEND_URL + '/auth/status', true);
+            xhr.withCredentials = true;
+            xhr.send();
+        }
+        
+        // Auto-run server test
+        setTimeout(testServerConnection, 2000);
+    </script>
+</body>
+</html>
