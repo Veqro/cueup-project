@@ -18,6 +18,11 @@ class ModernAuth {
      * Sofortige Initialisierung - KEINE Server-Calls
      */
     init() {
+        // Safari-spezifische Spotify-Callback-Behandlung
+        if (this.isSafari()) {
+            this.handleSafariSpotifyCallback();
+        }
+        
         // Lokale Session prüfen
         const session = this.getStoredSession();
         if (session && this.isSessionValid(session)) {
@@ -31,18 +36,97 @@ class ModernAuth {
         // Navigation sofort verfügbar machen
         this.updateUI();
     }
+    
+    /**
+     * Safari-spezifische Spotify-Callback-Behandlung
+     */
+    async handleSafariSpotifyCallback() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('spotify_login') === 'success' || 
+            urlParams.get('auth') === 'success' ||
+            document.referrer.includes('spotify.com')) {
+            
+            console.log('🍎 Safari Spotify-Login erkannt, erzwinge Auth-Check...');
+            
+            // Kurz warten und dann Auth-Status forcieren
+            setTimeout(async () => {
+                try {
+                    const response = await fetch(window.ENDPOINTS?.AUTH_STATUS || 'https://cueup-project.onrender.com/auth/status', {
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.isAuthenticated && data.spotifyUsername) {
+                            this.saveSession({
+                                spotifyUsername: data.spotifyUsername,
+                                spotifyConnected: true,
+                                isAuthenticated: true
+                            });
+                            console.log('🍎 Safari Session erfolgreich wiederhergestellt');
+                            
+                            // URL bereinigen
+                            const cleanUrl = window.location.pathname;
+                            window.history.replaceState({}, document.title, cleanUrl);
+                        }
+                    }
+                } catch (error) {
+                    console.log('🍎 Safari Auth-Check fehlgeschlagen:', error);
+                }
+            }, 1000);
+        }
+    }
 
     /**
-     * Session aus localStorage laden
+     * Session aus localStorage laden - Safari-optimiert
      */
     getStoredSession() {
         try {
-            const stored = localStorage.getItem(this.sessionKey);
+            // Primär: localStorage versuchen
+            let stored = localStorage.getItem(this.sessionKey);
+            
+            // Safari Fallback: sessionStorage prüfen
+            if (!stored && this.isSafari()) {
+                stored = sessionStorage.getItem(this.sessionKey + '_safari');
+                if (stored) {
+                    console.log('🍎 Safari Session aus sessionStorage wiederhergestellt');
+                }
+            }
+            
+            // Weiterer Fallback: sessionStorage normal
+            if (!stored) {
+                stored = sessionStorage.getItem(this.sessionKey);
+            }
+            
             return stored ? JSON.parse(stored) : null;
         } catch (error) {
+            console.error('Session-Laden fehlgeschlagen:', error);
+            // Cleanup bei Fehlern
             localStorage.removeItem(this.sessionKey);
+            sessionStorage.removeItem(this.sessionKey);
+            sessionStorage.removeItem(this.sessionKey + '_safari');
             return null;
         }
+    }
+    
+    /**
+     * Safari-Erkennung
+     */
+    isSafari() {
+        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ||
+               /iPad|iPhone|iPod/.test(navigator.userAgent);
+    }
+    
+    /**
+     * Browser-Erkennung für Debug-Zwecke
+     */
+    detectBrowser() {
+        const ua = navigator.userAgent;
+        if (ua.includes('Chrome')) return 'Chrome';
+        if (ua.includes('Firefox')) return 'Firefox';
+        if (ua.includes('Safari')) return 'Safari';
+        if (ua.includes('Edge')) return 'Edge';
+        return 'Unknown';
     }
 
     /**
@@ -82,7 +166,7 @@ class ModernAuth {
     }
 
     /**
-     * Session speichern (nach erfolgreichem Login)
+     * Session speichern (nach erfolgreichem Login) - Safari-optimiert
      */
     saveSession(userData) {
         const sessionDuration = window.CONFIG?.SESSION_DURATION || (30 * 24 * 60 * 60 * 1000);
@@ -91,10 +175,25 @@ class ModernAuth {
             user: userData,
             expires: Date.now() + sessionDuration, // Konfigurierbare Dauer
             created: Date.now(),
-            lastActivity: Date.now()
+            lastActivity: Date.now(),
+            browser: this.detectBrowser()
         };
         
-        localStorage.setItem(this.sessionKey, JSON.stringify(session));
+        // Safari-spezifische Session-Speicherung
+        try {
+            localStorage.setItem(this.sessionKey, JSON.stringify(session));
+            
+            // Safari Fallback: Auch in sessionStorage speichern
+            if (this.isSafari()) {
+                sessionStorage.setItem(this.sessionKey + '_safari', JSON.stringify(session));
+                console.log('🍎 Safari-Fallback Session gespeichert');
+            }
+        } catch (error) {
+            console.error('Session-Speicherung fehlgeschlagen:', error);
+            // Fallback: Nur sessionStorage bei Fehlern
+            sessionStorage.setItem(this.sessionKey, JSON.stringify(session));
+        }
+        
         this.isAuthenticated = true;
         this.user = userData;
         this.updateUI();

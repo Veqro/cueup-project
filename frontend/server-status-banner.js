@@ -10,13 +10,40 @@ class ServerStatusBanner {
         this.statusInterval = null;
         this.banner = null;
         this.checkInterval = 15000; // Alle 15 Sekunden prüfen
+        
+        // Seiten die Banner brauchen (nur authentifizierte Seiten)
+        this.authRequiredPages = [
+            'dashboard.html',
+            'profile.html', 
+            'myEvents.html',
+            'createevent.html'
+        ];
+        
         this.init();
     }
 
     init() {
-        this.createBanner();
-        this.startStatusCheck();
-        console.log('🏁 Server-Status-Banner initialisiert');
+        // Nur auf Seiten anzeigen, die Anmeldung brauchen
+        if (this.shouldShowBanner()) {
+            this.createBanner();
+            this.startStatusCheck();
+            console.log('🏁 Server-Status-Banner initialisiert für authentifizierte Seite');
+        } else {
+            console.log('🚫 Server-Status-Banner übersprungen für öffentliche Seite');
+        }
+    }
+    
+    /**
+     * Prüft ob Banner auf aktueller Seite angezeigt werden soll
+     */
+    shouldShowBanner() {
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        
+        // Banner nur auf Seiten die Anmeldung brauchen
+        return this.authRequiredPages.some(page => 
+            currentPage.includes(page.replace('.html', '')) || 
+            currentPage === page
+        );
     }
 
     createBanner() {
@@ -25,7 +52,7 @@ class ServerStatusBanner {
         this.banner.className = 'server-status-banner';
         this.banner.innerHTML = `
             <div class="status-ticker">
-                🟡 Server startet gerade... Bitte haben Sie einen Moment Geduld 🟡
+                Server startet gerade... Bitte haben Sie einen Moment Geduld
             </div>
         `;
 
@@ -34,7 +61,7 @@ class ServerStatusBanner {
         style.textContent = `
             .server-status-banner {
                 position: fixed;
-                bottom: 0;
+                top: 0;
                 left: 0;
                 right: 0;
                 background: linear-gradient(90deg, #ff8c00, #ffa500, #ff8c00);
@@ -42,10 +69,10 @@ class ServerStatusBanner {
                 font-weight: bold;
                 font-size: 0.85rem;
                 padding: 8px 0;
-                border-top: 2px solid rgba(255, 140, 0, 0.3);
+                border-bottom: 2px solid rgba(255, 140, 0, 0.3);
                 overflow: hidden;
                 white-space: nowrap;
-                box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                 z-index: 10000;
                 display: none;
                 pointer-events: none;
@@ -53,8 +80,9 @@ class ServerStatusBanner {
             
             .status-ticker {
                 display: inline-block;
-                animation: scroll-status-ticker 20s linear infinite;
+                animation: scroll-status-ticker 8s linear infinite;
                 pointer-events: none;
+                padding-right: 100vw;
             }
             
             .server-status-banner:hover .status-ticker,
@@ -73,9 +101,14 @@ class ServerStatusBanner {
                 }
             }
 
-            /* Body Padding wenn Banner sichtbar */
+            /* Body Padding wenn Banner sichtbar - jetzt oben */
             body.server-status-visible {
-                padding-bottom: 40px;
+                padding-top: 40px;
+            }
+            
+            /* Header nach unten verschieben wenn Banner sichtbar */
+            body.server-status-visible header {
+                margin-top: 40px;
             }
         `;
 
@@ -222,9 +255,9 @@ class DashboardKeepAlive {
 window.ServerStatusBanner = ServerStatusBanner;
 window.DashboardKeepAlive = DashboardKeepAlive;
 
-// Auto-initialisierung für alle Seiten (außer explizit ausgeschlossen)
+// Auto-initialisierung für authentifizierte Seiten
 document.addEventListener('DOMContentLoaded', () => {
-    // Server-Status-Banner für alle Seiten
+    // Server-Status-Banner nur für authentifizierte Seiten
     window.serverStatusBanner = new ServerStatusBanner();
     
     // Keep-Alive nur für Dashboard
