@@ -57,7 +57,19 @@ ModernAuth.prototype.protectPage = function() {
 };
 
 ModernAuth.prototype.spotifyLogin = function() {
-    window.location.href = 'https://cueup-project.onrender.com/login';
+    // Safari-Erkennung
+    var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    if (isSafari || isIOS) {
+        console.log('Safari/iOS erkannt - Weiterleitung zur Safari-Warnung');
+        window.location.href = 'safari.html';
+        return;
+    }
+    
+    // Normaler Spotify-Login für andere Browser
+    var loginUrl = window.ENDPOINTS && window.ENDPOINTS.LOGIN ? window.ENDPOINTS.LOGIN : 'https://cueup-project.onrender.com/login';
+    window.location.href = loginUrl;
 };
 
 ModernAuth.prototype.logout = function() {

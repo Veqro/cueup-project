@@ -725,9 +725,20 @@
                 this.loginBtn.style.cursor = 'pointer';
                 this.loginBtnText.textContent = 'Mit Spotify anmelden';
                 
-                // Click-Handler für Login
+                // Click-Handler für Login mit Safari-Erkennung
                 this.loginBtn.onclick = () => {
-                    const loginUrl = `${window.CONFIG?.BACKEND_URL || 'https://cueup-project.onrender.com'}/login`;
+                    // Safari-Erkennung
+                    var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                    
+                    if (isSafari || isIOS) {
+                        console.log('🍎 Safari/iOS erkannt - Weiterleitung zur Safari-Warnung');
+                        window.location.href = 'safari.html';
+                        return;
+                    }
+                    
+                    // Normaler Spotify-Login für andere Browser
+                    var loginUrl = (window.CONFIG && window.CONFIG.BACKEND_URL ? window.CONFIG.BACKEND_URL : 'https://cueup-project.onrender.com') + '/login';
                     console.log('🎵 Spotify Login zu:', loginUrl);
                     window.location.href = loginUrl;
                 };
