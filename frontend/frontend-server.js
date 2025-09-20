@@ -50,13 +50,3 @@ app.get('/*', (req, res) => {
     `);
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 CueUp Frontend Server läuft auf Port ${PORT}`);
-    console.log(`📱 Öffne im Browser: http://localhost:${PORT}/startpage`);
-    console.log(`✨ Saubere URLs aktiviert - keine .html Endungen!`);
-    console.log('');
-    console.log('Verfügbare URLs:');
-    pageRoutes.forEach(route => {
-        console.log(`   http://localhost:${PORT}/${route}`);
-    });
-});

@@ -44,7 +44,7 @@ const fs = require('fs');
 
 // URL Konfiguration
 const FRONTEND_URL = 'https://cueup.vercel.app'; // Dein Vercel Frontend
-const SERVER_URL = process.env.SERVER_URL || 'https://cueup-project.onrender.com'; // Render Backend URL
+const SERVER_URL = process.env.SERVER_URL || 'https://novel-willyt-veqro-a29cd625.koyeb.app'; // Render Backend URL
 
 // ============ SICHERE TOKEN-VERWALTUNG ============
 // In-Memory Token Storage - Access Tokens werden nur im RAM gespeichert
