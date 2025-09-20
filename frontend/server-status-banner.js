@@ -150,7 +150,7 @@ class ServerStatusBanner {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-            const response = await fetch(`${window.CONFIG?.BACKEND_URL || 'https://cueup-project.onrender.com'}/auth/status`, {
+            const response = await fetch(`${window.CONFIG?.BACKEND_URL || 'https://novel-willyt-veqro-a29cd625.koyeb.app'}/auth/status`, {
                 credentials: 'include',
                 signal: controller.signal
             });
@@ -253,7 +253,7 @@ class DashboardKeepAlive {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 8000);
             
-            const response = await fetch(`${window.CONFIG?.BACKEND_URL || 'https://cueup-project.onrender.com'}/auth/status`, {
+            const response = await fetch(`${window.CONFIG?.BACKEND_URL || 'https://novel-willyt-veqro-a29cd625.koyeb.app'}/auth/status`, {
                 credentials: 'include',
                 signal: controller.signal
             });

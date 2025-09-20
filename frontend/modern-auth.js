@@ -68,7 +68,7 @@ ModernAuth.prototype.spotifyLogin = function() {
     }
     
     // Normaler Spotify-Login für andere Browser
-    var loginUrl = window.ENDPOINTS && window.ENDPOINTS.LOGIN ? window.ENDPOINTS.LOGIN : 'https://cueup-project.onrender.com/login';
+    var loginUrl = window.ENDPOINTS && window.ENDPOINTS.LOGIN ? window.ENDPOINTS.LOGIN : 'https://novel-willyt-veqro-a29cd625.koyeb.app/login';
     window.location.href = loginUrl;
 };
 

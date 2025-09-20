@@ -927,7 +927,7 @@
         eventsList.innerHTML = '<div class="loading">Lade Events...</div>';
 
         try {
-          const response = await fetch("https://cueup-project.onrender.com/api/events", {
+          const response = await fetch("https://novel-willyt-veqro-a29cd625.koyeb.app/api/events", {
             credentials: "include",
           });
           
@@ -1095,7 +1095,7 @@
         try {
           console.log('Lösche Event mit Code:', eventCode);
           
-          const response = await fetch(`https://cueup-project.onrender.com/api/event/${eventCode}`, {
+          const response = await fetch(`https://novel-willyt-veqro-a29cd625.koyeb.app/api/event/${eventCode}`, {
             method: "DELETE",
             credentials: "include",
           });
