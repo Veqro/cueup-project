@@ -246,7 +246,49 @@
 
         .server-status.loading {
             border-left-color: #ffa500;
-            animation: pulse 2s infinite;
+            animation: gentle-loading-pulse 2s ease-in-out infinite;
+        }
+        
+        .server-status.loading .status-text {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .loading-rocket {
+            animation: rocket-bounce 1.5s ease-in-out infinite;
+        }
+        
+        .loading-dots-inline {
+            position: relative;
+            width: 20px;
+            height: 16px;
+        }
+        
+        .loading-dots-inline::before {
+            content: '...';
+            position: absolute;
+            left: 0;
+            animation: loading-dots-animation 1.5s infinite;
+        }
+        
+        @keyframes gentle-loading-pulse {
+            0%, 100% { opacity: 0.9; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.02); }
+        }
+        
+        @keyframes rocket-bounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+        }
+        
+        @keyframes loading-dots-animation {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: '...'; }
         }
 
         .server-status.online {
@@ -628,7 +670,7 @@
                 
                 // Nur wenn Server offline ist, zeige Loading-Animation
                 console.log('⏳ Server offline - starte Wake-Up-Prozess');
-                this.setStatus('loading', 'Server wird gestartet...', 'Bitte warten, der Server fährt hoch. Dies kann bis zu 30 Sekunden dauern.');
+                this.setStatus('loading', '<span class="status-text"><span class="loading-rocket">🚀</span>Server startet<span class="loading-dots-inline"></span></span>', 'Bitte warten, der Server fährt hoch. Dies kann bis zu 30 Sekunden dauern.');
                 await this.checkServerStatus();
             }
             
@@ -690,7 +732,7 @@
                     
                     // Nächster Versuch
                     const remainingSeconds = Math.ceil((this.maxRetries - this.currentTry) * this.retryDelay / 1000);
-                    this.setStatus('loading', `Server startet... (${this.currentTry}/${this.maxRetries})`, 
+                    this.setStatus('loading', `<span class="status-text"><span class="loading-rocket">🚀</span>Server startet (${this.currentTry}/${this.maxRetries})<span class="loading-dots-inline"></span></span>`, 
                         `Nächster Versuch in ${this.retryDelay/1000} Sekunden. Noch ca. ${remainingSeconds}s verbleibend.`);
                     
                     setTimeout(() => this.checkServerStatus(), this.retryDelay);
@@ -700,7 +742,7 @@
             setStatus(status, text, message) {
                 // Status-Klassen aktualisieren
                 this.statusElement.className = `server-status ${status}`;
-                this.statusTextElement.textContent = text;
+                this.statusTextElement.innerHTML = text;
                 this.statusMessageElement.textContent = message;
                 
                 // Spinner ein/aus

@@ -52,7 +52,9 @@ class ServerStatusBanner {
         this.banner.className = 'server-status-banner';
         this.banner.innerHTML = `
             <div class="status-ticker">
-                Server startet gerade... Bitte haben Sie einen Moment Geduld
+                <span class="server-icon">🚀</span>
+                <span class="status-text">Server startet...</span>
+                <span class="loading-dots"></span>
             </div>
         `;
 
@@ -79,26 +81,53 @@ class ServerStatusBanner {
             }
             
             .status-ticker {
-                display: inline-block;
-                animation: scroll-status-ticker 8s linear infinite;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+                width: 100%;
                 pointer-events: none;
-                padding-right: 100vw;
+                animation: gentle-pulse 2s ease-in-out infinite;
             }
             
-            .server-status-banner:hover .status-ticker,
-            .server-status-banner:active .status-ticker,
-            .status-ticker:hover,
-            .status-ticker:active {
-                animation-play-state: running !important;
+            .server-icon {
+                font-size: 1.1rem;
+                animation: rocket-bounce 1.5s ease-in-out infinite;
             }
             
-            @keyframes scroll-status-ticker {
-                from {
-                    transform: translateX(100vw);
-                }
-                to {
-                    transform: translateX(-100%);
-                }
+            .status-text {
+                font-weight: bold;
+            }
+            
+            .loading-dots {
+                position: relative;
+                width: 20px;
+                height: 16px;
+            }
+            
+            .loading-dots::before {
+                content: '...';
+                position: absolute;
+                left: 0;
+                animation: loading-dots-animation 1.5s infinite;
+            }
+            
+            @keyframes gentle-pulse {
+                0%, 100% { opacity: 0.9; }
+                50% { opacity: 1; }
+            }
+            
+            @keyframes rocket-bounce {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-3px); }
+            }
+            
+            @keyframes loading-dots-animation {
+                0% { content: ''; }
+                25% { content: '.'; }
+                50% { content: '..'; }
+                75% { content: '...'; }
+                100% { content: '...'; }
             }
 
             /* Body Padding wenn Banner sichtbar - jetzt oben */
