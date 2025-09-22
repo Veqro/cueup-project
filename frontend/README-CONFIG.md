@@ -16,7 +16,7 @@
 ### 📝 Beispiel für neuen Server:
 ```javascript
 // Alte URL:
-BACKEND_URL: 'https://novel-willyt-veqro-a29cd625.koyeb.app',
+BACKEND_URL: 'https://cueup-project.onrender.com',
 
 // Neue URL (z.B. bei Providerwechsel):
 BACKEND_URL: 'https://cueup-new-server.railway.app',

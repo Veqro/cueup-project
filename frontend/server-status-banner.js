@@ -87,12 +87,12 @@ class ServerStatusBanner {
                 gap: 8px;
                 width: 100%;
                 pointer-events: none;
-                animation: gentle-pulse 2s ease-in-out infinite;
+                animation: gentle-pulse 1.5s ease-in-out infinite;
             }
             
             .server-icon {
                 font-size: 1.1rem;
-                animation: rocket-bounce 1.5s ease-in-out infinite;
+                animation: rocket-bounce 1s ease-in-out infinite;
             }
             
             .status-text {
@@ -150,7 +150,7 @@ class ServerStatusBanner {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-            const response = await fetch(`${window.CONFIG?.BACKEND_URL || 'https://novel-willyt-veqro-a29cd625.koyeb.app'}/auth/status`, {
+            const response = await fetch(`${window.CONFIG?.BACKEND_URL || 'https://cueup-project.onrender.com'}/auth/status`, {
                 credentials: 'include',
                 signal: controller.signal
             });
@@ -253,7 +253,7 @@ class DashboardKeepAlive {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 8000);
             
-            const response = await fetch(`${window.CONFIG?.BACKEND_URL || 'https://novel-willyt-veqro-a29cd625.koyeb.app'}/auth/status`, {
+            const response = await fetch(`${window.CONFIG?.BACKEND_URL || 'https://cueup-project.onrender.com'}/auth/status`, {
                 credentials: 'include',
                 signal: controller.signal
             });

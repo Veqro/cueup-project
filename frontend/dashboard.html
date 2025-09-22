@@ -1048,7 +1048,7 @@
     </div>
 
     <script>
-        const SERVER_URL = 'https://novel-willyt-veqro-a29cd625.koyeb.app';
+        const SERVER_URL = 'https://cueup-project.onrender.com';
         const wishesContainer = document.getElementById('wishesContainer');
         let wishes = [];
         let currentEventCode = null;
@@ -1159,7 +1159,7 @@
         }
 
         // WebSocket Verbindung aufbauen
-        const ws = new WebSocket('wss://novel-willyt-veqro-a29cd625.koyeb.app');
+        const ws = new WebSocket('wss://cueup-project.onrender.com');
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);

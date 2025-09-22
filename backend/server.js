@@ -21,21 +21,21 @@ const requiredEnvVars = [
 for (const envVar of requiredEnvVars) {
     if (!process.env[envVar]) {
         console.error(`🔴 KRITISCHER FEHLER: Umgebungsvariable ${envVar} ist nicht gesetzt!`);
-        console.error('📋 Setze diese über das Koyeb Dashboard > Service > Environment variables');
+        console.error('📋 Setze diese über das Render Dashboard > Service > Environment variables');
         process.exit(1);
     }
     
     // Überprüfe, ob Placeholder-Werte verwendet werden
     if (process.env[envVar].includes('your_') || process.env[envVar].includes('here')) {
         console.error(`🔴 SICHERHEITSFEHLER: ${envVar} enthält Placeholder-Werte!`);
-        console.error('🔑 Setze echte API Keys über das Koyeb Dashboard');
+        console.error('🔑 Setze echte API Keys über das Render Dashboard');
         process.exit(1);
     }
 }
 
 console.log('✅ Alle kritischen Umgebungsvariablen sind korrekt gesetzt');
 
-// Fetch für Koyeb-API (falls nicht nativ verfügbar)
+// Fetch für Render-API (falls nicht nativ verfügbar)
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 // Express App erstellen
@@ -44,7 +44,7 @@ const fs = require('fs');
 
 // URL Konfiguration
 const FRONTEND_URL = 'https://cueup.vercel.app'; // Dein Vercel Frontend
-const SERVER_URL = process.env.SERVER_URL || 'https://novel-willyt-veqro-a29cd625.koyeb.app'; // Render Backend URL
+const SERVER_URL = process.env.SERVER_URL || 'https://cueup-project.onrender.com'; // Render Backend URL
 
 // ============ SICHERE TOKEN-VERWALTUNG ============
 // In-Memory Token Storage - Access Tokens werden nur im RAM gespeichert
@@ -215,14 +215,14 @@ app.use(session({
     resave: false,
     saveUninitialized: true, // Cookie auch für nicht-eingeloggte Benutzer erstellen
     cookie: {
-        secure: true, // HTTPS erforderlich (Koyeb + Vercel nutzen HTTPS)
+        secure: true, // HTTPS erforderlich (Render + Vercel nutzen HTTPS)
         httpOnly: true, // Schutz vor XSS
-        sameSite: 'none', // WICHTIG: Für Cross-Origin zwischen Vercel und Koyeb
+        sameSite: 'none', // WICHTIG: Für Cross-Origin zwischen Vercel und Render
         maxAge: 24 * 60 * 60 * 1000, // 24 Stunden
         domain: undefined // Automatische Domain-Erkennung
     },
     name: 'cueup.sid', // Eindeutiger Cookie-Name
-    proxy: true // Vertraue Proxy-Headern (wichtig für Koyeb)
+    proxy: true // Vertraue Proxy-Headern (wichtig für Render)
 }));
 
 // ENTFERNT: Frontend-Dateien werden nicht mehr vom Backend serviert
@@ -1777,7 +1777,7 @@ app.get('/api/event/:eventCode/check-owner', (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 8000; // Koyeb Port
+const PORT = process.env.PORT || 8000; // Render Port
 
 // ============ URL REWRITING FÜR SAUBERE URLs ============
 // Statische Dateien für saubere URLs ohne .html Endung

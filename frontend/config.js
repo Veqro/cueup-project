@@ -8,7 +8,7 @@
 // ============ HAUPTKONFIGURATION ============
 const CONFIG = {
     // Backend Server URL - Hier einfach die URL ändern für neuen Server
-    BACKEND_URL: 'https://novel-willyt-veqro-a29cd625.koyeb.app',
+    BACKEND_URL: 'https://cueup-project.onrender.com',
     
     // Frontend URL (normalerweise nicht ändern)
     FRONTEND_URL: 'https://cueup.vercel.app',
