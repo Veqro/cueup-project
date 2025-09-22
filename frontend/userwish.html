@@ -134,22 +134,6 @@
             position: relative;
             max-width: 500px;
             margin: 0 auto;
-            transition: all 0.3s ease;
-        }
-        
-        @media (max-width: 768px) {
-            .search-container:focus-within {
-                position: fixed;
-                bottom: max(50px, env(safe-area-inset-bottom) + 50px);
-                left: 50%;
-                transform: translateX(-50%);
-                width: 90%;
-                z-index: 1000;
-                padding: 10px;
-                background: rgba(51, 51, 51, 0.95);
-                border-radius: 10px;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            }
         }
 
         .search-input {
@@ -300,12 +284,6 @@
             z-index: 999;
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
             overflow: hidden;
-            will-change: transform;
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            transition: transform 0.3s ease;
         }
 
         .spotify-info {
@@ -441,14 +419,10 @@
 
             .contact-button {
                 font-size: 0.8rem;
-                padding: 4px 10px;
+                padding: 6px 12px;
                 margin-left: 10px;
                 white-space: nowrap;
                 flex-shrink: 0;
-                height: 32px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
             }
             
             .spotify-logo {
@@ -595,48 +569,27 @@
         /* Touch-Optimierungen */
         @media (hover: none) and (pointer: coarse) {
             .contact-button {
-                min-height: 36px;
-                min-width: 36px;
-                padding: 6px 12px;
+                min-height: 44px;
+                min-width: 44px;
+                padding: 8px 15px;
                 touch-action: manipulation;
             }
             
             .contact-text {
-                display: inline;
-                font-size: 0.9rem;
+                display: inline; /* Text auf Touch-Geräten anzeigen */
             }
             
             .contact-button::before {
-                content: none;
+                content: none; /* Icon ausblenden wenn Text angezeigt wird */
             }
             
             .spotify-footer {
-                height: 44px;
-                padding: 0 12px;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                z-index: 999;
-                will-change: transform;
-                transform: translateZ(0);
-                -webkit-transform: translateZ(0);
-                backface-visibility: hidden;
-                -webkit-backface-visibility: hidden;
-            }
-
-            .search-container:focus-within {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 90%;
-                z-index: 1000;
-                padding: 10px;
+                height: 54px;
+                padding: 0 15px;
             }
             
             body {
-                padding-bottom: 50px;
+                padding-bottom: 64px;
             }
         }
         
