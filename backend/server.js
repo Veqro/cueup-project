@@ -560,14 +560,18 @@ const spotifyApi = new SpotifyWebApi({
 // Middleware
 app.use(cors({
     origin: [
-        FRONTEND_URL, 
         'https://cueup.vercel.app',
-        'https://cueup-in4o30ksu-veqros-projects.vercel.app' // Neue Vercel-URL hinzugefügt
-    ], // Frontend URLs
+        'https://cueup-in4o30ksu-veqros-projects.vercel.app',
+        /https:\/\/cueup.*\.vercel\.app$/ // Alle Vercel Preview URLs
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Set-Cookie']
 }));
+
+// WICHTIG: Preflight OPTIONS Requests behandeln
+app.options('*', cors());
 
 // Middleware
 app.use(bodyParser.json());
