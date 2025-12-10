@@ -9,16 +9,6 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-const { createClient } = require('@supabase/supabase-js');
-
-
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY // anon key
-);
-
-
 
 // ============ SICHERHEITSCHECKS ============
 // Überprüfe kritische Umgebungsvariablen
@@ -175,408 +165,26 @@ function saveUsers() {
     );
 }
 
-
-// ============ SUPABASE STORAGE BUCKET FÜR EVENTS.JSON ============
-// Events werden als JSON-Datei in einem Supabase Storage Bucket gespeichert
-
-const BUCKET_NAME = 'data'; // Dein Bucket-Name
-const EVENTS_FILE = 'events.json';
-
-// Funktion zum Laden der Events aus Supabase Storage
-async function loadEventsFromSupabase() {
-    try {
-        console.log('📥 Lade events.json aus Supabase Storage...');
-        
-        // Datei aus Bucket herunterladen
-        const { data, error } = await supabase
-            .storage
-            .from(BUCKET_NAME)
-            .download(EVENTS_FILE);
-
-        if (error) {
-            // Datei existiert noch nicht - erstelle sie
-            if (error.message.includes('not found') || error.statusCode === 404) {
-                console.log('⚠️ events.json existiert noch nicht, erstelle neue Datei...');
-                await saveEventsToSupabase([]);
-                return [];
-            }
-            throw error;
-        }
-
-        // Blob zu Text konvertieren
-        const text = await data.text();
-        const jsonData = JSON.parse(text);
-        
-        const events = jsonData.events || [];
-        console.log(`✅ ${events.length} Events aus Supabase Storage geladen`);
-        return events;
-        
-    } catch (error) {
-        console.error('❌ Fehler beim Laden aus Supabase Storage:', error);
-        console.log('⚠️ Verwende leeres Events-Array');
-        return [];
-    }
-}
-
-// Funktion zum Speichern der Events in Supabase Storage
-async function saveEventsToSupabase(events) {
-    try {
-        console.log('💾 Speichere events.json in Supabase Storage...');
-        
-        // JSON-Daten erstellen
-        const jsonData = JSON.stringify({ events: events }, null, 2);
-        const blob = new Blob([jsonData], { type: 'application/json' });
-
-        // Datei in Bucket hochladen (überschreibt bestehende Datei)
-        const { data, error } = await supabase
-            .storage
-            .from(BUCKET_NAME)
-            .upload(EVENTS_FILE, blob, {
-                contentType: 'application/json',
-                upsert: true // Überschreibe existierende Datei
-            });
-
-        if (error) {
-            throw error;
-        }
-
-        console.log(`✅ Events erfolgreich in Supabase Storage gespeichert (${events.length} Events)`);
-        return true;
-        
-    } catch (error) {
-        console.error('❌ Fehler beim Speichern in Supabase Storage:', error);
-        
-        // Fallback: Auch lokal speichern als Backup
-        try {
-            fs.writeFileSync(
-                path.join(__dirname, 'events.json'),
-                JSON.stringify({ events: events }, null, 2),
-                'utf8'
-            );
-            console.log('💾 Fallback: Events lokal gespeichert');
-        } catch (localError) {
-            console.error('❌ Auch lokales Speichern fehlgeschlagen:', localError);
-        }
-        
-        return false;
-    }
-}
-
-// Event Speicher - wird beim Start aus Supabase geladen
+// Event Speicher mit Benutzer-ID
 let eventsStore = [];
 
-// ============ SERVER-START MIT SUPABASE STORAGE ============
-// Beim Server-Start: Events aus Supabase Storage laden
-(async () => {
-    try {
-        console.log('🚀 Server startet - lade Events aus Supabase Storage...');
-        eventsStore = await loadEventsFromSupabase();
-        console.log(`✅ Server bereit mit ${eventsStore.length} Events aus der Cloud`);
-    } catch (error) {
-        console.error('❌ Fehler beim Laden der Events:', error);
-        eventsStore = [];
-    }
-})();
-
-// Ersetze ALLE saveEvents() Aufrufe durch:
-function saveEvents() {
-    // Asynchron in Supabase Storage speichern
-    saveEventsToSupabase(eventsStore).catch(error => {
-        console.error('❌ Hintergrund-Speicherung fehlgeschlagen:', error);
-    });
+// Lade Events aus Datei beim Start
+try {
+    const eventData = fs.readFileSync(path.join(__dirname, 'events.json'), 'utf8');
+    eventsStore = JSON.parse(eventData).events;
+} catch (error) {
+    console.log('Keine events.json gefunden, starte mit leerer Event-Liste');
+    eventsStore = [];
 }
 
-// ============ BEISPIEL-VERWENDUNG IN DEINEN ROUTES ============
-
-// ============================================
-// FIX FÜR server.js - POST /api/events Route
-// Ersetze die Route (Zeile ~230)
-// DAS PROBLEM: Auth-Middleware kommt VOR der Route
-// und blockiert den Request BEVOR CORS-Header gesetzt werden!
-// ============================================
-
-// POST /api/events - Event erstellen
-app.post('/api/events', (req, res) => {
-    console.log('📥 POST /api/events aufgerufen');
-
-    // ⭐⭐⭐ KRITISCH: CORS-Header SOFORT setzen - VOR ALLEM ANDEREN! ⭐⭐⭐
-    res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    // Debug: Session-Details loggen
-    console.log('📊 Session Debug:', {
-        hasSession: !!req.session,
-        sessionId: req.sessionID,
-        userId: req.session?.userId,
-        username: req.session?.username,
-        spotify: req.session?.spotify,
-        cookies: req.headers.cookie,
-        userAgent: req.headers['user-agent']?.substring(0, 50),
-        path: req.path,
-        method: req.method
-    });
-
-    // Auth-Check
-    if (!req.session || !req.session.userId) {
-        console.log('❌ Keine Session oder userId vorhanden');
-        return res.status(401).json({
-            success: false,
-            message: 'Nicht eingeloggt'
-        });
-    }
-
-    const eventData = req.body;
-    if (!eventData) {
-        return res.status(400).json({
-            success: false,
-            message: 'Keine Event-Daten empfangen'
-        });
-    }
-
-    // Event-Code generieren, falls nicht vorhanden
-    if (!eventData.eventCode) {
-        eventData.eventCode = generateRandomString(6).toUpperCase();
-    }
-
-    eventData.id = Date.now().toString();
-    eventData.wishUrl = `https://cueup.vercel.app/userwish?event=${eventData.eventCode}`;
-    eventData.userId = req.session.userId;
-    eventData.username = req.session.username;
-
-    // Event zum Store hinzufügen
-    eventsStore.push(eventData);
-    
-    // In Supabase Storage speichern
-    saveEvents();
-
-    res.status(201).json({
-        success: true,
-        message: 'Event erfolgreich erstellt',
-        event: eventData
-    });
-
-    console.log('✅ Event gespeichert und in Cloud hochgeladen');
-});
-
-// GET /api/events - Events abrufen
-app.get('/api/events', (req, res) => {
-    // CORS-Header explizit setzen für diese Route
-    res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (!req.session || !req.session.userId) {
-        return res.status(401).json({
-            success: false,
-            message: 'Nicht eingeloggt'
-        });
-    }
-
-    // Events aus dem lokalen Cache (wurde beim Start aus Supabase geladen)
-    const userEvents = eventsStore.filter(event => event.userId === req.session.userId);
-    res.json(userEvents);
-});
-
-// DELETE /api/event/:eventCode - Event löschen
-app.delete('/api/event/:eventCode', (req, res) => {
-    if (!req.session || !req.session.userId) {
-        return res.status(401).json({
-            success: false,
-            message: 'Nicht eingeloggt'
-        });
-    }
-
-    const eventCode = req.params.eventCode;
-    const eventIndex = eventsStore.findIndex(event => 
-        event.eventCode === eventCode && event.userId === req.session.userId
+// Funktion zum Speichern der Events in Datei
+function saveEvents() {
+    fs.writeFileSync(
+        path.join(__dirname, 'events.json'),
+        JSON.stringify({ events: eventsStore }, null, 2),
+        'utf8'
     );
-
-    if (eventIndex === -1) {
-        return res.status(404).json({
-            success: false,
-            message: 'Event nicht gefunden oder keine Berechtigung'
-        });
-    }
-
-    // Event aus dem Array entfernen
-    eventsStore.splice(eventIndex, 1);
-    
-    // In Supabase Storage speichern
-    saveEvents();
-
-    res.json({
-        success: true,
-        message: 'Event erfolgreich gelöscht'
-    });
-});
-
-// POST /wish/:eventCode - Musikwunsch hinzufügen
-app.post('/wish/:eventCode', async (req, res) => {
-    try {
-        const { eventCode } = req.params;
-        const { songId, title, artist, coverUrl, spotifyUri } = req.body;
-
-        // Event finden
-        const event = eventsStore.find(e => e.id === eventCode || e.eventCode === eventCode);
-        if (!event) {
-            return res.status(404).json({
-                error: 'event_not_found',
-                message: 'Event nicht gefunden'
-            });
-        }
-
-        // Wishes Array initialisieren
-        if (!event.wishes) {
-            event.wishes = [];
-        }
-
-        // Neuen Musikwunsch erstellen
-        const newWish = {
-            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-            songId,
-            title,
-            artist,
-            coverUrl,
-            spotifyUri,
-            timestamp: new Date().toISOString(),
-            status: 'pending',
-            eventCode: event.id || event.eventCode
-        };
-
-        event.wishes.push(newWish);
-
-        // In Supabase Storage speichern
-        saveEvents();
-
-        res.json({
-            success: true,
-            message: 'Musikwunsch erfolgreich hinzugefügt',
-            wish: newWish
-        });
-
-        console.log('✅ Musikwunsch gespeichert und in Cloud hochgeladen');
-    } catch (error) {
-        console.error('Fehler beim Hinzufügen des Musikwunsches:', error);
-        res.status(500).json({
-            error: 'server_error',
-            message: 'Fehler beim Hinzufügen des Musikwunsches'
-        });
-    }
-});
-
-// POST /api/wishes/:wishId/status - Status aktualisieren
-app.post('/api/wishes/:wishId/status', (req, res) => {
-    try {
-        const { wishId } = req.params;
-        const { status, eventCode } = req.body;
-
-        if (!['pending', 'accepted', 'rejected'].includes(status)) {
-            return res.status(400).json({
-                error: 'invalid_status',
-                message: 'Ungültiger Status'
-            });
-        }
-
-        // Event finden
-        const event = eventsStore.find(e => e.eventCode === eventCode || e.id === eventCode);
-        if (!event) {
-            return res.status(404).json({
-                error: 'event_not_found',
-                message: 'Event nicht gefunden'
-            });
-        }
-
-        if (!event.wishes) {
-            event.wishes = [];
-        }
-
-        const wishIndex = event.wishes.findIndex(w => w.id === wishId);
-        if (wishIndex === -1) {
-            return res.status(404).json({
-                error: 'wish_not_found',
-                message: 'Musikwunsch nicht gefunden'
-            });
-        }
-
-        // Status aktualisieren
-        event.wishes[wishIndex].status = status;
-        event.wishes[wishIndex].lastUpdated = new Date().toISOString();
-
-        // In Supabase Storage speichern
-        saveEvents();
-
-        res.json({
-            success: true,
-            wish: event.wishes[wishIndex]
-        });
-
-        console.log('✅ Musikwunsch-Status aktualisiert und in Cloud hochgeladen');
-    } catch (error) {
-        console.error('Fehler beim Aktualisieren des Status:', error);
-        res.status(500).json({
-            error: 'server_error',
-            message: 'Fehler beim Aktualisieren des Status'
-        });
-    }
-});
-
-// Account-Löschung - Auch aus Supabase Storage aktualisieren
-app.delete('/auth/delete-account', async (req, res) => {
-    try {
-        if (!req.session || !req.session.userId) {
-            return res.status(401).json({
-                error: 'not_authenticated',
-                message: 'Nicht eingeloggt'
-            });
-        }
-
-        const userId = req.session.userId;
-        
-        // 1. Alle Events des Benutzers löschen
-        eventsStore = eventsStore.filter(event => event.userId !== userId);
-        
-        // 2. Benutzer aus dem Users-Store entfernen
-        const userIndex = usersStore.findIndex(user => user.id === userId);
-        if (userIndex !== -1) {
-            usersStore.splice(userIndex, 1);
-        }
-        
-        // 3. Access Tokens aus RAM entfernen
-        activeTokens.delete(userId);
-        
-        // 4. Dateien speichern (lokale users.json + Supabase events.json)
-        saveUsers();
-        await saveEventsToSupabase(eventsStore); // Warte auf Supabase-Upload
-        
-        // 5. Session beenden
-        req.session.destroy((err) => {
-            if (err) {
-                console.error('Fehler beim Session-Logout:', err);
-            }
-        });
-        
-        res.clearCookie('connect.sid');
-        
-        res.json({
-            success: true,
-            message: 'Account und alle zugehörigen Daten wurden erfolgreich gelöscht'
-        });
-        
-        console.log(`✅ Account erfolgreich gelöscht (inkl. Cloud-Sync): User ${userId}`);
-        
-    } catch (error) {
-        console.error('Fehler beim Löschen des Accounts:', error);
-        res.status(500).json({
-            error: 'server_error',
-            message: 'Fehler beim Löschen des Accounts'
-        });
-    }
-});
-
-console.log('✅ Supabase Storage aktiviert - events.json wird in der Cloud gespeichert!');
+}
 
 // Spotify API Konfiguration
 const redirectUri = `${SERVER_URL}/callback`;  // Render Backend URL
@@ -586,65 +194,36 @@ const spotifyApi = new SpotifyWebApi({
     redirectUri: redirectUri
 });
 
-//##
-
-const allowedOrigins = ['https://cueup.vercel.app'];
-
+// Middleware
 app.use(cors({
-  origin: function(origin, callback) {
-    // Kein Origin = Server-to-Server, Postman oder same-origin
-    if (!origin) {
-      return callback(null, true);
-    }
-    
-    // Origin in allowed list → erlauben
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    
-    // Origin NICHT erlaubt → blocken
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true, // ⭐ KRITISCH für Session-Cookies!
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Set-Cookie'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+    origin: [
+        FRONTEND_URL, 
+        'https://cueup.vercel.app',
+        'https://cueup-in4o30ksu-veqros-projects.vercel.app' // Neue Vercel-URL hinzugefügt
+    ], // Frontend URLs
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-console.log('✅ CORS konfiguriert - Origin:', allowedOrigins[0], '- Credentials: true');
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-// Supabase Client initialisieren
-
+// Middleware
 app.use(bodyParser.json());
 
 // Session-Middleware MUSS GANZ OBEN STEHEN!
 app.use(session({
     secret: 'dj-wishlist-secret-2024-updated',
     resave: false,
-    saveUninitialized: false, // ⭐ WICHTIG: false statt true!
-    rolling: true, // ⭐ NEU: Session bei jedem Request erneuern
+    saveUninitialized: true, // Cookie auch für nicht-eingeloggte Benutzer erstellen
     cookie: {
-        secure: true, // HTTPS erforderlich
+        secure: true, // HTTPS erforderlich (Render + Vercel nutzen HTTPS)
         httpOnly: true, // Schutz vor XSS
-        sameSite: 'none', // ⭐ WICHTIG für Cross-Origin
+        sameSite: 'none', // WICHTIG: Für Cross-Origin zwischen Vercel und Render
         maxAge: 24 * 60 * 60 * 1000, // 24 Stunden
-        path: '/' // ⭐ WICHTIG: Cookie für alle Pfade gültig
+        domain: undefined // Automatische Domain-Erkennung
     },
     name: 'cueup.sid', // Eindeutiger Cookie-Name
-    proxy: true // ⭐ WICHTIG: Vertraue Proxy-Headern (Render)
+    proxy: true // Vertraue Proxy-Headern (wichtig für Render)
 }));
-
-console.log('✅ Session-Middleware konfiguriert');
-console.log('📋 Session-Config:', {
-    name: 'cueup.sid',
-    secure: true,
-    sameSite: 'none',
-    maxAge: '24h'
-});
 
 // ENTFERNT: Frontend-Dateien werden nicht mehr vom Backend serviert
 
@@ -684,7 +263,13 @@ app.delete('/auth/delete-account', (req, res) => {
 
         const userId = req.session.userId;
         
-    
+        // 1. Alle Events des Benutzers löschen
+        const userEvents = eventsStore.filter(event => event.userId === userId);
+        console.log(`Lösche ${userEvents.length} Events für User ${userId}`);
+        
+        // Events aus dem Store entfernen
+        eventsStore = eventsStore.filter(event => event.userId !== userId);
+        
         // 2. Benutzer aus dem Users-Store entfernen
         const userIndex = usersStore.findIndex(user => user.id === userId);
         if (userIndex !== -1) {
@@ -1100,43 +685,31 @@ app.post('/spotify/disconnect', (req, res) => {
 });
 
 // Auth-Check Middleware (nur für geschützte Routen)
-// ============================================
-// FIX FÜR server.js - Auth-Check Middleware
-// Ersetze die Middleware (Zeile ~520)
-// ============================================
-
-// Auth-Check Middleware (nur für geschützte Routen)
 app.use((req, res, next) => {
     console.log(`🔍 Auth Middleware - Path: ${req.path}, Method: ${req.method}`);
-
-    // CORS Preflight OPTIONS requests immer durchlassen
-    if (req.method === 'OPTIONS') {
-        console.log(`✅ OPTIONS request allowed for CORS: ${req.path}`);
-        return res.status(200).end();
-    }
-
+    
     // Pfade, die ohne Authentifizierung zugänglich sind
     const publicPaths = [
         '/auth/login',
-        '/auth/check',
+        '/auth/check', 
         '/auth/status',
-        '/login',
-        '/callback',
+        '/login',              // ❗ WICHTIG: Spotify-Login Route erlauben ❗
+        '/callback',           // ❗ WICHTIG: Spotify-Callback Route erlauben ❗
         '/free.html',
         '/startpage.css',
         '/img/',
         '/logout',
         '/spotify/search',
-        '/spotify/disconnect',
-        '/api/event/', // ⭐ Public Event Routes
-        '/api/wishes/', // ⭐ Public Wishes Routes
-        '/wish/' // ⭐ Public Wish Submit
+        '/spotify/disconnect'  // ❗ WICHTIG: Spotify-Disconnect erlauben ❗
     ];
 
-    // ⭐⭐⭐ WICHTIG: /api/events für POST Requests NICHT blocken ⭐⭐⭐
-    // Auth-Check wird IN der Route selbst gemacht!
-    if (req.path === '/api/events' && req.method === 'POST') {
-        console.log(`✅ POST /api/events - Auth-Check in Route`);
+    // Spezielle Behandlung für API-Routen
+    // Prüfe ob es eine geschützte API-Route ist (nur check-owner braucht Auth)
+    if (req.path.includes('/check-owner')) {
+        console.log(`🔒 Protected API route: ${req.path}, checking auth...`);
+        // Diese Route braucht Authentifizierung, also weitermachen mit Auth-Check
+    } else if (req.path.startsWith('/api/event/') || req.path.startsWith('/api/wishes/') || req.path.startsWith('/wish/')) {
+        console.log(`✅ Public API path: ${req.path}`);
         return next();
     }
 
@@ -1154,18 +727,20 @@ app.use((req, res, next) => {
         sessionId: req.sessionID,
         userId: req.session?.userId,
         username: req.session?.username,
+        spotify: req.session?.spotify,
         cookies: req.headers.cookie,
-        path: req.path,
-        method: req.method
+        userAgent: req.headers['user-agent']?.substring(0, 50)
     });
 
     // Prüfen ob der Benutzer eingeloggt ist
     if (!req.session || !req.session.userId) {
         console.log(`❌ No session/userId for path: ${req.path}`);
         if (req.method === 'GET') {
+            // Bei GET-Anfragen zur Frontend-Login-Seite umleiten
             console.log(`➡️ Redirecting GET to Frontend login`);
             return res.redirect(`${FRONTEND_URL}/free.html`);
         } else {
+            // Bei anderen Anfragen 401 zurückgeben
             console.log(`❌ Returning 401 for ${req.method} ${req.path}`);
             return res.status(401).json({
                 error: 'not_authenticated',
@@ -1268,33 +843,51 @@ app.get('/login', (req, res) => {
 // Diese Route wurde entfernt, da sie nicht mehr benötigt wird
 
 // Callback Route
-// ============================================
-// FIX FÜR server.js - Callback Route
-// Ersetze die /callback Route (ab Zeile ~600)
-// ============================================
-
-// Callback Route
 app.get('/callback', async (req, res) => {
     const { code, state } = req.query;
     const storedState = req.session.spotifyState;
     const frontendUrl = req.session.frontendUrl || FRONTEND_URL;
 
-    console.log('🔍 Callback aufgerufen');
-    console.log('📊 State Check:', { 
-        received: state, 
-        stored: storedState,
-        sessionId: req.sessionID 
-    });
+    // Debug: State-Vergleich loggen
+    console.log('🔍 Callback State Check:');
+    console.log('   Empfangen:', state);
+    console.log('   Session gespeichert:', storedState);
+    console.log('   Session ID:', req.sessionID);
 
-    // State-Validierung (optional für Debugging überspringen)
-    if (state && storedState && state !== storedState) {
-        console.log('⚠️ State Mismatch - aber fortfahren für Debugging');
+    // Prüfe sowohl Session als auch In-Memory Store
+    let stateValid = false;
+    
+    // Option 1: Session State
+    if (state && storedState && state === storedState) {
+        stateValid = true;
+        console.log('✅ State über Session validiert');
+    }
+    
+    // Option 2: In-Memory State Store (Fallback)
+    if (!stateValid && global.spotifyStates && global.spotifyStates.has(state)) {
+        const stateData = global.spotifyStates.get(state);
+        const age = Date.now() - stateData.timestamp;
+        
+        if (age < 10 * 60 * 1000) { // 10 Minuten gültig
+            stateValid = true;
+            console.log('✅ State über Memory Store validiert');
+            global.spotifyStates.delete(state); // Einmalig verwenden
+        } else {
+            console.log('⏰ State zu alt (Memory Store)');
+        }
+    }
+
+    if (!stateValid) {
+        console.log('⚠️ State Mismatch! Aber für Tests fortfahren...');
+        // TEMPORÄR: State-Check überspringen für Debugging
+        // Kommentieren Sie diese Zeilen für Produktion wieder ein:
+        // res.redirect(`${frontendUrl}/spotify-login.html?error=state_mismatch`);
+        // return;
     }
 
     try {
-        // Token von Spotify abrufen
         const data = await spotifyApi.authorizationCodeGrant(code);
-        console.log('✅ Spotify Token erhalten');
+        console.log('Token erhalten');
 
         // Token in der API setzen
         spotifyApi.setAccessToken(data.body['access_token']);
@@ -1302,15 +895,15 @@ app.get('/callback', async (req, res) => {
         
         // Benutzerdaten abrufen
         const me = await spotifyApi.getMe();
-        console.log('✅ Spotify User-Daten erhalten:', me.body.display_name);
         
-        // Refresh Token verschlüsseln
+        // SICHERHEIT: Access Token nur im RAM speichern, Refresh Token verschlüsselt
         const encryptedRefreshToken = encryptRefreshToken(data.body['refresh_token']);
         
         const spotifyUserData = {
             id: me.body.id,
             name: me.body.display_name,
             isPremium: me.body.product === 'premium',
+            // KEINE Access Tokens hier! Nur verschlüsselter Refresh Token
             encryptedRefreshToken: encryptedRefreshToken
         };
         
@@ -1318,7 +911,8 @@ app.get('/callback', async (req, res) => {
         let user = usersStore.find(u => u.spotifyData && u.spotifyData.id === me.body.id);
         
         if (!user) {
-            const newUserId = Date.now().toString();
+            // Neuer Benutzer - erstelle automatisch ein Konto
+            const newUserId = Date.now().toString(); // Eindeutige ID
             user = {
                 id: newUserId,
                 username: me.body.display_name || `spotify_user_${me.body.id}`,
@@ -1326,51 +920,49 @@ app.get('/callback', async (req, res) => {
                 events: []
             };
             usersStore.push(user);
-            console.log('✅ Neuer Benutzer erstellt:', user.username);
+            console.log('Neuer Benutzer erstellt für Spotify-ID:', me.body.id);
         } else {
+            // Bestehender Benutzer - aktualisiere Spotify-Daten
             user.spotifyData = spotifyUserData;
-            console.log('✅ Bestehender Benutzer aktualisiert:', user.username);
+            console.log('Bestehender Benutzer gefunden für Spotify-ID:', me.body.id);
         }
         
-        // Access Token im RAM speichern
+        // SICHERHEIT: Access Token nur im RAM speichern
         storeAccessToken(user.id, data.body['access_token'], data.body['expires_in']);
         
-        // ⭐⭐⭐ KRITISCH: Session-Daten setzen ⭐⭐⭐
+        // Benutzer in Session einloggen
         req.session.userId = user.id;
         req.session.username = user.username;
+        // KEINE Token in Session! Nur Basis-Spotify-Info
         req.session.spotify = {
             id: me.body.id,
             name: me.body.display_name,
             isPremium: me.body.product === 'premium'
         };
         
-        console.log('📝 Session-Daten gesetzt:', {
+        // Session explizit speichern
+        req.session.save((err) => {
+            if (err) {
+                console.error('❌ Session save error:', err);
+            } else {
+                console.log('✅ Session erfolgreich gespeichert:', req.sessionID);
+            }
+        });
+        
+        // Änderungen speichern
+        saveUsers();
+        console.log('Spotify Login erfolgreich für:', me.body.display_name, '- Tokens sicher gespeichert');
+        console.log('🔑 Session Details nach Login:', {
             sessionId: req.sessionID,
             userId: req.session.userId,
             username: req.session.username
         });
         
-        // Benutzer speichern
-        saveUsers();
-        
-        // ⭐⭐⭐ WICHTIGSTER TEIL: Session EXPLIZIT speichern ⭐⭐⭐
-        req.session.save((err) => {
-            if (err) {
-                console.error('❌ Session save error:', err);
-                return res.redirect(`${frontendUrl}/free.html?error=session_save_failed`);
-            }
-            
-            console.log('✅ Session erfolgreich gespeichert!');
-            console.log('✅ SessionID:', req.sessionID);
-            console.log('✅ Session Cookie sollte jetzt beim Client ankommen');
-            
-            // ERST JETZT weiterleiten - NACH erfolgreichem Session-Save
-            res.redirect(`${frontendUrl}/spotify-success.html`);
-        });
-        
+        // Zur Frontend Success-Seite weiterleiten
+        res.redirect(`${FRONTEND_URL}/spotify-success.html`);
     } catch (error) {
-        console.error('❌ Auth error:', error);
-        res.redirect(`${frontendUrl}/free.html?error=auth_failed`);
+        console.error('Auth error:', error);
+        res.redirect(`${FRONTEND_URL}/spotify-login.html?error=auth_failed`);
     }
 });
 
@@ -1590,12 +1182,6 @@ app.get('/spotify/me', async (req, res) => {
 // Musikwünsche-Routen
 // Events Route
 app.get('/api/events', async (req, res) => {
-    // CORS-Header explizit setzen für diese Route
-    res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
     // Prüfen ob der Benutzer eingeloggt ist
     if (!req.session.userId) {
         return res.status(401).json({
@@ -1655,15 +1241,9 @@ app.use('/spotify/search', (req, res, next) => next());
 
 // Event by Code Route (Public)
 app.get('/api/event/:eventCode', (req, res) => {
-    // CORS-Header explizit setzen für diese Route
-    res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
     try {
         const { eventCode } = req.params;
-
+        
         if (!eventCode) {
             return res.status(400).json({
                 error: 'missing_code',
@@ -1681,7 +1261,7 @@ app.get('/api/event/:eventCode', (req, res) => {
         }
 
         const event = eventsStore.find(e => e.eventCode === eventCode);
-
+        
         if (!event) {
             return res.status(404).json({
                 error: 'event_not_found',
@@ -1690,6 +1270,7 @@ app.get('/api/event/:eventCode', (req, res) => {
         }
 
         // Setze explizit den Content-Type Header
+        res.setHeader('Content-Type', 'application/json');
         res.json(event);
     } catch (error) {
         console.error('Fehler beim Abrufen des Events:', error);
@@ -1963,19 +1544,10 @@ app.post('/api/events', (req, res) => {
 });
 
 app.get('/api/events', (req, res) => {
-    console.log('🔍 GET /api/events called (duplicate route)');
-    console.log('Session exists:', !!req.session);
-    console.log('User ID:', req.session?.userId);
-
-    // CORS-Header explizit setzen für diese Route
-    res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
+    console.log('GET /api/events aufgerufen');
+    
     // Prüfen ob Benutzer eingeloggt ist
     if (!req.session || !req.session.userId) {
-        console.log('❌ No session or userId - returning 401');
         return res.status(401).json({
             success: false,
             message: 'Nicht eingeloggt'
@@ -1984,8 +1556,8 @@ app.get('/api/events', (req, res) => {
 
     // Nur Events des eingeloggten Benutzers zurückgeben
     const userEvents = eventsStore.filter(event => event.userId === req.session.userId);
-    console.log(`✅ Returning ${userEvents.length} events for user ${req.session.userId}`);
-
+    console.log('Events für Benutzer', req.session.userId, ':', userEvents);
+    
     res.json(userEvents);
 });
 
