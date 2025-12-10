@@ -10,6 +10,13 @@ const session = require('express-session');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY // anon key
+);
+
 // ============ SICHERHEITSCHECKS ============
 // Überprüfe kritische Umgebungsvariablen
 const requiredEnvVars = [
@@ -165,26 +172,382 @@ function saveUsers() {
     );
 }
 
-// Event Speicher mit Benutzer-ID
+
+// ============ SUPABASE STORAGE BUCKET FÜR EVENTS.JSON ============
+// Events werden als JSON-Datei in einem Supabase Storage Bucket gespeichert
+
+const BUCKET_NAME = 'data'; // Dein Bucket-Name
+const EVENTS_FILE = 'events.json';
+
+// Funktion zum Laden der Events aus Supabase Storage
+async function loadEventsFromSupabase() {
+    try {
+        console.log('📥 Lade events.json aus Supabase Storage...');
+        
+        // Datei aus Bucket herunterladen
+        const { data, error } = await supabase
+            .storage
+            .from(BUCKET_NAME)
+            .download(EVENTS_FILE);
+
+        if (error) {
+            // Datei existiert noch nicht - erstelle sie
+            if (error.message.includes('not found') || error.statusCode === 404) {
+                console.log('⚠️ events.json existiert noch nicht, erstelle neue Datei...');
+                await saveEventsToSupabase([]);
+                return [];
+            }
+            throw error;
+        }
+
+        // Blob zu Text konvertieren
+        const text = await data.text();
+        const jsonData = JSON.parse(text);
+        
+        const events = jsonData.events || [];
+        console.log(`✅ ${events.length} Events aus Supabase Storage geladen`);
+        return events;
+        
+    } catch (error) {
+        console.error('❌ Fehler beim Laden aus Supabase Storage:', error);
+        console.log('⚠️ Verwende leeres Events-Array');
+        return [];
+    }
+}
+
+// Funktion zum Speichern der Events in Supabase Storage
+async function saveEventsToSupabase(events) {
+    try {
+        console.log('💾 Speichere events.json in Supabase Storage...');
+        
+        // JSON-Daten erstellen
+        const jsonData = JSON.stringify({ events: events }, null, 2);
+        const blob = new Blob([jsonData], { type: 'application/json' });
+
+        // Datei in Bucket hochladen (überschreibt bestehende Datei)
+        const { data, error } = await supabase
+            .storage
+            .from(BUCKET_NAME)
+            .upload(EVENTS_FILE, blob, {
+                contentType: 'application/json',
+                upsert: true // Überschreibe existierende Datei
+            });
+
+        if (error) {
+            throw error;
+        }
+
+        console.log(`✅ Events erfolgreich in Supabase Storage gespeichert (${events.length} Events)`);
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Fehler beim Speichern in Supabase Storage:', error);
+        
+        // Fallback: Auch lokal speichern als Backup
+        try {
+            fs.writeFileSync(
+                path.join(__dirname, 'events.json'),
+                JSON.stringify({ events: events }, null, 2),
+                'utf8'
+            );
+            console.log('💾 Fallback: Events lokal gespeichert');
+        } catch (localError) {
+            console.error('❌ Auch lokales Speichern fehlgeschlagen:', localError);
+        }
+        
+        return false;
+    }
+}
+
+// Event Speicher - wird beim Start aus Supabase geladen
 let eventsStore = [];
 
-// Lade Events aus Datei beim Start
-try {
-    const eventData = fs.readFileSync(path.join(__dirname, 'events.json'), 'utf8');
-    eventsStore = JSON.parse(eventData).events;
-} catch (error) {
-    console.log('Keine events.json gefunden, starte mit leerer Event-Liste');
-    eventsStore = [];
+// ============ SERVER-START MIT SUPABASE STORAGE ============
+// Beim Server-Start: Events aus Supabase Storage laden
+(async () => {
+    try {
+        console.log('🚀 Server startet - lade Events aus Supabase Storage...');
+        eventsStore = await loadEventsFromSupabase();
+        console.log(`✅ Server bereit mit ${eventsStore.length} Events aus der Cloud`);
+    } catch (error) {
+        console.error('❌ Fehler beim Laden der Events:', error);
+        eventsStore = [];
+    }
+})();
+
+// Ersetze ALLE saveEvents() Aufrufe durch:
+function saveEvents() {
+    // Asynchron in Supabase Storage speichern
+    saveEventsToSupabase(eventsStore).catch(error => {
+        console.error('❌ Hintergrund-Speicherung fehlgeschlagen:', error);
+    });
 }
 
-// Funktion zum Speichern der Events in Datei
-function saveEvents() {
-    fs.writeFileSync(
-        path.join(__dirname, 'events.json'),
-        JSON.stringify({ events: eventsStore }, null, 2),
-        'utf8'
+// ============ BEISPIEL-VERWENDUNG IN DEINEN ROUTES ============
+
+// POST /api/events - Event erstellen
+app.post('/api/events', (req, res) => {
+    console.log('POST /api/events aufgerufen');
+    
+    try {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Nicht eingeloggt'
+            });
+        }
+
+        const eventData = req.body;
+        if (!eventData) {
+            return res.status(400).json({
+                success: false,
+                message: 'Keine Event-Daten empfangen'
+            });
+        }
+
+        // Event-Code generieren, falls nicht vorhanden
+        if (!eventData.eventCode) {
+            eventData.eventCode = generateRandomString(6).toUpperCase();
+        }
+
+        eventData.id = Date.now().toString();
+        eventData.wishUrl = `https://cueup.vercel.app/userwish?event=${eventData.eventCode}`;
+        eventData.userId = req.session.userId;
+        eventData.username = req.session.username;
+
+        // Event zum Store hinzufügen
+        eventsStore.push(eventData);
+        
+        // In Supabase Storage speichern
+        saveEvents();
+
+        res.status(201).json({
+            success: true,
+            message: 'Event erfolgreich erstellt',
+            event: eventData
+        });
+
+        console.log('✅ Event gespeichert und in Cloud hochgeladen');
+    } catch (error) {
+        console.error('Fehler beim Speichern des Events:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Interner Server-Fehler beim Speichern des Events'
+        });
+    }
+});
+
+// GET /api/events - Events abrufen
+app.get('/api/events', (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+            success: false,
+            message: 'Nicht eingeloggt'
+        });
+    }
+
+    // Events aus dem lokalen Cache (wurde beim Start aus Supabase geladen)
+    const userEvents = eventsStore.filter(event => event.userId === req.session.userId);
+    res.json(userEvents);
+});
+
+// DELETE /api/event/:eventCode - Event löschen
+app.delete('/api/event/:eventCode', (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({
+            success: false,
+            message: 'Nicht eingeloggt'
+        });
+    }
+
+    const eventCode = req.params.eventCode;
+    const eventIndex = eventsStore.findIndex(event => 
+        event.eventCode === eventCode && event.userId === req.session.userId
     );
-}
+
+    if (eventIndex === -1) {
+        return res.status(404).json({
+            success: false,
+            message: 'Event nicht gefunden oder keine Berechtigung'
+        });
+    }
+
+    // Event aus dem Array entfernen
+    eventsStore.splice(eventIndex, 1);
+    
+    // In Supabase Storage speichern
+    saveEvents();
+
+    res.json({
+        success: true,
+        message: 'Event erfolgreich gelöscht'
+    });
+});
+
+// POST /wish/:eventCode - Musikwunsch hinzufügen
+app.post('/wish/:eventCode', async (req, res) => {
+    try {
+        const { eventCode } = req.params;
+        const { songId, title, artist, coverUrl, spotifyUri } = req.body;
+
+        // Event finden
+        const event = eventsStore.find(e => e.id === eventCode || e.eventCode === eventCode);
+        if (!event) {
+            return res.status(404).json({
+                error: 'event_not_found',
+                message: 'Event nicht gefunden'
+            });
+        }
+
+        // Wishes Array initialisieren
+        if (!event.wishes) {
+            event.wishes = [];
+        }
+
+        // Neuen Musikwunsch erstellen
+        const newWish = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            songId,
+            title,
+            artist,
+            coverUrl,
+            spotifyUri,
+            timestamp: new Date().toISOString(),
+            status: 'pending',
+            eventCode: event.id || event.eventCode
+        };
+
+        event.wishes.push(newWish);
+
+        // In Supabase Storage speichern
+        saveEvents();
+
+        res.json({
+            success: true,
+            message: 'Musikwunsch erfolgreich hinzugefügt',
+            wish: newWish
+        });
+
+        console.log('✅ Musikwunsch gespeichert und in Cloud hochgeladen');
+    } catch (error) {
+        console.error('Fehler beim Hinzufügen des Musikwunsches:', error);
+        res.status(500).json({
+            error: 'server_error',
+            message: 'Fehler beim Hinzufügen des Musikwunsches'
+        });
+    }
+});
+
+// POST /api/wishes/:wishId/status - Status aktualisieren
+app.post('/api/wishes/:wishId/status', (req, res) => {
+    try {
+        const { wishId } = req.params;
+        const { status, eventCode } = req.body;
+
+        if (!['pending', 'accepted', 'rejected'].includes(status)) {
+            return res.status(400).json({
+                error: 'invalid_status',
+                message: 'Ungültiger Status'
+            });
+        }
+
+        // Event finden
+        const event = eventsStore.find(e => e.eventCode === eventCode || e.id === eventCode);
+        if (!event) {
+            return res.status(404).json({
+                error: 'event_not_found',
+                message: 'Event nicht gefunden'
+            });
+        }
+
+        if (!event.wishes) {
+            event.wishes = [];
+        }
+
+        const wishIndex = event.wishes.findIndex(w => w.id === wishId);
+        if (wishIndex === -1) {
+            return res.status(404).json({
+                error: 'wish_not_found',
+                message: 'Musikwunsch nicht gefunden'
+            });
+        }
+
+        // Status aktualisieren
+        event.wishes[wishIndex].status = status;
+        event.wishes[wishIndex].lastUpdated = new Date().toISOString();
+
+        // In Supabase Storage speichern
+        saveEvents();
+
+        res.json({
+            success: true,
+            wish: event.wishes[wishIndex]
+        });
+
+        console.log('✅ Musikwunsch-Status aktualisiert und in Cloud hochgeladen');
+    } catch (error) {
+        console.error('Fehler beim Aktualisieren des Status:', error);
+        res.status(500).json({
+            error: 'server_error',
+            message: 'Fehler beim Aktualisieren des Status'
+        });
+    }
+});
+
+// Account-Löschung - Auch aus Supabase Storage aktualisieren
+app.delete('/auth/delete-account', async (req, res) => {
+    try {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).json({
+                error: 'not_authenticated',
+                message: 'Nicht eingeloggt'
+            });
+        }
+
+        const userId = req.session.userId;
+        
+        // 1. Alle Events des Benutzers löschen
+        eventsStore = eventsStore.filter(event => event.userId !== userId);
+        
+        // 2. Benutzer aus dem Users-Store entfernen
+        const userIndex = usersStore.findIndex(user => user.id === userId);
+        if (userIndex !== -1) {
+            usersStore.splice(userIndex, 1);
+        }
+        
+        // 3. Access Tokens aus RAM entfernen
+        activeTokens.delete(userId);
+        
+        // 4. Dateien speichern (lokale users.json + Supabase events.json)
+        saveUsers();
+        await saveEventsToSupabase(eventsStore); // Warte auf Supabase-Upload
+        
+        // 5. Session beenden
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Fehler beim Session-Logout:', err);
+            }
+        });
+        
+        res.clearCookie('connect.sid');
+        
+        res.json({
+            success: true,
+            message: 'Account und alle zugehörigen Daten wurden erfolgreich gelöscht'
+        });
+        
+        console.log(`✅ Account erfolgreich gelöscht (inkl. Cloud-Sync): User ${userId}`);
+        
+    } catch (error) {
+        console.error('Fehler beim Löschen des Accounts:', error);
+        res.status(500).json({
+            error: 'server_error',
+            message: 'Fehler beim Löschen des Accounts'
+        });
+    }
+});
+
+console.log('✅ Supabase Storage aktiviert - events.json wird in der Cloud gespeichert!');
 
 // Spotify API Konfiguration
 const redirectUri = `${SERVER_URL}/callback`;  // Render Backend URL
@@ -263,13 +626,7 @@ app.delete('/auth/delete-account', (req, res) => {
 
         const userId = req.session.userId;
         
-        // 1. Alle Events des Benutzers löschen
-        const userEvents = eventsStore.filter(event => event.userId === userId);
-        console.log(`Lösche ${userEvents.length} Events für User ${userId}`);
-        
-        // Events aus dem Store entfernen
-        eventsStore = eventsStore.filter(event => event.userId !== userId);
-        
+    
         // 2. Benutzer aus dem Users-Store entfernen
         const userIndex = usersStore.findIndex(user => user.id === userId);
         if (userIndex !== -1) {
