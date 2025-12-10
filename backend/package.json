@@ -17,8 +17,7 @@
     "jsonwebtoken": "^9.0.2",
     "node-fetch": "^3.3.2",
     "spotify-web-api-node": "^5.0.2",
-    "ws": "^8.13.0",
-    "@supabase/supabase-js": "^2.39.0"
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
