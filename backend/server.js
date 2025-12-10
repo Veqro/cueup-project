@@ -11,17 +11,7 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
-app.use(cors({
-    origin: "https://cueup.vercel.app",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-}));
 
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-// Supabase Client initialisieren
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -574,6 +564,18 @@ const spotifyApi = new SpotifyWebApi({
 app.options('*', cors());
 
 // Middleware
+app.use(cors({
+    origin: "https://cueup.vercel.app",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// Supabase Client initialisieren
+
 app.use(bodyParser.json());
 
 // Session-Middleware MUSS GANZ OBEN STEHEN!
