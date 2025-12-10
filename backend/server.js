@@ -291,7 +291,11 @@ function saveEvents() {
 // POST /api/events - Event erstellen
 app.post('/api/events', (req, res) => {
     console.log('POST /api/events aufgerufen');
-    
+
+    // CORS-Header explizit setzen für diese Route
+    res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
+    res.header('Access-Control-Allow-Credentials', 'true');
+
     try {
         if (!req.session || !req.session.userId) {
             return res.status(401).json({
@@ -585,8 +589,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Optional: OPTIONS Preflight für alle Routen
-app.options('*', cors());
+// Optional: OPTIONS Preflight für alle Routen (entfernt, da jetzt oben behandelt)
 //##
 
 app.use(express.json());
@@ -1071,7 +1074,12 @@ app.use((req, res, next) => {
     // CORS Preflight OPTIONS requests immer durchlassen
     if (req.method === 'OPTIONS') {
         console.log(`✅ OPTIONS request allowed for CORS: ${req.path}`);
-        return next();
+        // Setze CORS-Header explizit für OPTIONS
+        res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
+        res.header('Access-Control-Allow-Credentials', 'true');
+        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+        return res.status(200).end();
     }
 
     // Pfade, die ohne Authentifizierung zugänglich sind
