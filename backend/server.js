@@ -297,7 +297,18 @@ app.post('/api/events', (req, res) => {
     res.header('Access-Control-Allow-Credentials', 'true');
 
     try {
+        console.log('🔍 Session Debug:', {
+            hasSession: !!req.session,
+            sessionId: req.sessionID,
+            userId: req.session?.userId,
+            username: req.session?.username,
+            spotify: req.session?.spotify,
+            cookies: req.headers.cookie,
+            userAgent: req.headers['user-agent']?.substring(0, 50)
+        });
+
         if (!req.session || !req.session.userId) {
+            console.log('❌ Keine Session oder userId vorhanden');
             return res.status(401).json({
                 success: false,
                 message: 'Nicht eingeloggt'
@@ -1123,7 +1134,9 @@ app.use((req, res, next) => {
         username: req.session?.username,
         spotify: req.session?.spotify,
         cookies: req.headers.cookie,
-        userAgent: req.headers['user-agent']?.substring(0, 50)
+        userAgent: req.headers['user-agent']?.substring(0, 50),
+        path: req.path,
+        method: req.method
     });
 
     // Prüfen ob der Benutzer eingeloggt ist
