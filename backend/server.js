@@ -563,14 +563,22 @@ const spotifyApi = new SpotifyWebApi({
 // WICHTIG: Preflight OPTIONS Requests behandeln
 app.options('*', cors());
 
+const allowedOrigins = ['https://cueup.vercel.app'];
+
 // Middleware
 app.use(cors({
-    origin: "https://cueup.vercel.app",
+    origin: function(origin, callback) {
+        if (!origin) return callback(null, true); // mobile apps oder Postman
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
