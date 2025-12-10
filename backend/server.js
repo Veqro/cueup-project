@@ -565,10 +565,18 @@ const allowedOrigins = ['https://cueup.vercel.app'];
 
 app.use(cors({
   origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // z. B. Postman oder Server-zu-Server
+    console.log('🔍 CORS Check - Origin:', origin);
+    console.log('🔍 CORS Check - Allowed Origins:', allowedOrigins);
+
+    if (!origin) {
+      console.log('✅ CORS: No origin (server-to-server or Postman)');
+      return callback(null, true);
+    }
     if (allowedOrigins.includes(origin)) {
+      console.log('✅ CORS: Origin allowed:', origin);
       callback(null, true);
     } else {
+      console.log('❌ CORS: Origin blocked:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
