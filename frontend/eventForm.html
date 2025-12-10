@@ -1185,11 +1185,14 @@
                     credentials: 'include'
                 });
 
-                console.log('Server-Antwort:', response.status, await response.text());
+                // Korrektes Response-Handling - klonen, um den Stream nicht zu verbrauchen
+                const responseClone = response.clone();
+                const responseText = await responseClone.text();
+                console.log('Server-Antwort:', response.status, responseText);
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('Server-Antwort:', response.status, errorText);
+                    console.error('Server-Fehler:', response.status, errorText);
                     throw new Error(`Server-Fehler: ${response.status} - ${errorText}`);
                 }
 
