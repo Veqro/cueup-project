@@ -9,13 +9,26 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-
 const { createClient } = require('@supabase/supabase-js');
+
+app.use(cors({
+    origin: "https://cueup.vercel.app",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// Supabase Client initialisieren
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY // anon key
 );
+
+
 
 // ============ SICHERHEITSCHECKS ============
 // Überprüfe kritische Umgebungsvariablen
@@ -556,14 +569,6 @@ const spotifyApi = new SpotifyWebApi({
     clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
     redirectUri: redirectUri
 });
-
-// Middleware
-app.use(cors({
-    origin: true,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-}));
 
 // WICHTIG: Preflight OPTIONS Requests behandeln
 app.options('*', cors());
