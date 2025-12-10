@@ -1111,114 +1111,121 @@
             }
         }
 
-        // Formular-Validierung
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // Erneute Authentifizierungsprüfung
-            const isAuthenticated = await checkAuthAndProtect();
-            if (!isAuthenticated) {
-                return; // Nicht fortfahren, wenn nicht angemeldet
-            }
-            
-            let isValid = true;
-            formError.style.display = 'none';
+// ============================================
+// DIESER CODE ERSETZT DEN FORM SUBMIT HANDLER
+// IN DEINER eventForm.html (AB ZEILE ~1140)
+// ============================================
 
-            // Alle Pflichtfelder prüfen
-            inputs.forEach(input => {
-                if (!input.value) {
-                    isValid = false;
-                    validateField(input);
-                }
-            });
+// Formular-Validierung und Submission
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Erneute Authentifizierungsprüfung
+    const isAuthenticated = await checkAuthAndProtect();
+    if (!isAuthenticated) {
+        return; // Nicht fortfahren, wenn nicht angemeldet
+    }
+    
+    let isValid = true;
+    formError.style.display = 'none';
 
-            // Zusätzliche Zeitvalidierung
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            if (startTime && endTime && startTime >= endTime) {
-                isValid = false;
-                formError.textContent = 'Die Endzeit muss nach der Startzeit liegen.';
-                formError.style.display = 'block';
-            }
+    // Alle Pflichtfelder prüfen
+    inputs.forEach(input => {
+        if (!input.value) {
+            isValid = false;
+            validateField(input);
+        }
+    });
 
-            if (!isValid) {
-                formError.style.display = 'block';
-                formError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                return;
-            }
+    // Zusätzliche Zeitvalidierung
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+    if (startTime && endTime && startTime >= endTime) {
+        isValid = false;
+        formError.textContent = 'Die Endzeit muss nach der Startzeit liegen.';
+        formError.style.display = 'block';
+    }
 
-            // Wenn alles valid ist
-            // Event-Code generieren (6 Zeichen, Zahlen und Großbuchstaben)
-            const eventCode = Array.from(crypto.getRandomValues(new Uint8Array(6)))
-                .map(n => (n % 36).toString(36).toUpperCase())
-                .join('');
-            
-            // Wunsch-URL generieren
-            const wishUrl = `${window.location.origin}/userwish.html?eventId=${eventCode}`;
+    if (!isValid) {
+        formError.style.display = 'block';
+        formError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+    }
 
-            // Event-Daten sammeln
-            const eventData = {
-                id: eventCode,
-                name: document.getElementById('eventName').value,
-                date: document.getElementById('eventDate').value,
-                time: document.getElementById('startTime').value,
-                endTime: document.getElementById('endTime').value,
-                location: document.getElementById('location').value,
-                dj: document.getElementById('djName').value,
-                description: document.getElementById('description').value,
-                wishUrl: wishUrl,
-                createdAt: new Date().toISOString()
-            };
+    // Wenn alles valid ist
+    // Event-Code generieren (6 Zeichen, Zahlen und Großbuchstaben)
+    const eventCode = Array.from(crypto.getRandomValues(new Uint8Array(6)))
+        .map(n => (n % 36).toString(36).toUpperCase())
+        .join('');
+    
+    // Wunsch-URL generieren
+    const wishUrl = `${window.location.origin}/userwish.html?eventId=${eventCode}`;
 
-            try {
-                console.log('Sende Event-Daten:', eventData);
+    // Event-Daten sammeln
+    const eventData = {
+        id: eventCode,
+        name: document.getElementById('eventName').value,
+        date: document.getElementById('eventDate').value,
+        time: document.getElementById('startTime').value,
+        endTime: document.getElementById('endTime').value,
+        location: document.getElementById('location').value,
+        dj: document.getElementById('djName').value,
+        description: document.getElementById('description').value,
+        wishUrl: wishUrl,
+        createdAt: new Date().toISOString()
+    };
 
-                // Event zum Server senden
-                const response = await fetch('https://cueup-project.onrender.com/api/events', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(eventData),
-                    mode: 'cors',
-                    credentials: 'include'
-                });
+    try {
+        console.log('Sende Event-Daten:', eventData);
 
-                // Korrektes Response-Handling - klonen, um den Stream nicht zu verbrauchen
-                const responseClone = response.clone();
-                const responseText = await responseClone.text();
-                console.log('Server-Antwort:', response.status, responseText);
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Server-Fehler:', response.status, errorText);
-                    throw new Error(`Server-Fehler: ${response.status} - ${errorText}`);
-                }
-
-                // Als Backup auch im localStorage speichern
-                let existingEvents = [];
-                const eventsStr = localStorage.getItem('events');
-                if (eventsStr) {
-                    existingEvents = JSON.parse(eventsStr);
-                }
-                if (!Array.isArray(existingEvents)) {
-                    existingEvents = [];
-                }
-
-                // Neues Event hinzufügen
-                existingEvents.unshift(eventData);
-                localStorage.setItem('events', JSON.stringify(existingEvents));
-                
-                console.log('Event erfolgreich gespeichert:', eventData);
-
-                // Zur Erfolgsseite weiterleiten
-                window.location.href = `eventSuccess.html?code=${eventCode}&wishUrl=${encodeURIComponent(wishUrl)}`;
-            } catch (error) {
-                console.error('Fehler beim Speichern des Events:', error);
-                alert('Fehler beim Speichern des Events: ' + error.message);
-            }
+        // ⭐⭐⭐ DAS IST DER FIX - credentials: 'include' HINZUGEFÜGT ⭐⭐⭐
+        const response = await fetch('https://cueup-project.onrender.com/api/events', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(eventData),
+            mode: 'cors',
+            credentials: 'include' // ⭐ DIESE ZEILE WAR DAS PROBLEM!
         });
+
+        // Response-Handling
+        const responseClone = response.clone();
+        const responseText = await responseClone.text();
+        console.log('Server-Antwort:', response.status, responseText);
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: responseText }));
+            console.error('Server-Fehler:', response.status, errorData);
+            throw new Error(`Server-Fehler: ${response.status} - ${errorData.message || responseText}`);
+        }
+
+        const result = await response.json();
+        
+        // Als Backup auch im localStorage speichern
+        let existingEvents = [];
+        const eventsStr = localStorage.getItem('events');
+        if (eventsStr) {
+            existingEvents = JSON.parse(eventsStr);
+        }
+        if (!Array.isArray(existingEvents)) {
+            existingEvents = [];
+        }
+
+        // Neues Event hinzufügen
+        existingEvents.unshift(eventData);
+        localStorage.setItem('events', JSON.stringify(existingEvents));
+        
+        console.log('✅ Event erfolgreich gespeichert:', eventData);
+
+        // Zur Erfolgsseite weiterleiten
+        window.location.href = `eventSuccess.html?code=${eventCode}&wishUrl=${encodeURIComponent(wishUrl)}`;
+    } catch (error) {
+        console.error('❌ Fehler beim Speichern des Events:', error);
+        alert('Fehler beim Speichern des Events: ' + error.message);
+    }
+});
     </script>
 
     <!-- Footer -->
