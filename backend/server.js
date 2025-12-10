@@ -288,83 +288,76 @@ function saveEvents() {
 
 // ============ BEISPIEL-VERWENDUNG IN DEINEN ROUTES ============
 
+// ============================================
+// FIX FÜR server.js - POST /api/events Route
+// Ersetze die Route (Zeile ~230)
+// DAS PROBLEM: Auth-Middleware kommt VOR der Route
+// und blockiert den Request BEVOR CORS-Header gesetzt werden!
+// ============================================
+
 // POST /api/events - Event erstellen
 app.post('/api/events', (req, res) => {
-    console.log('POST /api/events aufgerufen');
+    console.log('📥 POST /api/events aufgerufen');
 
-        // ⭐ FÜGE DIESE DEBUG-LOGS HINZU:
-    console.log('📊 Session Debug:', {
-        hasSession: !!req.session,
-        sessionId: req.sessionID,
-        userId: req.session?.userId,
-        username: req.session?.username,
-        cookieHeader: req.headers.cookie,
-        origin: req.headers.origin
-    });
-
-    // CORS-Header explizit setzen für diese Route
+    // ⭐⭐⭐ KRITISCH: CORS-Header SOFORT setzen - VOR ALLEM ANDEREN! ⭐⭐⭐
     res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    try {
-        console.log('🔍 Session Debug:', {
-            hasSession: !!req.session,
-            sessionId: req.sessionID,
-            userId: req.session?.userId,
-            username: req.session?.username,
-            spotify: req.session?.spotify,
-            cookies: req.headers.cookie,
-            userAgent: req.headers['user-agent']?.substring(0, 50)
-        });
+    // Debug: Session-Details loggen
+    console.log('📊 Session Debug:', {
+        hasSession: !!req.session,
+        sessionId: req.sessionID,
+        userId: req.session?.userId,
+        username: req.session?.username,
+        spotify: req.session?.spotify,
+        cookies: req.headers.cookie,
+        userAgent: req.headers['user-agent']?.substring(0, 50),
+        path: req.path,
+        method: req.method
+    });
 
-        if (!req.session || !req.session.userId) {
-            console.log('❌ Keine Session oder userId vorhanden');
-            return res.status(401).json({
-                success: false,
-                message: 'Nicht eingeloggt'
-            });
-        }
-
-        const eventData = req.body;
-        if (!eventData) {
-            return res.status(400).json({
-                success: false,
-                message: 'Keine Event-Daten empfangen'
-            });
-        }
-
-        // Event-Code generieren, falls nicht vorhanden
-        if (!eventData.eventCode) {
-            eventData.eventCode = generateRandomString(6).toUpperCase();
-        }
-
-        eventData.id = Date.now().toString();
-        eventData.wishUrl = `https://cueup.vercel.app/userwish?event=${eventData.eventCode}`;
-        eventData.userId = req.session.userId;
-        eventData.username = req.session.username;
-
-        // Event zum Store hinzufügen
-        eventsStore.push(eventData);
-        
-        // In Supabase Storage speichern
-        saveEvents();
-
-        res.status(201).json({
-            success: true,
-            message: 'Event erfolgreich erstellt',
-            event: eventData
-        });
-
-        console.log('✅ Event gespeichert und in Cloud hochgeladen');
-    } catch (error) {
-        console.error('Fehler beim Speichern des Events:', error);
-        res.status(500).json({
+    // Auth-Check
+    if (!req.session || !req.session.userId) {
+        console.log('❌ Keine Session oder userId vorhanden');
+        return res.status(401).json({
             success: false,
-            message: 'Interner Server-Fehler beim Speichern des Events'
+            message: 'Nicht eingeloggt'
         });
     }
+
+    const eventData = req.body;
+    if (!eventData) {
+        return res.status(400).json({
+            success: false,
+            message: 'Keine Event-Daten empfangen'
+        });
+    }
+
+    // Event-Code generieren, falls nicht vorhanden
+    if (!eventData.eventCode) {
+        eventData.eventCode = generateRandomString(6).toUpperCase();
+    }
+
+    eventData.id = Date.now().toString();
+    eventData.wishUrl = `https://cueup.vercel.app/userwish?event=${eventData.eventCode}`;
+    eventData.userId = req.session.userId;
+    eventData.username = req.session.username;
+
+    // Event zum Store hinzufügen
+    eventsStore.push(eventData);
+    
+    // In Supabase Storage speichern
+    saveEvents();
+
+    res.status(201).json({
+        success: true,
+        message: 'Event erfolgreich erstellt',
+        event: eventData
+    });
+
+    console.log('✅ Event gespeichert und in Cloud hochgeladen');
 });
 
 // GET /api/events - Events abrufen
@@ -594,32 +587,33 @@ const spotifyApi = new SpotifyWebApi({
 });
 
 //##
+
 const allowedOrigins = ['https://cueup.vercel.app'];
 
 app.use(cors({
   origin: function(origin, callback) {
-    console.log('🔍 CORS Check - Origin:', origin);
-    console.log('🔍 CORS Check - Allowed Origins:', allowedOrigins);
-
+    // Kein Origin = Server-to-Server, Postman oder same-origin
     if (!origin) {
-      console.log('✅ CORS: No origin (server-to-server or Postman)');
       return callback(null, true);
     }
+    
+    // Origin in allowed list → erlauben
     if (allowedOrigins.includes(origin)) {
-      console.log('✅ CORS: Origin allowed:', origin);
-      callback(null, true);
-    } else {
-      console.log('❌ CORS: Origin blocked:', origin);
-      callback(new Error('Not allowed by CORS'));
+      return callback(null, true);
     }
+    
+    // Origin NICHT erlaubt → blocken
+    callback(new Error('Not allowed by CORS'));
   },
-  credentials: true, // very important!
+  credentials: true, // ⭐ KRITISCH für Session-Cookies!
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Set-Cookie'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
-// Optional: OPTIONS Preflight für alle Routen (entfernt, da jetzt oben behandelt)
-//##
+console.log('✅ CORS konfiguriert - Origin:', allowedOrigins[0], '- Credentials: true');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -1106,17 +1100,18 @@ app.post('/spotify/disconnect', (req, res) => {
 });
 
 // Auth-Check Middleware (nur für geschützte Routen)
+// ============================================
+// FIX FÜR server.js - Auth-Check Middleware
+// Ersetze die Middleware (Zeile ~520)
+// ============================================
+
+// Auth-Check Middleware (nur für geschützte Routen)
 app.use((req, res, next) => {
     console.log(`🔍 Auth Middleware - Path: ${req.path}, Method: ${req.method}`);
 
     // CORS Preflight OPTIONS requests immer durchlassen
     if (req.method === 'OPTIONS') {
         console.log(`✅ OPTIONS request allowed for CORS: ${req.path}`);
-        // Setze CORS-Header explizit für OPTIONS
-        res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
-        res.header('Access-Control-Allow-Credentials', 'true');
-        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
         return res.status(200).end();
     }
 
@@ -1125,23 +1120,23 @@ app.use((req, res, next) => {
         '/auth/login',
         '/auth/check',
         '/auth/status',
-        '/login',              // ❗ WICHTIG: Spotify-Login Route erlauben ❗
-        '/callback',           // ❗ WICHTIG: Spotify-Callback Route erlauben ❗
+        '/login',
+        '/callback',
         '/free.html',
         '/startpage.css',
         '/img/',
         '/logout',
         '/spotify/search',
-        '/spotify/disconnect'  // ❗ WICHTIG: Spotify-Disconnect erlauben ❗
+        '/spotify/disconnect',
+        '/api/event/', // ⭐ Public Event Routes
+        '/api/wishes/', // ⭐ Public Wishes Routes
+        '/wish/' // ⭐ Public Wish Submit
     ];
 
-    // Spezielle Behandlung für API-Routen
-    // Prüfe ob es eine geschützte API-Route ist (nur check-owner braucht Auth)
-    if (req.path.includes('/check-owner')) {
-        console.log(`🔒 Protected API route: ${req.path}, checking auth...`);
-        // Diese Route braucht Authentifizierung, also weitermachen mit Auth-Check
-    } else if (req.path.startsWith('/api/event/') || req.path.startsWith('/api/wishes/') || req.path.startsWith('/wish/')) {
-        console.log(`✅ Public API path: ${req.path}`);
+    // ⭐⭐⭐ WICHTIG: /api/events für POST Requests NICHT blocken ⭐⭐⭐
+    // Auth-Check wird IN der Route selbst gemacht!
+    if (req.path === '/api/events' && req.method === 'POST') {
+        console.log(`✅ POST /api/events - Auth-Check in Route`);
         return next();
     }
 
@@ -1159,9 +1154,7 @@ app.use((req, res, next) => {
         sessionId: req.sessionID,
         userId: req.session?.userId,
         username: req.session?.username,
-        spotify: req.session?.spotify,
         cookies: req.headers.cookie,
-        userAgent: req.headers['user-agent']?.substring(0, 50),
         path: req.path,
         method: req.method
     });
@@ -1170,11 +1163,9 @@ app.use((req, res, next) => {
     if (!req.session || !req.session.userId) {
         console.log(`❌ No session/userId for path: ${req.path}`);
         if (req.method === 'GET') {
-            // Bei GET-Anfragen zur Frontend-Login-Seite umleiten
             console.log(`➡️ Redirecting GET to Frontend login`);
             return res.redirect(`${FRONTEND_URL}/free.html`);
         } else {
-            // Bei anderen Anfragen 401 zurückgeben
             console.log(`❌ Returning 401 for ${req.method} ${req.path}`);
             return res.status(401).json({
                 error: 'not_authenticated',
