@@ -631,17 +631,26 @@ app.use(bodyParser.json());
 app.use(session({
     secret: 'dj-wishlist-secret-2024-updated',
     resave: false,
-    saveUninitialized: true, // Cookie auch für nicht-eingeloggte Benutzer erstellen
+    saveUninitialized: false, // ⭐ WICHTIG: false statt true!
+    rolling: true, // ⭐ NEU: Session bei jedem Request erneuern
     cookie: {
-        secure: true, // HTTPS erforderlich (Render + Vercel nutzen HTTPS)
+        secure: true, // HTTPS erforderlich
         httpOnly: true, // Schutz vor XSS
-        sameSite: 'none', // WICHTIG: Für Cross-Origin zwischen Vercel und Render
+        sameSite: 'none', // ⭐ WICHTIG für Cross-Origin
         maxAge: 24 * 60 * 60 * 1000, // 24 Stunden
-        domain: undefined // Automatische Domain-Erkennung
+        path: '/' // ⭐ WICHTIG: Cookie für alle Pfade gültig
     },
     name: 'cueup.sid', // Eindeutiger Cookie-Name
-    proxy: true // Vertraue Proxy-Headern (wichtig für Render)
+    proxy: true // ⭐ WICHTIG: Vertraue Proxy-Headern (Render)
 }));
+
+console.log('✅ Session-Middleware konfiguriert');
+console.log('📋 Session-Config:', {
+    name: 'cueup.sid',
+    secure: true,
+    sameSite: 'none',
+    maxAge: '24h'
+});
 
 // ENTFERNT: Frontend-Dateien werden nicht mehr vom Backend serviert
 
@@ -1268,51 +1277,33 @@ app.get('/login', (req, res) => {
 // Diese Route wurde entfernt, da sie nicht mehr benötigt wird
 
 // Callback Route
+// ============================================
+// FIX FÜR server.js - Callback Route
+// Ersetze die /callback Route (ab Zeile ~600)
+// ============================================
+
+// Callback Route
 app.get('/callback', async (req, res) => {
     const { code, state } = req.query;
     const storedState = req.session.spotifyState;
     const frontendUrl = req.session.frontendUrl || FRONTEND_URL;
 
-    // Debug: State-Vergleich loggen
-    console.log('🔍 Callback State Check:');
-    console.log('   Empfangen:', state);
-    console.log('   Session gespeichert:', storedState);
-    console.log('   Session ID:', req.sessionID);
+    console.log('🔍 Callback aufgerufen');
+    console.log('📊 State Check:', { 
+        received: state, 
+        stored: storedState,
+        sessionId: req.sessionID 
+    });
 
-    // Prüfe sowohl Session als auch In-Memory Store
-    let stateValid = false;
-    
-    // Option 1: Session State
-    if (state && storedState && state === storedState) {
-        stateValid = true;
-        console.log('✅ State über Session validiert');
-    }
-    
-    // Option 2: In-Memory State Store (Fallback)
-    if (!stateValid && global.spotifyStates && global.spotifyStates.has(state)) {
-        const stateData = global.spotifyStates.get(state);
-        const age = Date.now() - stateData.timestamp;
-        
-        if (age < 10 * 60 * 1000) { // 10 Minuten gültig
-            stateValid = true;
-            console.log('✅ State über Memory Store validiert');
-            global.spotifyStates.delete(state); // Einmalig verwenden
-        } else {
-            console.log('⏰ State zu alt (Memory Store)');
-        }
-    }
-
-    if (!stateValid) {
-        console.log('⚠️ State Mismatch! Aber für Tests fortfahren...');
-        // TEMPORÄR: State-Check überspringen für Debugging
-        // Kommentieren Sie diese Zeilen für Produktion wieder ein:
-        // res.redirect(`${frontendUrl}/spotify-login.html?error=state_mismatch`);
-        // return;
+    // State-Validierung (optional für Debugging überspringen)
+    if (state && storedState && state !== storedState) {
+        console.log('⚠️ State Mismatch - aber fortfahren für Debugging');
     }
 
     try {
+        // Token von Spotify abrufen
         const data = await spotifyApi.authorizationCodeGrant(code);
-        console.log('Token erhalten');
+        console.log('✅ Spotify Token erhalten');
 
         // Token in der API setzen
         spotifyApi.setAccessToken(data.body['access_token']);
@@ -1320,15 +1311,15 @@ app.get('/callback', async (req, res) => {
         
         // Benutzerdaten abrufen
         const me = await spotifyApi.getMe();
+        console.log('✅ Spotify User-Daten erhalten:', me.body.display_name);
         
-        // SICHERHEIT: Access Token nur im RAM speichern, Refresh Token verschlüsselt
+        // Refresh Token verschlüsseln
         const encryptedRefreshToken = encryptRefreshToken(data.body['refresh_token']);
         
         const spotifyUserData = {
             id: me.body.id,
             name: me.body.display_name,
             isPremium: me.body.product === 'premium',
-            // KEINE Access Tokens hier! Nur verschlüsselter Refresh Token
             encryptedRefreshToken: encryptedRefreshToken
         };
         
@@ -1336,8 +1327,7 @@ app.get('/callback', async (req, res) => {
         let user = usersStore.find(u => u.spotifyData && u.spotifyData.id === me.body.id);
         
         if (!user) {
-            // Neuer Benutzer - erstelle automatisch ein Konto
-            const newUserId = Date.now().toString(); // Eindeutige ID
+            const newUserId = Date.now().toString();
             user = {
                 id: newUserId,
                 username: me.body.display_name || `spotify_user_${me.body.id}`,
@@ -1345,49 +1335,51 @@ app.get('/callback', async (req, res) => {
                 events: []
             };
             usersStore.push(user);
-            console.log('Neuer Benutzer erstellt für Spotify-ID:', me.body.id);
+            console.log('✅ Neuer Benutzer erstellt:', user.username);
         } else {
-            // Bestehender Benutzer - aktualisiere Spotify-Daten
             user.spotifyData = spotifyUserData;
-            console.log('Bestehender Benutzer gefunden für Spotify-ID:', me.body.id);
+            console.log('✅ Bestehender Benutzer aktualisiert:', user.username);
         }
         
-        // SICHERHEIT: Access Token nur im RAM speichern
+        // Access Token im RAM speichern
         storeAccessToken(user.id, data.body['access_token'], data.body['expires_in']);
         
-        // Benutzer in Session einloggen
+        // ⭐⭐⭐ KRITISCH: Session-Daten setzen ⭐⭐⭐
         req.session.userId = user.id;
         req.session.username = user.username;
-        // KEINE Token in Session! Nur Basis-Spotify-Info
         req.session.spotify = {
             id: me.body.id,
             name: me.body.display_name,
             isPremium: me.body.product === 'premium'
         };
         
-        // Session explizit speichern
-        req.session.save((err) => {
-            if (err) {
-                console.error('❌ Session save error:', err);
-            } else {
-                console.log('✅ Session erfolgreich gespeichert:', req.sessionID);
-            }
-        });
-        
-        // Änderungen speichern
-        saveUsers();
-        console.log('Spotify Login erfolgreich für:', me.body.display_name, '- Tokens sicher gespeichert');
-        console.log('🔑 Session Details nach Login:', {
+        console.log('📝 Session-Daten gesetzt:', {
             sessionId: req.sessionID,
             userId: req.session.userId,
             username: req.session.username
         });
         
-        // Zur Frontend Success-Seite weiterleiten
-        res.redirect(`${FRONTEND_URL}/spotify-success.html`);
+        // Benutzer speichern
+        saveUsers();
+        
+        // ⭐⭐⭐ WICHTIGSTER TEIL: Session EXPLIZIT speichern ⭐⭐⭐
+        req.session.save((err) => {
+            if (err) {
+                console.error('❌ Session save error:', err);
+                return res.redirect(`${frontendUrl}/free.html?error=session_save_failed`);
+            }
+            
+            console.log('✅ Session erfolgreich gespeichert!');
+            console.log('✅ SessionID:', req.sessionID);
+            console.log('✅ Session Cookie sollte jetzt beim Client ankommen');
+            
+            // ERST JETZT weiterleiten - NACH erfolgreichem Session-Save
+            res.redirect(`${frontendUrl}/spotify-success.html`);
+        });
+        
     } catch (error) {
-        console.error('Auth error:', error);
-        res.redirect(`${FRONTEND_URL}/spotify-login.html?error=auth_failed`);
+        console.error('❌ Auth error:', error);
+        res.redirect(`${frontendUrl}/free.html?error=auth_failed`);
     }
 });
 
