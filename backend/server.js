@@ -1067,11 +1067,17 @@ app.post('/spotify/disconnect', (req, res) => {
 // Auth-Check Middleware (nur für geschützte Routen)
 app.use((req, res, next) => {
     console.log(`🔍 Auth Middleware - Path: ${req.path}, Method: ${req.method}`);
-    
+
+    // CORS Preflight OPTIONS requests immer durchlassen
+    if (req.method === 'OPTIONS') {
+        console.log(`✅ OPTIONS request allowed for CORS: ${req.path}`);
+        return next();
+    }
+
     // Pfade, die ohne Authentifizierung zugänglich sind
     const publicPaths = [
         '/auth/login',
-        '/auth/check', 
+        '/auth/check',
         '/auth/status',
         '/login',              // ❗ WICHTIG: Spotify-Login Route erlauben ❗
         '/callback',           // ❗ WICHTIG: Spotify-Callback Route erlauben ❗
@@ -1923,10 +1929,13 @@ app.post('/api/events', (req, res) => {
 });
 
 app.get('/api/events', (req, res) => {
-    console.log('GET /api/events aufgerufen');
-    
+    console.log('🔍 GET /api/events called (duplicate route)');
+    console.log('Session exists:', !!req.session);
+    console.log('User ID:', req.session?.userId);
+
     // Prüfen ob Benutzer eingeloggt ist
     if (!req.session || !req.session.userId) {
+        console.log('❌ No session or userId - returning 401');
         return res.status(401).json({
             success: false,
             message: 'Nicht eingeloggt'
@@ -1935,8 +1944,8 @@ app.get('/api/events', (req, res) => {
 
     // Nur Events des eingeloggten Benutzers zurückgeben
     const userEvents = eventsStore.filter(event => event.userId === req.session.userId);
-    console.log('Events für Benutzer', req.session.userId, ':', userEvents);
-    
+    console.log(`✅ Returning ${userEvents.length} events for user ${req.session.userId}`);
+
     res.json(userEvents);
 });
 
