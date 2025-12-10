@@ -1633,7 +1633,6 @@ app.get('/api/event/:eventCode', (req, res) => {
         }
 
         // Setze explizit den Content-Type Header
-        res.setHeader('Content-Type', 'application/json');
         res.json(event);
     } catch (error) {
         console.error('Fehler beim Abrufen des Events:', error);
