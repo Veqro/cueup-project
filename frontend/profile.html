@@ -469,44 +469,66 @@
                     fetch('https://cueup-project.onrender.com/api/events', {
                         credentials: 'include'
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(events => {
                         // Event Statistiken
-                        document.getElementById('eventCount').textContent = events.length || '0';
-                        
-                        if (events.length > 0) {
-                            // Sortiere Events nach Datum
-                            const sortedEvents = events.sort((a, b) => new Date(a.date) - new Date(b.date));
-                            const futureEvents = sortedEvents.filter(e => new Date(e.date) > new Date());
-                            const pastEvents = sortedEvents.filter(e => new Date(e.date) <= new Date());
+                        const eventCountElement = document.getElementById('eventCount');
+                        const nextEventElement = document.getElementById('nextEvent');
+                        const lastEventElement = document.getElementById('lastEvent');
 
-                            // Nächstes Event
-                            document.getElementById('nextEvent').textContent = 
-                                futureEvents.length > 0 
-                                    ? new Date(futureEvents[0].date).toLocaleDateString() 
-                                    : 'Keine geplanten Events';
+                        if (eventCountElement && nextEventElement && lastEventElement) {
+                            eventCountElement.textContent = events.length || '0';
 
-                            // Letztes Event
-                            document.getElementById('lastEvent').textContent = 
-                                pastEvents.length > 0 
-                                    ? new Date(pastEvents[pastEvents.length - 1].date).toLocaleDateString() 
-                                    : 'Keine vergangenen Events';
+                            if (events.length > 0) {
+                                // Sortiere Events nach Datum
+                                const sortedEvents = events.sort((a, b) => new Date(a.date) - new Date(b.date));
+                                const futureEvents = sortedEvents.filter(e => new Date(e.date) > new Date());
+                                const pastEvents = sortedEvents.filter(e => new Date(e.date) <= new Date());
+
+                                // Nächstes Event
+                                nextEventElement.textContent =
+                                    futureEvents.length > 0
+                                        ? new Date(futureEvents[0].date).toLocaleDateString()
+                                        : 'Keine geplanten Events';
+
+                                // Letztes Event
+                                lastEventElement.textContent =
+                                    pastEvents.length > 0
+                                        ? new Date(pastEvents[pastEvents.length - 1].date).toLocaleDateString()
+                                        : 'Keine vergangenen Events';
+                            } else {
+                                nextEventElement.textContent = 'Keine geplanten Events';
+                                lastEventElement.textContent = 'Keine vergangenen Events';
+                            }
                         } else {
-                            document.getElementById('nextEvent').textContent = 'Keine geplanten Events';
-                            document.getElementById('lastEvent').textContent = 'Keine vergangenen Events';
+                            console.error('DOM elements not found for event stats');
                         }
                     })
                     .catch(error => {
                         console.error('Fehler beim Laden der Events:', error);
-                        document.getElementById('eventCount').textContent = 'Fehler beim Laden';
-                        document.getElementById('nextEvent').textContent = 'Fehler beim Laden';
-                        document.getElementById('lastEvent').textContent = 'Fehler beim Laden';
+                        const eventCountElement = document.getElementById('eventCount');
+                        const nextEventElement = document.getElementById('nextEvent');
+                        const lastEventElement = document.getElementById('lastEvent');
+
+                        if (eventCountElement && nextEventElement && lastEventElement) {
+                            eventCountElement.textContent = 'Fehler beim Laden';
+                            nextEventElement.textContent = 'Fehler beim Laden';
+                            lastEventElement.textContent = 'Fehler beim Laden';
+                        }
                     });
 
                     // Account Details
-                    document.getElementById('accountCreated').textContent = data.createdAt 
-                        ? new Date(data.createdAt).toLocaleDateString() 
-                        : 'Nicht verfügbar';
+                    const accountCreatedElement = document.getElementById('accountCreated');
+                    if (accountCreatedElement) {
+                        accountCreatedElement.textContent = data.createdAt
+                            ? new Date(data.createdAt).toLocaleDateString()
+                            : 'Nicht verfügbar';
+                    }
                 } else {
                     // Nicht eingeloggt oder kein Spotify: Login-Container anzeigen
                     document.getElementById('notLoggedInContainer').style.display = 'block';
@@ -514,9 +536,18 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                const elements = ['username', 'eventCount', 'nextEvent', 'lastEvent', 'accountCreated'];
-                elements.forEach(id => {
-                    document.getElementById(id).textContent = 'Fehler beim Laden';
+                const elements = [
+                    { id: 'username', element: document.getElementById('username') },
+                    { id: 'eventCount', element: document.getElementById('eventCount') },
+                    { id: 'nextEvent', element: document.getElementById('nextEvent') },
+                    { id: 'lastEvent', element: document.getElementById('lastEvent') },
+                    { id: 'accountCreated', element: document.getElementById('accountCreated') }
+                ];
+
+                elements.forEach(item => {
+                    if (item.element) {
+                        item.element.textContent = 'Fehler beim Laden';
+                    }
                 });
             }
         }

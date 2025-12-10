@@ -295,6 +295,8 @@ app.post('/api/events', (req, res) => {
     // CORS-Header explizit setzen für diese Route
     res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
     res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     try {
         console.log('🔍 Session Debug:', {
@@ -357,6 +359,12 @@ app.post('/api/events', (req, res) => {
 
 // GET /api/events - Events abrufen
 app.get('/api/events', (req, res) => {
+    // CORS-Header explizit setzen für diese Route
+    res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
     if (!req.session || !req.session.userId) {
         return res.status(401).json({
             success: false,
@@ -1589,6 +1597,12 @@ app.get('/spotify/me', async (req, res) => {
 // Musikwünsche-Routen
 // Events Route
 app.get('/api/events', async (req, res) => {
+    // CORS-Header explizit setzen für diese Route
+    res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
     // Prüfen ob der Benutzer eingeloggt ist
     if (!req.session.userId) {
         return res.status(401).json({
@@ -1648,9 +1662,15 @@ app.use('/spotify/search', (req, res, next) => next());
 
 // Event by Code Route (Public)
 app.get('/api/event/:eventCode', (req, res) => {
+    // CORS-Header explizit setzen für diese Route
+    res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
     try {
         const { eventCode } = req.params;
-        
+
         if (!eventCode) {
             return res.status(400).json({
                 error: 'missing_code',
@@ -1668,7 +1688,7 @@ app.get('/api/event/:eventCode', (req, res) => {
         }
 
         const event = eventsStore.find(e => e.eventCode === eventCode);
-        
+
         if (!event) {
             return res.status(404).json({
                 error: 'event_not_found',
@@ -1953,6 +1973,12 @@ app.get('/api/events', (req, res) => {
     console.log('🔍 GET /api/events called (duplicate route)');
     console.log('Session exists:', !!req.session);
     console.log('User ID:', req.session?.userId);
+
+    // CORS-Header explizit setzen für diese Route
+    res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     // Prüfen ob Benutzer eingeloggt ist
     if (!req.session || !req.session.userId) {
