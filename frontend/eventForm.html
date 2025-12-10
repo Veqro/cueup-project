@@ -1017,6 +1017,7 @@
             updateTimeDisplays();
             timeModal.style.display = 'flex';
         });
+        
 
         // Navigation
         document.getElementById('prevMonth').addEventListener('click', () => {
@@ -1116,14 +1117,37 @@
 // IN DEINER eventForm.html (AB ZEILE ~1140)
 // ============================================
 
+// ============================================
+// ERSETZE DEN KOMPLETTEN FORM SUBMIT HANDLER
+// In eventForm.html ab Zeile ~1140
+// ============================================
+
 // Formular-Validierung und Submission
 form.addEventListener('submit', async function(e) {
     e.preventDefault();
     
+    console.log('🔍 Form Submit gestartet...');
+    
+    // Debug: Cookie-Status prüfen
+    console.log('🍪 Aktuelle Cookies:', document.cookie);
+    
     // Erneute Authentifizierungsprüfung
-    const isAuthenticated = await checkAuthAndProtect();
-    if (!isAuthenticated) {
-        return; // Nicht fortfahren, wenn nicht angemeldet
+    try {
+        const authCheck = await fetch('https://cueup-project.onrender.com/auth/status', {
+            credentials: 'include'
+        });
+        const authData = await authCheck.json();
+        console.log('📊 Auth-Status:', authData);
+        
+        if (!authData.isAuthenticated) {
+            alert('Du bist nicht eingeloggt! Bitte melde dich erneut an.');
+            window.location.href = 'free.html';
+            return;
+        }
+    } catch (error) {
+        console.error('❌ Auth-Check fehlgeschlagen:', error);
+        alert('Fehler bei der Authentifizierung. Bitte neu anmelden.');
+        return;
     }
     
     let isValid = true;
@@ -1152,7 +1176,6 @@ form.addEventListener('submit', async function(e) {
         return;
     }
 
-    // Wenn alles valid ist
     // Event-Code generieren (6 Zeichen, Zahlen und Großbuchstaben)
     const eventCode = Array.from(crypto.getRandomValues(new Uint8Array(6)))
         .map(n => (n % 36).toString(36).toUpperCase())
@@ -1176,32 +1199,51 @@ form.addEventListener('submit', async function(e) {
     };
 
     try {
-        console.log('Sende Event-Daten:', eventData);
+        console.log('📤 Sende Event-Daten:', eventData);
+        console.log('🍪 Cookie wird mitgesendet:', document.cookie.includes('cueup.sid'));
 
-        // ⭐⭐⭐ DAS IST DER FIX - credentials: 'include' HINZUGEFÜGT ⭐⭐⭐
+        // ⭐⭐⭐ KRITISCH: credentials: 'include' MUSS HIER STEHEN ⭐⭐⭐
         const response = await fetch('https://cueup-project.onrender.com/api/events', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify(eventData),
-            mode: 'cors',
-            credentials: 'include' // ⭐ DIESE ZEILE WAR DAS PROBLEM!
+            credentials: 'include', // ⭐⭐⭐ WICHTIGSTE ZEILE ⭐⭐⭐
+            body: JSON.stringify(eventData)
         });
 
-        // Response-Handling
-        const responseClone = response.clone();
-        const responseText = await responseClone.text();
-        console.log('Server-Antwort:', response.status, responseText);
+        console.log('📥 Response Status:', response.status);
+        console.log('📥 Response Headers:', [...response.headers.entries()]);
+
+        // Response-Text zuerst lesen
+        const responseText = await response.text();
+        console.log('📥 Response Body (raw):', responseText);
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: responseText }));
-            console.error('Server-Fehler:', response.status, errorData);
-            throw new Error(`Server-Fehler: ${response.status} - ${errorData.message || responseText}`);
+            let errorMessage = 'Unbekannter Fehler';
+            try {
+                const errorData = JSON.parse(responseText);
+                errorMessage = errorData.message || errorMessage;
+            } catch (e) {
+                errorMessage = responseText;
+            }
+            
+            console.error('❌ Server-Fehler:', response.status, errorMessage);
+            
+            // Spezielle Behandlung für 401
+            if (response.status === 401) {
+                alert('Session abgelaufen! Bitte melde dich erneut an.');
+                window.location.href = 'free.html';
+                return;
+            }
+            
+            throw new Error(`Server-Fehler: ${response.status} - ${errorMessage}`);
         }
 
-        const result = await response.json();
+        // Erfolgreiche Response parsen
+        const result = JSON.parse(responseText);
+        console.log('✅ Server-Response:', result);
         
         // Als Backup auch im localStorage speichern
         let existingEvents = [];
@@ -1221,9 +1263,11 @@ form.addEventListener('submit', async function(e) {
 
         // Zur Erfolgsseite weiterleiten
         window.location.href = `eventSuccess.html?code=${eventCode}&wishUrl=${encodeURIComponent(wishUrl)}`;
+        
     } catch (error) {
         console.error('❌ Fehler beim Speichern des Events:', error);
-        alert('Fehler beim Speichern des Events: ' + error.message);
+        console.error('❌ Error Stack:', error.stack);
+        alert('Fehler beim Speichern des Events:\n' + error.message);
     }
 });
     </script>

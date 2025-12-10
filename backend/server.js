@@ -292,6 +292,16 @@ function saveEvents() {
 app.post('/api/events', (req, res) => {
     console.log('POST /api/events aufgerufen');
 
+        // ⭐ FÜGE DIESE DEBUG-LOGS HINZU:
+    console.log('📊 Session Debug:', {
+        hasSession: !!req.session,
+        sessionId: req.sessionID,
+        userId: req.session?.userId,
+        username: req.session?.username,
+        cookieHeader: req.headers.cookie,
+        origin: req.headers.origin
+    });
+
     // CORS-Header explizit setzen für diese Route
     res.header('Access-Control-Allow-Origin', 'https://cueup.vercel.app');
     res.header('Access-Control-Allow-Credentials', 'true');
