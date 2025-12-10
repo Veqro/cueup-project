@@ -10,6 +10,13 @@ const session = require('express-session');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY // anon key
+);
+
 // ============ SICHERHEITSCHECKS ============
 // Überprüfe kritische Umgebungsvariablen
 const requiredEnvVars = [
@@ -177,13 +184,12 @@ try {
     eventsStore = [];
 }
 
-// Funktion zum Speichern der Events in Datei
+// Funktion zum Speichern der Events in Supabase Storage
 function saveEvents() {
-    fs.writeFileSync(
-        path.join(__dirname, 'events.json'),
-        JSON.stringify({ events: eventsStore }, null, 2),
-        'utf8'
-    );
+    // Asynchron in Supabase Storage speichern
+    saveEventsToSupabase(eventsStore).catch(error => {
+        console.error('❌ Hintergrund-Speicherung fehlgeschlagen:', error);
+    });
 }
 
 // Spotify API Konfiguration
@@ -1089,6 +1095,67 @@ function saveUsers() {
     }
 }
 
+// Supabase Storage Config
+const BUCKET_NAME = 'data';
+const EVENTS_FILE = 'events.json';
+
+// Funktion zum Speichern der Events in Supabase Storage
+async function saveEventsToSupabase(events) {
+    try {
+        console.log('💾 Speichere events.json in Supabase Storage...');
+        
+        const jsonData = JSON.stringify({ events: events }, null, 2);
+        const blob = new Blob([jsonData], { type: 'application/json' });
+
+        const { error } = await supabase
+            .storage
+            .from(BUCKET_NAME)
+            .upload(EVENTS_FILE, blob, {
+                contentType: 'application/json',
+                upsert: true
+            });
+
+        if (error) throw error;
+        console.log(`✅ Events in Supabase gespeichert (${events.length} Events)`);
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Supabase Speichern fehlgeschlagen:', error);
+        return false;
+    }
+}
+
+// Funktion zum Laden der Events aus Supabase Storage
+async function loadEventsFromSupabase() {
+    try {
+        console.log('📥 Lade events.json aus Supabase Storage...');
+        
+        const { data, error } = await supabase
+            .storage
+            .from(BUCKET_NAME)
+            .download(EVENTS_FILE);
+
+        if (error) {
+            if (error.message.includes('not found')) {
+                console.log('⚠️ events.json existiert noch nicht, erstelle neue...');
+                await saveEventsToSupabase([]);
+                return [];
+            }
+            throw error;
+        }
+
+        const text = await data.text();
+        const jsonData = JSON.parse(text);
+        const events = jsonData.events || [];
+        console.log(`✅ ${events.length} Events aus Supabase geladen`);
+        return events;
+        
+    } catch (error) {
+        console.error('❌ Supabase Laden fehlgeschlagen:', error);
+        return [];
+    }
+}
+
 // Überprüfen ob Benutzer eingeloggt ist (Spotify-basiert)
 app.get('/auth/check', (req, res) => {
     if (!req.session.userId) {
@@ -1832,11 +1899,19 @@ spotifyApi.clientCredentialsGrant()
         console.error(`Spotify-Token Fehler: ${error.message}`);
     });
 
-app.listen(PORT, () => {
+app.listen(PORT,  async () => {
     console.log('Server läuft auf Port', PORT);
     console.log('Öffne im Browser:');
     console.log(`${SERVER_URL}/startpage`);
     console.log('Saubere URLs aktiviert - keine .html Endungen mehr nötig!');
     console.log('Backend ist jetzt auf Render gehostet!');
+    console.log(`Server gestartet auf Port ${PORT}`);
+        try {
+        eventsStore = await loadEventsFromSupabase();
+        console.log(`✅ ${eventsStore.length} Events aus Supabase geladen`);
+    } catch (error) {
+        console.error('❌ Fehler beim Laden:', error);
+    }
+    
     console.log(`Server gestartet auf Port ${PORT}`);
 });
