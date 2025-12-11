@@ -28,637 +28,604 @@
     <!-- Firefox-spezifischer Fallback -->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
-        /* Language Dropdown Styles */
-        .language-dropdown {
-            position: relative;
-            margin-right: 20px;
-        }
-        
-        .language-button {
-            background: transparent;
-            border: 2px solid rgba(170, 0, 255, 0.4);
-            border-radius: 4px;
-            padding: 10px 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            min-width: 50px;
-            min-height: 40px;
-        }
-        
-        .language-button:hover {
-            border-color: #aa00ff;
-            background: rgba(170, 0, 255, 0.1);
-        }
-        
-        .flag-icon {
-            width: 24px;
-            height: 16px;
-            border-radius: 2px;
-        }
-        
-        .dropdown-arrow {
-            color: white;
-            font-size: 12px;
-            transition: transform 0.3s ease;
-        }
-        
-        .language-dropdown.open .dropdown-arrow {
-            transform: rotate(180deg);
-        }
-        
-        .language-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: rgba(20, 20, 20, 0.95);
-            backdrop-filter: blur(15px);
-            border: 2px solid rgba(170, 0, 255, 0.3);
-            border-radius: 4px;
-            padding: 8px 0;
-            min-width: 150px;
-            display: none;
-            z-index: 1000;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
-        
-        .language-option {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-            color: white;
-            text-decoration: none;
-        }
-        
-        .language-option:hover {
-            background: rgba(170, 0, 255, 0.2);
-            color: white;
-        }
-        
-        .language-name {
-            font-size: 14px;
-        }
+   /* Language Dropdown Styles */
+.language-dropdown {
+    position: relative;
+    margin-right: 20px;
+}
 
-        .container {
-            max-width: 800px;
-            margin: 20px auto 0 auto;
-            padding: 20px;
-            background-color: #333;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
+.language-button {
+    background: transparent;
+    border: 2px solid rgba(170, 0, 255, 0.4);
+    border-radius: 4px;
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    min-width: 50px;
+    min-height: 40px;
+}
 
-        .event-info {
-            text-align: center;
-            margin-bottom: 30px;
-            color: white;
-        }
+.language-button:hover {
+    border-color: #aa00ff;
+    background: rgba(170, 0, 255, 0.1);
+}
 
-        .event-name {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #aa00ff;
-        }
+.flag-icon {
+    width: 24px;
+    height: 16px;
+    border-radius: 2px;
+}
 
-        .dj-name {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-        }
+.dropdown-arrow {
+    color: white;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
 
-        .search-container {
-            position: relative;
-            max-width: 500px;
-            margin: 0 auto;
-            transition: all 0.3s ease;
-        }
-        
-        @media (max-width: 768px) {
-            .search-container:focus-within {
-                position: fixed;
-                bottom: max(50px, env(safe-area-inset-bottom) + 50px);
-                left: 50%;
-                transform: translateX(-50%);
-                width: 90%;
-                z-index: 1000;
-                padding: 10px;
-                background: rgba(51, 51, 51, 0.95);
-                border-radius: 10px;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            }
-        }
+.language-dropdown.open .dropdown-arrow {
+    transform: rotate(180deg);
+}
 
-        .search-input {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #444;
-            border-radius: 10px;
-            background-color: #222;
-            color: white;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-        }
+.language-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(170, 0, 255, 0.3);
+    border-radius: 4px;
+    padding: 8px 0;
+    min-width: 150px;
+    display: none;
+    z-index: 1000;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
 
-        .search-input:focus {
-            border-color: #aa00ff;
-            outline: none;
-            box-shadow: 0 0 10px rgba(170, 0, 255, 0.2);
-        }
+.language-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    color: white;
+    text-decoration: none;
+}
 
-        .suggestions {
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            box-sizing: border-box;
-            background-color: #222;
-            border: 2px solid #aa00ff;
-            border-radius: 10px;
-            margin-top: 5px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
+.language-option:hover {
+    background: rgba(170, 0, 255, 0.2);
+    color: white;
+}
 
-        /* Custom Scrollbar für Suggestions */
-        .suggestions::-webkit-scrollbar {
-            width: 8px;
-        }
+.language-name {
+    font-size: 14px;
+}
 
-        .suggestions::-webkit-scrollbar-track {
-            background: #333;
-            border-radius: 4px;
-        }
+.container {
+    max-width: 800px;
+    margin: 20px auto 0 auto;
+    padding: 20px;
+    background-color: #333;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
 
-        .suggestions::-webkit-scrollbar-thumb {
-            background: #aa00ff;
-            border-radius: 4px;
-            transition: background 0.3s ease;
-        }
+.event-info {
+    text-align: center;
+    margin-bottom: 30px;
+    color: white;
+}
 
-        .suggestions::-webkit-scrollbar-thumb:hover {
-            background: #9000dd;
-        }
+.event-name {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: #aa00ff;
+}
 
-        /* Firefox Scrollbar */
-        .suggestions {
-            scrollbar-width: thin;
-            scrollbar-color: #aa00ff #333;
-        }
+.dj-name {
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+}
 
-        .suggestion-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            color: white;
-        }
+.search-container {
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto;
+}
 
-        .suggestion-item:hover {
-            background-color: #444;
-        }
+.search-input {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid #444;
+    border-radius: 10px;
+    background-color: #222;
+    color: white;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
 
-        .suggestion-cover {
-            width: 50px;
-            height: 50px;
-            margin-right: 15px;
-            border-radius: 5px;
-        }
+.search-input:focus {
+    border-color: #aa00ff;
+    outline: none;
+    box-shadow: 0 0 10px rgba(170, 0, 255, 0.2);
+}
 
-        .suggestion-info {
-            flex-grow: 1;
-        }
+.suggestions {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #222;
+    border: 2px solid #aa00ff;
+    border-radius: 10px;
+    margin-top: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
 
-        .suggestion-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
+/* Custom Scrollbar für Suggestions */
+.suggestions::-webkit-scrollbar {
+    width: 8px;
+}
 
-        .suggestion-artist {
-            font-size: 0.9rem;
-            color: #aaa;
-        }
+.suggestions::-webkit-scrollbar-track {
+    background: #333;
+    border-radius: 4px;
+}
 
-        .submit-btn {
-            display: block;
-            width: 200px;
-            margin: 30px auto 0;
-            padding: 15px 30px;
-            background-color: #aa00ff;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+.suggestions::-webkit-scrollbar-thumb {
+    background: #aa00ff;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
 
-        .submit-btn:hover {
-            background-color: #9000dd;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(170, 0, 255, 0.3);
-        }
+.suggestions::-webkit-scrollbar-thumb:hover {
+    background: #9000dd;
+}
 
-        .submit-btn:disabled {
-            background-color: #666;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
+/* Firefox Scrollbar */
+.suggestions {
+    scrollbar-width: thin;
+    scrollbar-color: #aa00ff #333;
+}
 
-        /* Erfolgsmeldung */
-        .success-message {
-            display: none;
-            text-align: center;
-            color: #4CAF50;
-            padding: 10px;
-            margin-top: 20px;
-            border-radius: 5px;
-        }
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: white;
+}
 
-        /* Permanenter unterer Streifen */
-        .spotify-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 50px;
-            background-color: #191414;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 999;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            will-change: transform;
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            transition: transform 0.3s ease;
-        }
+.suggestion-item:hover {
+    background-color: #444;
+}
 
-        .spotify-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding-right: 20px;
-            font-size: 20px;
-        }
+.suggestion-cover {
+    width: 50px;
+    height: 50px;
+    margin-right: 15px;
+    border-radius: 5px;
+}
 
-        .spotify-text {
-            font-size: 12px;
-            color: white;
-            margin: 0;
-        }
+.suggestion-info {
+    flex-grow: 1;
+}
 
-        .contact-button {
-            background: linear-gradient(135deg, #aa00ff, #8a2be2);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-size: 1rem;
-          
-            transition: all 0.3s ease;
-            margin-left: 20px;
-            box-shadow: 0 4px 15px rgba(170, 0, 255, 0.3);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
+.suggestion-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
 
-        .contact-button:hover {
-            background: linear-gradient(135deg, #9000dd, #aa00ff);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(170, 0, 255, 0.4);
-            color: white;
-        }
-        
-        .contact-text {
-            white-space: nowrap;
-        }
-        
-     
+.suggestion-artist {
+    font-size: 0.9rem;
+    color: #aaa;
+}
 
-        .spotify-logo {
-            height: 30px;
-            width: auto;
-          
-        }
+.submit-btn {
+    display: block;
+    width: 200px;
+    margin: 30px auto 0;
+    padding: 15px 30px;
+    background-color: #aa00ff;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
-   
+.submit-btn:hover {
+    background-color: #9000dd;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(170, 0, 255, 0.3);
+}
 
-        /* Body Padding für Footer */
-        body {
-            padding-bottom: 60px;
-        }
+.submit-btn:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
 
-        /* Mobile Optimierung */
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                padding: 15px;
-                max-width: calc(100% - 20px);
-            }
-            
-            .event-name {
-                font-size: 2rem;
-            }
-            
-            .dj-name {
-                font-size: 1.4rem;
-            }
-            
-            .search-container {
-                max-width: 100%;
-                margin: 0 auto;
-                padding: 0;
-            }
-            
-            .search-input {
-                font-size: 16px; /* Verhindert Zoom auf iOS */
-                padding: 12px 15px;
-                width: 100%;
-                box-sizing: border-box;
-            }
-            
-            .suggestions {
-                max-height: 250px;
-            }
-            
-            .suggestion-item {
-                padding: 12px 10px;
-            }
-            
-            .suggestion-cover {
-                width: 40px;
-                height: 40px;
-                margin-right: 10px;
-            }
-            
-            .suggestion-title {
-                font-size: 0.9rem;
-            }
-            
-            .suggestion-artist {
-                font-size: 0.8rem;
-            }
-            
-            .submit-btn {
-                width: 90%;
-                max-width: 300px;
-            }
-            
-            .spotify-footer {
-                height: 45px;
-                padding: 0 15px;
-                flex-wrap: nowrap;
-            }
+/* Erfolgsmeldung */
+.success-message {
+    display: none;
+    text-align: center;
+    color: #4CAF50;
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 5px;
+}
 
-            .spotify-info {
-                gap: 8px;
-                padding-right: 10px;
-                flex-shrink: 0;
-            }
+/* Permanenter unterer Streifen */
+.spotify-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background-color: #191414;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 999;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transition: transform 0.3s ease;
+}
 
-            .spotify-text {
-                font-size: 10px;
-                line-height: 1.2;
-                white-space: nowrap;
-            }
+.spotify-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 20px;
+    font-size: 20px;
+}
 
-            .contact-button {
-                font-size: 0.8rem;
-                padding: 4px 10px;
-                margin-left: 10px;
-                white-space: nowrap;
-                flex-shrink: 0;
-                height: 32px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            
-            .spotify-logo {
-                height: 25px;
-                flex-shrink: 0;
-            }
-            
-            body {
-                padding-bottom: 55px;
-            }
-        }
+.spotify-text {
+    font-size: 12px;
+    color: white;
+    margin: 0;
+}
 
-        /* Sehr kleine Bildschirme */
-        @media (max-width: 480px) {
-            .container {
-                margin: 5px;
-                padding: 10px;
-                max-width: calc(100% - 10px);
-            }
-            
-            .event-name {
-                font-size: 1.8rem;
-            }
-            
-            .dj-name {
-                font-size: 1.2rem;
-            }
-            
-            .search-container {
-                max-width: 100%;
-                margin: 0;
-                padding: 0;
-            }
-            
-            .search-input {
-                padding: 10px 12px;
-                width: 100%;
-                box-sizing: border-box;
-            }
-            
-            .suggestions {
-                max-height: 200px;
-                width: 100%;
-            }
-            
-            .suggestion-item {
-                padding: 8px;
-            }
-            
-            .suggestion-cover {
-                width: 35px;
-                height: 35px;
-                margin-right: 8px;
-            }
-            
-            .spotify-footer {
-                height: 40px;
-                padding: 0 10px;
-            }
+.contact-button {
+    background: linear-gradient(135deg, #aa00ff, #8a2be2);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    margin-left: 20px;
+    box-shadow: 0 4px 15px rgba(170, 0, 255, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
 
-            .spotify-info {
-                gap: 4px;
-                padding-right: 6px;
-                flex-direction: column;
-                align-items: center;
-            }
+.contact-button:hover {
+    background: linear-gradient(135deg, #9000dd, #aa00ff);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(170, 0, 255, 0.4);
+    color: white;
+}
 
-            .spotify-text {
-                font-size: 8px;
-                line-height: 1.1;
-                white-space: nowrap;
-                /* Text bleibt sichtbar, wird nur sehr klein */
-            }
+.contact-text {
+    white-space: nowrap;
+}
 
-            .contact-button {
-                font-size: 0.7rem;
-                padding: 5px 8px;
-                margin-left: 8px;
-                min-width: 50px;
-            }
-            
-            .contact-text {
-                display: none; /* Text auf sehr kleinen Bildschirmen ausblenden */
-            }
-            
-            .contact-button::before {
-                content: "📞";
-                font-size: 12px;
-            }
-            
-            .spotify-logo {
-                height: 22px;
-            }
-            
-            body {
-                padding-bottom: 50px;
-            }
-        }
-        
-        /* Sehr sehr kleine Bildschirme (unter 360px) */
-        @media (max-width: 360px) {
-            .spotify-footer {
-                height: 38px;
-                padding: 0 8px;
-                justify-content: space-between;
-            }
+.spotify-logo {
+    height: 30px;
+    width: auto;
+}
 
-            .spotify-info {
-                gap: 4px;
-                padding-right: 5px;
-                min-width: 0;
-            }
+/* Body Padding für Footer */
+body {
+    padding-bottom: 60px;
+}
 
-            .spotify-text {
-                display: none; /* Komplett ausgeblendet */
-            }
+/* Mobile Optimierung */
+@media (max-width: 768px) {
+    .container {
+        margin: 10px;
+        padding: 15px;
+        max-width: calc(100% - 20px);
+    }
+    
+    .event-name {
+        font-size: 2rem;
+    }
+    
+    .dj-name {
+        font-size: 1.4rem;
+    }
+    
+    .search-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0;
+    }
+    
+    .search-input {
+        font-size: 16px;
+        padding: 12px 15px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .suggestions {
+        max-height: 250px;
+    }
+    
+    .suggestion-item {
+        padding: 12px 10px;
+    }
+    
+    .suggestion-cover {
+        width: 40px;
+        height: 40px;
+        margin-right: 10px;
+    }
+    
+    .suggestion-title {
+        font-size: 0.9rem;
+    }
+    
+    .suggestion-artist {
+        font-size: 0.8rem;
+    }
+    
+    .submit-btn {
+        width: 90%;
+        max-width: 300px;
+    }
+    
+    .spotify-footer {
+        height: 45px;
+        padding: 0 15px;
+        flex-wrap: nowrap;
+    }
 
-            .contact-button {
-                font-size: 0.65rem;
-                padding: 6px 8px;
-                margin-left: 5px;
-                border-radius: 20px;
-                min-width: 40px;
-            }
-            
-            .contact-text {
-                display: none; /* Text komplett ausgeblendet */
-            }
-            
-            .contact-button::before {
-                content: "📞";
-                font-size: 14px;
-            }
-            
-            .spotify-logo {
-                height: 20px;
-            }
-            
-            body {
-                padding-bottom: 48px;
-            }
-        }
-        
-        /* Touch-Optimierungen */
-        @media (hover: none) and (pointer: coarse) {
-            .contact-button {
-                min-height: 36px;
-                min-width: 36px;
-                padding: 6px 12px;
-                touch-action: manipulation;
-            }
-            
-            .contact-text {
-                display: inline;
-                font-size: 0.9rem;
-            }
-            
-            .contact-button::before {
-                content: none;
-            }
-            
-            .spotify-footer {
-                height: 44px;
-                padding: 0 12px;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                z-index: 999;
-                will-change: transform;
-                transform: translateZ(0);
-                -webkit-transform: translateZ(0);
-                backface-visibility: hidden;
-                -webkit-backface-visibility: hidden;
-            }
+    .spotify-info {
+        gap: 8px;
+        padding-right: 10px;
+        flex-shrink: 0;
+    }
 
-            .search-container:focus-within {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 90%;
-                z-index: 1000;
-                padding: 10px;
-            }
-            
-            body {
-                padding-bottom: 50px;
-            }
-        }
-        
-        /* Landscape-Orientierung auf kleinen Geräten */
-        @media screen and (max-height: 500px) and (orientation: landscape) {
-            .spotify-footer {
-                height: 40px;
-            }
-            
-            .contact-button {
-                padding: 4px 10px;
-                font-size: 0.8rem;
-            }
-            
-            .spotify-logo {
-                height: 20px;
-            }
-            
-            body {
-                padding-bottom: 50px;
-            }
-        }
+    .spotify-text {
+        font-size: 10px;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    .contact-button {
+        font-size: 0.8rem;
+        padding: 4px 10px;
+        margin-left: 10px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .spotify-logo {
+        height: 25px;
+        flex-shrink: 0;
+    }
+    
+    body {
+        padding-bottom: 55px;
+    }
+}
+
+/* Sehr kleine Bildschirme */
+@media (max-width: 480px) {
+    .container {
+        margin: 5px;
+        padding: 10px;
+        max-width: calc(100% - 10px);
+    }
+    
+    .event-name {
+        font-size: 1.8rem;
+    }
+    
+    .dj-name {
+        font-size: 1.2rem;
+    }
+    
+    .search-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .search-input {
+        padding: 10px 12px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .suggestions {
+        max-height: 200px;
+        width: 100%;
+    }
+    
+    .suggestion-item {
+        padding: 8px;
+    }
+    
+    .suggestion-cover {
+        width: 35px;
+        height: 35px;
+        margin-right: 8px;
+    }
+    
+    .spotify-footer {
+        height: 40px;
+        padding: 0 10px;
+    }
+
+    .spotify-info {
+        gap: 4px;
+        padding-right: 6px;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .spotify-text {
+        font-size: 8px;
+        line-height: 1.1;
+        white-space: nowrap;
+    }
+
+    .contact-button {
+        font-size: 0.7rem;
+        padding: 5px 8px;
+        margin-left: 8px;
+        min-width: 50px;
+    }
+    
+    .contact-text {
+        display: none;
+    }
+    
+    .contact-button::before {
+        content: "📞";
+        font-size: 12px;
+    }
+    
+    .spotify-logo {
+        height: 22px;
+    }
+    
+    body {
+        padding-bottom: 50px;
+    }
+}
+
+/* Sehr sehr kleine Bildschirme (unter 360px) */
+@media (max-width: 360px) {
+    .spotify-footer {
+        height: 38px;
+        padding: 0 8px;
+        justify-content: space-between;
+    }
+
+    .spotify-info {
+        gap: 4px;
+        padding-right: 5px;
+        min-width: 0;
+    }
+
+    .spotify-text {
+        display: none;
+    }
+
+    .contact-button {
+        font-size: 0.65rem;
+        padding: 6px 8px;
+        margin-left: 5px;
+        border-radius: 20px;
+        min-width: 40px;
+    }
+    
+    .contact-text {
+        display: none;
+    }
+    
+    .contact-button::before {
+        content: "📞";
+        font-size: 14px;
+    }
+    
+    .spotify-logo {
+        height: 20px;
+    }
+    
+    body {
+        padding-bottom: 48px;
+    }
+}
+
+/* Touch-Optimierungen */
+@media (hover: none) and (pointer: coarse) {
+    .contact-button {
+        min-height: 36px;
+        min-width: 36px;
+        padding: 6px 12px;
+        touch-action: manipulation;
+    }
+    
+    .contact-text {
+        display: inline;
+        font-size: 0.9rem;
+    }
+    
+    .contact-button::before {
+        content: none;
+    }
+    
+    .spotify-footer {
+        height: 44px;
+        padding: 0 12px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        will-change: transform;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+    
+    body {
+        padding-bottom: 50px;
+    }
+}
+
+/* Landscape-Orientierung auf kleinen Geräten */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .spotify-footer {
+        height: 40px;
+    }
+    
+    .contact-button {
+        padding: 4px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .spotify-logo {
+        height: 20px;
+    }
+    
+    body {
+        padding-bottom: 50px;
+    }
+}
     </style>
     <script src="url-rewriter.js"></script>
 </head>
